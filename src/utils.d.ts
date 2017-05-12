@@ -1,4 +1,19 @@
 import { IBrowserInfo } from "./interfaces";
+/**
+ * Method to perform the asnc operation
+ * @param {any} data  the data to operate on
+ * @returns {Promise<any>} returns a promise
+ */
+export declare type DoUntilOperationFunction = (data: any) => Promise<any>;
+/**
+ * Method to decide whether to continue or not
+ * @param {any} data  the data to look at (will have been returned vi a promise from DoUntilOperationFunction)
+ * @returns {boolean} returns true or false. return false to stop
+ */
+export declare type DoUntilTestFunction = (data: any) => boolean;
+/**
+ * Utility class
+ */
 export declare class Utils {
     /**
      * Function to clone an object
@@ -20,6 +35,20 @@ export declare class Utils {
      * @returns {IBrowserInfo} - returns an IBrowserInfo interface
      */
     static getBrowserInfo(userAgent?: string): IBrowserInfo;
+    /**
+     * Method to call some async function on an array of data and you want them called sequentially
+     * @param {any[]} arr
+     * @param {Function} iteratorFn
+     * @returns {Promise} - returns a Promise
+     */
+    static eachSeries(arr: any[], iteratorFn: Function): Promise<any>;
+    /**
+     * Method to encapsulate repeatdly calling an async method until a condition is met (tyoes defined at top)
+     * @param {DoUntilOperationFunction} operation - the operation to perform
+     * @param {DoUntilTestFunction} test - the condition that stops the repeats
+     * @param {any} data - the data
+     */
+    static doUntil(operation: DoUntilOperationFunction, test: DoUntilTestFunction, data?: any): Promise<any>;
     /**
      * @class Utils
      * @ignore

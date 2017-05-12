@@ -28,18 +28,18 @@ var IndexedDBLogger = (function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
             if (_this.idbSupported) {
-                var self = _this;
+                var self_1 = _this;
                 var openRequest = indexedDB.open(_this._name, _this._version);
                 openRequest.onupgradeneeded = function (e) {
                     console.log("Upgrading database...");
                     var thisDB = e.target.result;
-                    if (!thisDB.objectStoreNames.contains(self._store)) {
-                        var os = thisDB.createObjectStore(self._store, { autoIncrement: true });
+                    if (!thisDB.objectStoreNames.contains(self_1._store)) {
+                        var os = thisDB.createObjectStore(self_1._store, { autoIncrement: true });
                         os.createIndex("created", "created", { unique: false });
                     }
                 };
                 openRequest.onsuccess = function (e) {
-                    self._database = e.target.result;
+                    self_1._database = e.target.result;
                     resolve(true);
                 };
                 openRequest.onerror = function (e) {

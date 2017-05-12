@@ -3,12 +3,12 @@ var Profile = (function () {
      * Profile class constructor.
      * @class Profile
      * @classdesc Class that implements Profile.
-     * @parameter {SessionAndSocketResolver} resolver
+     * @parameter {INetworkManager} _networkManager
      * @parameter {ILocalStorageData} localStorageData
      * @parameter {IProfileManager} profileManager
      */
-    function Profile(_sessionAndSocketResolver, _localStorage, _profileManager) {
-        this._sessionAndSocketResolver = _sessionAndSocketResolver;
+    function Profile(_networkManager, _localStorage, _profileManager) {
+        this._networkManager = _networkManager;
         this._localStorage = _localStorage;
         this._profileManager = _profileManager;
     }
@@ -20,7 +20,7 @@ var Profile = (function () {
      */
     Profile.prototype.getProfile = function (profileId) {
         var _this = this;
-        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+        return this._networkManager.ensureSessionAndSocket()
             .then(function (sessionInfo) {
             return _this._profileManager.getProfile(profileId);
         });
@@ -33,7 +33,7 @@ var Profile = (function () {
      */
     Profile.prototype.queryProfiles = function (query) {
         var _this = this;
-        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+        return this._networkManager.ensureSessionAndSocket()
             .then(function (sessionInfo) {
             return _this._profileManager.queryProfiles(query);
         });
@@ -48,7 +48,7 @@ var Profile = (function () {
      */
     Profile.prototype.updateProfile = function (profileId, profile, eTag) {
         var _this = this;
-        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+        return this._networkManager.ensureSessionAndSocket()
             .then(function (sessionInfo) {
             return _this._profileManager.updateProfile(profileId, profile, eTag);
         });
@@ -62,7 +62,7 @@ var Profile = (function () {
     Profile.prototype.getMyProfile = function (useEtag) {
         var _this = this;
         if (useEtag === void 0) { useEtag = true; }
-        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+        return this._networkManager.ensureSessionAndSocket()
             .then(function (sessionInfo) {
             return _this._profileManager.getProfile(sessionInfo.session.profileId)
                 .then(function (result) {
@@ -83,7 +83,7 @@ var Profile = (function () {
     Profile.prototype.updateMyProfile = function (profile, useEtag) {
         var _this = this;
         if (useEtag === void 0) { useEtag = true; }
-        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+        return this._networkManager.ensureSessionAndSocket()
             .then(function (sessionInfo) {
             return _this._profileManager.updateProfile(sessionInfo.session.profileId, profile, useEtag ? _this._localStorage.getString("MyProfileETag") : undefined)
                 .then(function (result) {

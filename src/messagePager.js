@@ -14,7 +14,7 @@ var MessagePager = (function () {
         this._localStorage = _localStorage;
         this._messageManager = _messageManager;
         this._orphanedEevnts = {};
-        this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
+        this._orphanedEevnts = this._localStorage.getObject("orphanedEevnts") || {};
     }
     /**
      * Get a page of messages, internally deal with orphaned events etc ...
@@ -127,6 +127,13 @@ var MessagePager = (function () {
         }
     };
     /**
+     * Method to reset any cached info abut a conversation
+     */
+    MessagePager.prototype.resetConversation = function (conversationId) {
+        this._orphanedEevnts[conversationId] = {};
+        this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
+    };
+    /**
      *
      */
     MessagePager.prototype.mergeOrphanedEvents = function (orphanedEventContainer, orphanedEvets) {
@@ -152,13 +159,13 @@ var MessagePager = (function () {
     MessagePager.prototype.applyOrphanedEvents = function (messages, orphanedEventContainer) {
         this._logger.log("==> applyOrphanedEvents: " + JSON.stringify(orphanedEventContainer.orphanedEvents));
         for (var i = orphanedEventContainer.orphanedEvents.length - 1; i >= 0; i--) {
-            var event = orphanedEventContainer.orphanedEvents[i];
-            if (this.playEvent(event, messages)) {
-                this._logger.log("succesfuly played event " + event.conversationEventId);
+            var event_2 = orphanedEventContainer.orphanedEvents[i];
+            if (this.playEvent(event_2, messages)) {
+                this._logger.log("succesfuly played event " + event_2.conversationEventId);
                 orphanedEventContainer.orphanedEvents.splice(i, 1);
             }
             else {
-                this._logger.warn("failed to play event " + event.conversationEventId, event);
+                this._logger.warn("failed to play event " + event_2.conversationEventId, event_2);
             }
         }
         this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
@@ -261,13 +268,6 @@ var MessagePager = (function () {
         mapped.conversationId = event.data.payload.conversationId;
         mapped.payload = event.data.payload;
         return mapped;
-    };
-    /**
-     * Method to reset any cached info abut a conversation
-     */
-    MessagePager.prototype.resetConversation = function (conversationId) {
-        this._orphanedEevnts[conversationId] = undefined;
-        this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
     };
     return MessagePager;
 })();

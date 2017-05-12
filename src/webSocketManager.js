@@ -274,6 +274,17 @@ var WebSocketManager = (function () {
                     this._eventManager.publishLocalEvent("participantTyping", participantTypingEventData);
                 }
                 break;
+            case "conversation.participantTypingOff":
+                {
+                    var participantTypingOffEventData = {
+                        conversationId: event.payload.conversationId,
+                        createdBy: event.context.createdBy,
+                        profileId: event.payload.profileId,
+                        timestamp: event.publishedOn,
+                    };
+                    this._eventManager.publishLocalEvent("participantTypingOff", participantTypingOffEventData);
+                }
+                break;
             case "conversationMessage.sent":
                 {
                     var _event = {

@@ -17,6 +17,7 @@ export declare class SessionManager implements ISessionManager {
      * @parameter {ILogger} logger
      * @parameter {IRestClient} restClient
      * @parameter {ILocalStorageData} localStorageData
+     * @parameter {IComapiConfig} comapiConfig
      */
     constructor(_logger: ILogger, _restClient: IRestClient, _localStorageData: ILocalStorageData, _comapiConfig: IComapiConfig);
     /**

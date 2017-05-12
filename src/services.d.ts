@@ -1,6 +1,5 @@
-import { AppMessaging } from "./appMessaging";
-import { Profile } from "./profile";
-export declare class Services {
+import { IServices, IAppMessaging, IProfile } from "./interfaces";
+export declare class Services implements IServices {
     private _appMessaging;
     private _profile;
     /**
@@ -10,17 +9,17 @@ export declare class Services {
      * @parameter {AppMessaging} _appMessaging
      * @parameter {Profile} _profile
      */
-    constructor(_appMessaging: AppMessaging, _profile: Profile);
+    constructor(_appMessaging: IAppMessaging, _profile: IProfile);
     /**
      * Method to get AppMessaging interface
      * @method Services#appMessaging
      * @returns {AppMessaging} - Returns AppMessaging interface
      */
-    appMessaging: AppMessaging;
+    appMessaging: IAppMessaging;
     /**
      * Method to get Profile interface
      * @method Services#profile
      * @returns {Profile} - Returns Profile interface
      */
-    profile: Profile;
+    profile: IProfile;
 }

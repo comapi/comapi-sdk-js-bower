@@ -1,22 +1,18 @@
-import { IEventManager, ILogger, ILocalStorageData, ISessionManager, ISession, IDeviceManager, IFacebookManager, IConversationManager, IProfileManager, IMessageManager, IComapiConfig, IWebSocketManager } from "./interfaces";
+import { IEventManager, ILogger, ILocalStorageData, ISession, IDeviceManager, IFacebookManager, IConversationManager, IProfileManager, IMessageManager, IComapiConfig, IServices, IDevice, IChannels, IFoundation } from "./interfaces";
 import { ConversationBuilder } from "./conversationBuilder";
 import { MessageBuilder } from "./messageBuilder";
 import { MessageStatusBuilder } from "./messageStatusBuilder";
 import { ComapiConfig } from "./comapiConfig";
-import { Services } from "./services";
-import { Device } from "./device";
-import { Channels } from "./channels";
+import { NetworkManager } from "./networkManager";
 export { ComapiConfig, MessageStatusBuilder, ConversationBuilder, MessageBuilder };
-export declare class Foundation {
+export declare class Foundation implements IFoundation {
     private _eventManager;
     private _logger;
-    private _sessionManager;
-    private _webSocketManager;
-    private _comapiConfig;
+    private _networkManager;
     /**
      * Singleton Foundation instance
      */
-    private static _foundtion;
+    private static _foundation;
     /**
      * @name Foundation#_services
      * @private
@@ -41,6 +37,13 @@ export declare class Foundation {
      * @param {IComapiConfig} comapiConfig - the app config (use `ComapiConfig` to create)
      * @returns {Promise} - returns promise
      */
+    static initialiseShared(comapiConfig: IComapiConfig): Promise<Foundation>;
+    /**
+     * Factory method to create an instance of Foundation
+     * @method Foundation#initialise
+     * @param {IComapiConfig} comapiConfig - the app config (use `ComapiConfig` to create)
+     * @returns {Promise} - returns promise
+     */
     static initialise(comapiConfig: IComapiConfig): Promise<Foundation>;
     /**
      * Property to get the SDK version
@@ -48,11 +51,17 @@ export declare class Foundation {
      */
     static version: string;
     /**
+     * Private initialisation method
+     * @param comapiConfig
+     * @param indexedDBLogger
+     */
+    private static _initialise(comapiConfig, doSingleton);
+    /**
      * Foundation class constructor.
      * @class Foundation
      * @classdesc Class that implements Comapi foundation functionality.
      */
-    constructor(_eventManager: IEventManager, _logger: ILogger, _localStorageData: ILocalStorageData, _sessionManager: ISessionManager, _deviceManager: IDeviceManager, _facebookManager: IFacebookManager, _conversationManager: IConversationManager, _profileManager: IProfileManager, _messageManager: IMessageManager, _webSocketManager: IWebSocketManager, _comapiConfig: IComapiConfig);
+    constructor(_eventManager: IEventManager, _logger: ILogger, _localStorageData: ILocalStorageData, _networkManager: NetworkManager, _deviceManager: IDeviceManager, _facebookManager: IFacebookManager, _conversationManager: IConversationManager, _profileManager: IProfileManager, _messageManager: IMessageManager, _comapiConfig: IComapiConfig);
     /**
      * Method to start a new authenticated session
      * @method Foundation#startSession
@@ -70,19 +79,19 @@ export declare class Foundation {
      * @method Foundation#services
      * @returns {Services} - Returns Services
      */
-    services: Services;
+    services: IServices;
     /**
      * Method to get Device interface
      * @method Foundation#device
      * @returns {Device} - Returns Device
      */
-    device: Device;
+    device: IDevice;
     /**
      * Method to get Channels interface
      * @method Foundation#channels
      * @returns {Channels} - Returns Channels
      */
-    channels: Channels;
+    channels: IChannels;
     /**
      * Method to get current session
      * @method Foundation#session

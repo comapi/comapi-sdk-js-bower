@@ -33,6 +33,10 @@ export declare class MessagePager {
      */
     markMessagesAsDelivered(id: string, messages: IConversationMessage[], userId: string): Promise<string>;
     /**
+     * Method to reset any cached info abut a conversation
+     */
+    resetConversation(conversationId: string): void;
+    /**
      *
      */
     private mergeOrphanedEvents(orphanedEventContainer, orphanedEvets);
@@ -46,8 +50,4 @@ export declare class MessagePager {
      */
     private playEvent(event, messages);
     private mapOrphanedEvent(event);
-    /**
-     * Method to reset any cached info abut a conversation
-     */
-    private resetConversation(conversationId);
 }

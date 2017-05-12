@@ -1,3 +1,6 @@
+/**
+ * Utility class
+ */
 var Utils = (function () {
     /**
      * @class Utils
@@ -63,6 +66,31 @@ var Utils = (function () {
             name: M[0],
             version: M[1]
         };
+    };
+    /**
+     * Method to call some async function on an array of data and you want them called sequentially
+     * @param {any[]} arr
+     * @param {Function} iteratorFn
+     * @returns {Promise} - returns a Promise
+     */
+    Utils.eachSeries = function (arr, iteratorFn) {
+        return arr.reduce(function (p, item) {
+            return p.then(function () {
+                return iteratorFn(item);
+            });
+        }, Promise.resolve());
+    };
+    /**
+     * Method to encapsulate repeatdly calling an async method until a condition is met (tyoes defined at top)
+     * @param {DoUntilOperationFunction} operation - the operation to perform
+     * @param {DoUntilTestFunction} test - the condition that stops the repeats
+     * @param {any} data - the data
+     */
+    Utils.doUntil = function (operation, test, data) {
+        return operation(data)
+            .then(function (rslt) {
+            return test(rslt) ? Utils.doUntil(operation, test, rslt) : rslt;
+        });
     };
     return Utils;
 })();

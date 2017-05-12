@@ -5,11 +5,11 @@ var RestClient = (function () {
      * @ignore
      * @classdesc Class that implements a RestClient.
      * @param {ILogger} [logger] - the logger
-     * @param {ISessionManager} [sessionManager] - the session sessionManager
+     * @param {INetworkManager} [networkManager] - the network Manager
      */
-    function RestClient(logger, sessionManager) {
+    function RestClient(logger, networkManager) {
         this.logger = logger;
-        this.sessionManager = sessionManager;
+        this.networkManager = networkManager;
         this._readyStates = [
             "request not initialized",
             "server connection established",
@@ -224,8 +224,11 @@ var RestClient = (function () {
             return self._makeRequest(method, url, headers, data)
                 .catch(function (result) {
                 // TODO: refactor max retry count into some config ...
-                if (i < 3 && result.statusCode === 401 && self.sessionManager) {
-                    return self.sessionManager.startSession()
+                if (i < 3 && result.statusCode === 401 && self.networkManager) {
+                    // the old session is just dead so ending it is not reuired ...
+                    //  - the old websocket will still be connected and needs to be cleanly disconnected 
+                    // TODO: add a restartSession()which encapsuates this logic ?
+                    return self.networkManager.restartSession()
                         .then(function (sessionInfo) {
                         headers.authorization = "Bearer " + sessionInfo.token;
                         return recurse(++i);

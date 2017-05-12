@@ -8,6 +8,7 @@ var SessionManager = (function () {
      * @parameter {ILogger} logger
      * @parameter {IRestClient} restClient
      * @parameter {ILocalStorageData} localStorageData
+     * @parameter {IComapiConfig} comapiConfig
      */
     function SessionManager(_logger, _restClient, _localStorageData, _comapiConfig) {
         this._logger = _logger;
@@ -161,7 +162,7 @@ var SessionManager = (function () {
             platform: /*browserInfo.name*/ "javascript",
             platformVersion: browserInfo.version,
             sdkType: /*"javascript"*/ "native",
-            sdkVersion: "1.0.0.0"
+            sdkVersion: "1.0.1.2"
         };
         return this._restClient.post(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/sessions", {}, data)
             .then(function (result) {

@@ -1,4 +1,4 @@
-import { ISessionManager, ILogger, IRestClient, IRestClientResult } from "./interfaces";
+import { ILogger, IRestClient, IRestClientResult, INetworkManager } from "./interfaces";
 import { RestClient } from "./restClient";
 export declare class AuthenticatedRestClient extends RestClient implements IRestClient {
     /**
@@ -7,9 +7,9 @@ export declare class AuthenticatedRestClient extends RestClient implements IRest
      * @ignore
      * @classdesc Class that implements an Authenticated RestClient.
      * @param {ILogger} logger - the logger
-     * @param {ISessionManager} sessionManager - the Session Manager
+     * @param {INetworkManager} networkManager - the Network Manager
      */
-    constructor(logger: ILogger, sessionManager: ISessionManager);
+    constructor(logger: ILogger, networkManager: INetworkManager);
     /**
      * Method to make a GET request
      * @method AuthenticatedRestClient#get

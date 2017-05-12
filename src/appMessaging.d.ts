@@ -1,8 +1,7 @@
-import { IConversationManager, IConversationDetails, IConversationDetails2, IConversationParticipant, ConversationScope, IMessageManager, IConversationMessageEvent, IConversationMessage, ISendMessageResult, IMessageStatus, IGetMessagesResponse } from "./interfaces";
-import { SessionAndSocketResolver } from "./resolver";
+import { IConversationManager, IConversationDetails, IConversationDetails2, IConversationParticipant, ConversationScope, IMessageManager, IConversationMessageEvent, IConversationMessage, ISendMessageResult, IMessageStatus, IGetMessagesResponse, INetworkManager } from "./interfaces";
 import { MessagePager } from "./messagePager";
 export declare class AppMessaging {
-    private _sessionAndSocketResolver;
+    private _networkManager;
     private _conversationManager;
     private _messageManager;
     private _messagePager;
@@ -10,11 +9,11 @@ export declare class AppMessaging {
      * AppMessaging class constructor.
      * @class  AppMessaging
      * @classdesc Class that implements AppMessaging
-     * @parameter {SessionAndSocketResolver} resolver
-     * @parameter {IConversationManager} conversationManager
-     * @parameter {IMessageManager} messageManager
+     * @param {INetworkManager} networkManager
+     * @param {IConversationManager} conversationManager
+     * @param {IMessageManager} messageManager
      */
-    constructor(_sessionAndSocketResolver: SessionAndSocketResolver, _conversationManager: IConversationManager, _messageManager: IMessageManager, _messagePager: MessagePager);
+    constructor(_networkManager: INetworkManager, _conversationManager: IConversationManager, _messageManager: IMessageManager, _messagePager: MessagePager);
     /**
      * Function to create a conversation
      * @method AppMessaging#createConversation
@@ -116,4 +115,11 @@ export declare class AppMessaging {
      * @returns {Promise}
      */
     sendIsTyping(conversationId: string): Promise<boolean>;
+    /**
+     * Function to send typing off event to a conversation
+     * @method AppMessaging#sendIsTypingOff
+     * @param {string} conversationId - the conversation Id
+     * @returns {Promise}
+     */
+    sendIsTypingOff(conversationId: string): Promise<boolean>;
 }

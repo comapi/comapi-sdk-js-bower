@@ -11,6 +11,8 @@ var ComapiConfig = (function () {
         this.webSocketBase = "wss://api.comapi.com";
         this.logLevel = interfaces_1.LogLevels.Error;
         this.logPersistence = interfaces_1.LogPersistences.LocalStorage;
+        this.isTypingTimeout = 10;
+        this.isTypingOffTimeout = 10;
         this.apiSpaceId = undefined;
     }
     /**

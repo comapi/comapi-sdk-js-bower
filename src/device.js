@@ -3,11 +3,11 @@ var Device = (function () {
      * Device class constructor.
      * @class Device
      * @classdesc Class that implements Device related functionality.
-     * @parameter {SessionAndSocketResolver} resolver
+     * @parameter {INetworkManager} _networkManager
      * @parameter {IDeviceManager} deviceManager
      */
-    function Device(_sessionAndSocketResolver, _deviceManager) {
-        this._sessionAndSocketResolver = _sessionAndSocketResolver;
+    function Device(_networkManager, _deviceManager) {
+        this._networkManager = _networkManager;
         this._deviceManager = _deviceManager;
     }
     /**
@@ -19,7 +19,7 @@ var Device = (function () {
      */
     Device.prototype.setFCMPushDetails = function (packageName, registrationId) {
         var _this = this;
-        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+        return this._networkManager.ensureSessionAndSocket()
             .then(function (sessionInfo) {
             return _this._deviceManager.setFCMPushDetails(sessionInfo.session.id, packageName, registrationId);
         });
@@ -34,7 +34,7 @@ var Device = (function () {
      */
     Device.prototype.setAPNSPushDetails = function (bundleId, environment, token) {
         var _this = this;
-        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+        return this._networkManager.ensureSessionAndSocket()
             .then(function (sessionInfo) {
             return _this._deviceManager.setAPNSPushDetails(sessionInfo.session.id, bundleId, environment, token);
         });
@@ -46,7 +46,7 @@ var Device = (function () {
      */
     Device.prototype.removePushDetails = function () {
         var _this = this;
-        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+        return this._networkManager.ensureSessionAndSocket()
             .then(function (sessionInfo) {
             return _this._deviceManager.removePushDetails(sessionInfo.session.id);
         });

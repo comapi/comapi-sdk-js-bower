@@ -3,6 +3,8 @@ function __export(m) {
 }
 var foundation_1 = require("./foundation");
 exports.Foundation = foundation_1.Foundation;
+var utils_1 = require("./utils");
+exports.Utils = utils_1.Utils;
 var comapiConfig_1 = require("./comapiConfig");
 exports.ComapiConfig = comapiConfig_1.ComapiConfig;
 var conversationBuilder_1 = require("./conversationBuilder");

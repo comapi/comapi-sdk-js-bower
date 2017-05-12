@@ -12,10 +12,10 @@ var AuthenticatedRestClient = (function (_super) {
      * @ignore
      * @classdesc Class that implements an Authenticated RestClient.
      * @param {ILogger} logger - the logger
-     * @param {ISessionManager} sessionManager - the Session Manager
+     * @param {INetworkManager} networkManager - the Network Manager
      */
-    function AuthenticatedRestClient(logger, sessionManager) {
-        _super.call(this, logger, sessionManager);
+    function AuthenticatedRestClient(logger, networkManager) {
+        _super.call(this, logger, networkManager);
     }
     /**
      * Method to make a GET request
@@ -27,7 +27,7 @@ var AuthenticatedRestClient = (function (_super) {
     AuthenticatedRestClient.prototype.get = function (url, headers) {
         var _this = this;
         headers = headers || {};
-        return this.sessionManager.getValidToken()
+        return this.networkManager.getValidToken()
             .then(function (token) {
             headers.authorization = _this.constructAUthHeader(token);
             return _super.prototype.get.call(_this, url, headers);
@@ -43,7 +43,7 @@ var AuthenticatedRestClient = (function (_super) {
      */
     AuthenticatedRestClient.prototype.post = function (url, headers, data) {
         var _this = this;
-        return this.sessionManager.getValidToken()
+        return this.networkManager.getValidToken()
             .then(function (token) {
             headers.authorization = _this.constructAUthHeader(token);
             return _super.prototype.post.call(_this, url, headers, data);
@@ -59,7 +59,7 @@ var AuthenticatedRestClient = (function (_super) {
      */
     AuthenticatedRestClient.prototype.put = function (url, headers, data) {
         var _this = this;
-        return this.sessionManager.getValidToken()
+        return this.networkManager.getValidToken()
             .then(function (token) {
             headers.authorization = _this.constructAUthHeader(token);
             return _super.prototype.put.call(_this, url, headers, data);
@@ -74,7 +74,7 @@ var AuthenticatedRestClient = (function (_super) {
      */
     AuthenticatedRestClient.prototype.delete = function (url, headers) {
         var _this = this;
-        return this.sessionManager.getValidToken()
+        return this.networkManager.getValidToken()
             .then(function (token) {
             headers.authorization = _this.constructAUthHeader(token);
             return _super.prototype.delete.call(_this, url, headers);

@@ -1,16 +1,15 @@
-import { IFacebookManager } from "./interfaces";
-import { SessionAndSocketResolver } from "./resolver";
-export declare class Channels {
-    private _sessionAndSocketResolver;
+import { IFacebookManager, IChannels, INetworkManager } from "./interfaces";
+export declare class Channels implements IChannels {
+    private _networkManager;
     private _facebookManager;
     /**
      * Channels class constructor.
      * @class Channels
      * @classdesc Class that implements Channels interface
-     * @parameter {SessionAndSocketResolver} resolver
+     * @parameter {NetworkManager} networkManager
      * @parameter {IFacebookManager} facebookManager
      */
-    constructor(_sessionAndSocketResolver: SessionAndSocketResolver, _facebookManager: IFacebookManager);
+    constructor(_networkManager: INetworkManager, _facebookManager: IFacebookManager);
     /**
      * Method to create opt in state for facebook messenger
      * @method Channels#createFbOptInState

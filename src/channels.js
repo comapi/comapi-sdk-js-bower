@@ -3,11 +3,11 @@ var Channels = (function () {
      * Channels class constructor.
      * @class Channels
      * @classdesc Class that implements Channels interface
-     * @parameter {SessionAndSocketResolver} resolver
+     * @parameter {NetworkManager} networkManager
      * @parameter {IFacebookManager} facebookManager
      */
-    function Channels(_sessionAndSocketResolver, _facebookManager) {
-        this._sessionAndSocketResolver = _sessionAndSocketResolver;
+    function Channels(_networkManager, _facebookManager) {
+        this._networkManager = _networkManager;
         this._facebookManager = _facebookManager;
     }
     /**
@@ -17,7 +17,7 @@ var Channels = (function () {
      */
     Channels.prototype.createFbOptInState = function (data) {
         var _this = this;
-        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+        return this._networkManager.ensureSessionAndSocket()
             .then(function (sessionInfo) {
             return _this._facebookManager.createSendToMessengerState(data);
         });

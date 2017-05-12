@@ -6,6 +6,7 @@ export declare class ConversationManager implements IConversationManager {
     private _comapiConfig;
     private _sessionManager;
     private isTypingInfo;
+    private isTypingOffInfo;
     /**
      * ConversationManager class constructor.
      * @class ConversationManager
@@ -78,10 +79,17 @@ export declare class ConversationManager implements IConversationManager {
      */
     getConversations(scope?: ConversationScope, profileId?: string): Promise<IConversationDetails2[]>;
     /**
-     * Function to get participantss in a conversation
+     * Function to send an is-typing event
      * @method ConversationManager#sendIsTyping
      * @param {string} conversationId
      * @returns {Promise}
      */
     sendIsTyping(conversationId: string): Promise<boolean>;
+    /**
+     * Function to send an is-typing off event
+     * @method ConversationManager#sendIsTyping
+     * @param {string} conversationId
+     * @returns {Promise}
+     */
+    sendIsTypingOff(conversationId: string): Promise<boolean>;
 }

@@ -17,9 +17,11 @@ var ConversationManager = (function () {
         this._localStorageData = _localStorageData;
         this._comapiConfig = _comapiConfig;
         this._sessionManager = _sessionManager;
-        //  This obkect is an in-memory dictionary of last sent timestamps (conversationId: timestamp) ...
+        //  This object is an in-memory dictionary of last sent timestamps (conversationId: timestamp) ...
         //  "FA93AA1B-DEA5-4182-BE67-3DEAF4021040": "2017-02-28T14:48:21.634Z"
         this.isTypingInfo = {};
+        // same for typing off 
+        this.isTypingOffInfo = {};
     }
     /**
      * Function to create a onversation
@@ -148,20 +150,19 @@ var ConversationManager = (function () {
         });
     };
     /**
-     * Function to get participantss in a conversation
+     * Function to send an is-typing event
      * @method ConversationManager#sendIsTyping
      * @param {string} conversationId
      * @returns {Promise}
      */
     ConversationManager.prototype.sendIsTyping = function (conversationId) {
-        // we only want to call this once every n seconds (10?)
-        // so store a store a  
         var _this = this;
+        // we only want to call this once every n seconds (10?)
         if (this.isTypingInfo[conversationId]) {
             var lastSentTime = new Date(this.isTypingInfo[conversationId]);
             var now = new Date();
             var diff = (now.getTime() - lastSentTime.getTime()) / 1000;
-            if (diff < 5) {
+            if (diff < (this._comapiConfig.isTypingTimeout || 10)) {
                 return Promise.resolve(false);
             }
         }
@@ -169,6 +170,30 @@ var ConversationManager = (function () {
         return this._restClient.post(url, {}, {})
             .then(function (result) {
             _this.isTypingInfo[conversationId] = new Date().toISOString();
+            return Promise.resolve(true);
+        });
+    };
+    /**
+     * Function to send an is-typing off event
+     * @method ConversationManager#sendIsTyping
+     * @param {string} conversationId
+     * @returns {Promise}
+     */
+    ConversationManager.prototype.sendIsTypingOff = function (conversationId) {
+        var _this = this;
+        // we only want to call this once every n seconds (10?)
+        if (this.isTypingOffInfo[conversationId]) {
+            var lastSentTime = new Date(this.isTypingOffInfo[conversationId]);
+            var now = new Date();
+            var diff = (now.getTime() - lastSentTime.getTime()) / 1000;
+            if (diff < (this._comapiConfig.isTypingOffTimeout || 10)) {
+                return Promise.resolve(false);
+            }
+        }
+        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/typing";
+        return this._restClient.delete(url, {})
+            .then(function (result) {
+            _this.isTypingOffInfo[conversationId] = new Date().toISOString();
             return Promise.resolve(true);
         });
     };

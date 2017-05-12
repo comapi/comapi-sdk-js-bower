@@ -26,7 +26,7 @@ var profile_1 = require("./profile");
 var services_1 = require("./services");
 var device_1 = require("./device");
 var channels_1 = require("./channels");
-var resolver_1 = require("./resolver");
+var networkManager_1 = require("./networkManager");
 /*
  * Exports to be added to COMAPI namespace
  */
@@ -37,24 +37,22 @@ var Foundation = (function () {
      * @classdesc Class that implements Comapi foundation functionality.
      */
     function Foundation(_eventManager, _logger, 
-        /*private*/ _localStorageData, _sessionManager, 
+        /*private*/ _localStorageData, _networkManager, 
         /*private*/ _deviceManager, 
         /*private*/ _facebookManager, 
         /*private*/ _conversationManager, 
         /*private*/ _profileManager, 
-        /*private*/ _messageManager, _webSocketManager, _comapiConfig) {
+        /*private*/ _messageManager, 
+        /*private*/ _comapiConfig) {
         this._eventManager = _eventManager;
         this._logger = _logger;
-        this._sessionManager = _sessionManager;
-        this._webSocketManager = _webSocketManager;
-        this._comapiConfig = _comapiConfig;
-        var resolver = new resolver_1.SessionAndSocketResolver(_sessionManager, _webSocketManager);
+        this._networkManager = _networkManager;
         var messagePager = new messagePager_1.MessagePager(_logger, _localStorageData, _messageManager);
-        var appMessaging = new appMessaging_1.AppMessaging(resolver, _conversationManager, _messageManager, messagePager);
-        var profile = new profile_1.Profile(resolver, _localStorageData, _profileManager);
+        var appMessaging = new appMessaging_1.AppMessaging(this._networkManager, _conversationManager, _messageManager, messagePager);
+        var profile = new profile_1.Profile(this._networkManager, _localStorageData, _profileManager);
         this._services = new services_1.Services(appMessaging, profile);
-        this._device = new device_1.Device(resolver, _deviceManager);
-        this._channels = new channels_1.Channels(resolver, _facebookManager);
+        this._device = new device_1.Device(this._networkManager, _deviceManager);
+        this._channels = new channels_1.Channels(this._networkManager, _facebookManager);
     }
     /**
      * Factory method to create a singleton instance of Foundation
@@ -62,28 +60,37 @@ var Foundation = (function () {
      * @param {IComapiConfig} comapiConfig - the app config (use `ComapiConfig` to create)
      * @returns {Promise} - returns promise
      */
+    Foundation.initialiseShared = function (comapiConfig) {
+        return Foundation._initialise(comapiConfig, true);
+    };
+    /**
+     * Factory method to create an instance of Foundation
+     * @method Foundation#initialise
+     * @param {IComapiConfig} comapiConfig - the app config (use `ComapiConfig` to create)
+     * @returns {Promise} - returns promise
+     */
     Foundation.initialise = function (comapiConfig) {
-        if (Foundation._foundtion) {
-            return Promise.resolve(Foundation._foundtion);
-        }
-        function _initialise(indexedDBLogger) {
-            var eventManager = new eventManager_1.EventManager();
-            var localStorageData = new localStorageData_1.LocalStorageData();
-            var logger = new logger_1.Logger(eventManager, comapiConfig.logPersistence === interfaces_1.LogPersistences.LocalStorage ? localStorageData : undefined, indexedDBLogger);
-            if (comapiConfig.logLevel) {
-                logger.logLevel = comapiConfig.logLevel;
-            }
-            var restClient = new restClient_1.RestClient(logger);
-            var sessionManager = new sessionManager_1.SessionManager(logger, restClient, localStorageData, comapiConfig);
-            var authenticatedRestClient = new authenticatedRestClient_1.AuthenticatedRestClient(logger, sessionManager);
-            var deviceManager = new deviceManager_1.DeviceManager(logger, authenticatedRestClient, localStorageData, comapiConfig);
-            var facebookManager = new facebookManager_1.FacebookManager(authenticatedRestClient, comapiConfig);
-            var conversationManager = new conversationManager_1.ConversationManager(logger, authenticatedRestClient, localStorageData, comapiConfig, sessionManager);
-            var profileManager = new profileManager_1.ProfileManager(logger, authenticatedRestClient, localStorageData, comapiConfig, sessionManager);
-            var messageManager = new messageManager_1.MessageManager(logger, authenticatedRestClient, localStorageData, comapiConfig, sessionManager, conversationManager);
-            var webSocketManager = new webSocketManager_1.WebSocketManager(logger, localStorageData, comapiConfig, sessionManager, eventManager);
-            var foundation = new Foundation(eventManager, logger, localStorageData, sessionManager, deviceManager, facebookManager, conversationManager, profileManager, messageManager, webSocketManager, comapiConfig);
-            return foundation;
+        return Foundation._initialise(comapiConfig, false);
+    };
+    Object.defineProperty(Foundation, "version", {
+        /**
+         * Property to get the SDK version
+         * @method Foundation#version
+         */
+        get: function () {
+            return "1.0.1.2";
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Private initialisation method
+     * @param comapiConfig
+     * @param indexedDBLogger
+     */
+    Foundation._initialise = function (comapiConfig, doSingleton) {
+        if (doSingleton && Foundation._foundation) {
+            return Promise.resolve(Foundation._foundation);
         }
         if (comapiConfig.logPersistence &&
             comapiConfig.logPersistence === interfaces_1.LogPersistences.IndexedDB) {
@@ -95,39 +102,50 @@ var Foundation = (function () {
                 return indexedDBLogger.purge(purgeDate);
             })
                 .then(function () {
-                Foundation._foundtion = _initialise(indexedDBLogger);
-                return Promise.resolve(Foundation._foundtion);
+                var foundation = foundationFactory(comapiConfig, indexedDBLogger);
+                if (doSingleton) {
+                    Foundation._foundation = foundation;
+                }
+                return Promise.resolve(foundation);
             });
         }
         else {
-            Foundation._foundtion = _initialise();
-            return Promise.resolve(Foundation._foundtion);
+            var foundation = foundationFactory(comapiConfig);
+            if (doSingleton) {
+                Foundation._foundation = foundation;
+            }
+            return Promise.resolve(foundation);
+        }
+        function foundationFactory(config, indexedDBLogger) {
+            var eventManager = new eventManager_1.EventManager();
+            var localStorageData = new localStorageData_1.LocalStorageData();
+            var logger = new logger_1.Logger(eventManager, config.logPersistence === interfaces_1.LogPersistences.LocalStorage ? localStorageData : undefined, indexedDBLogger);
+            if (config.logLevel) {
+                logger.logLevel = config.logLevel;
+            }
+            var restClient = new restClient_1.RestClient(logger);
+            var sessionManager = new sessionManager_1.SessionManager(logger, restClient, localStorageData, config);
+            var webSocketManager = new webSocketManager_1.WebSocketManager(logger, localStorageData, config, sessionManager, eventManager);
+            var networkManager = new networkManager_1.NetworkManager(sessionManager, webSocketManager);
+            var authenticatedRestClient = new authenticatedRestClient_1.AuthenticatedRestClient(logger, networkManager);
+            var deviceManager = new deviceManager_1.DeviceManager(logger, authenticatedRestClient, localStorageData, config);
+            var facebookManager = new facebookManager_1.FacebookManager(authenticatedRestClient, config);
+            var conversationManager = new conversationManager_1.ConversationManager(logger, authenticatedRestClient, localStorageData, config, sessionManager);
+            var profileManager = new profileManager_1.ProfileManager(logger, authenticatedRestClient, localStorageData, config, sessionManager);
+            var messageManager = new messageManager_1.MessageManager(logger, authenticatedRestClient, localStorageData, config, sessionManager, conversationManager);
+            var foundation = new Foundation(eventManager, logger, localStorageData, networkManager, deviceManager, facebookManager, conversationManager, profileManager, messageManager, config);
+            return foundation;
         }
     };
-    Object.defineProperty(Foundation, "version", {
-        /**
-         * Property to get the SDK version
-         * @method Foundation#version
-         */
-        get: function () {
-            return "1.0.0.0";
-        },
-        enumerable: true,
-        configurable: true
-    });
     /**
      * Method to start a new authenticated session
      * @method Foundation#startSession
      * @returns {Promise} - Returns a promise
      */
     Foundation.prototype.startSession = function () {
-        var _this = this;
-        return this._sessionManager.startSession()
+        return this._networkManager.startSession()
             .then(function (sessionInfo) {
-            return _this._webSocketManager.connect();
-        })
-            .then(function (connected) {
-            return _this._sessionManager.sessionInfo.session;
+            return sessionInfo.session;
         });
     };
     /**
@@ -136,11 +154,7 @@ var Foundation = (function () {
      * @returns {Promise} - Returns a promise
      */
     Foundation.prototype.endSession = function () {
-        var _this = this;
-        return this._webSocketManager.disconnect()
-            .then(function () {
-            return _this._sessionManager.endSession();
-        });
+        return this._networkManager.endSession();
     };
     Object.defineProperty(Foundation.prototype, "services", {
         /**
@@ -185,7 +199,7 @@ var Foundation = (function () {
          * @returns {ISession} - Returns an ISession interface
          */
         get: function () {
-            return this._sessionManager.sessionInfo ? this._sessionManager.sessionInfo.session : null;
+            return this._networkManager.session;
         },
         enumerable: true,
         configurable: true

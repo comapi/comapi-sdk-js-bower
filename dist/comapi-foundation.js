@@ -73,7 +73,7 @@ var COMAPI =
 	var services_1 = __webpack_require__(23);
 	var device_1 = __webpack_require__(24);
 	var channels_1 = __webpack_require__(25);
-	var resolver_1 = __webpack_require__(26);
+	var networkManager_1 = __webpack_require__(26);
 	/*
 	 * Exports to be added to COMAPI namespace
 	 */
@@ -84,24 +84,22 @@ var COMAPI =
 	     * @classdesc Class that implements Comapi foundation functionality.
 	     */
 	    function Foundation(_eventManager, _logger, 
-	        /*private*/ _localStorageData, _sessionManager, 
+	        /*private*/ _localStorageData, _networkManager, 
 	        /*private*/ _deviceManager, 
 	        /*private*/ _facebookManager, 
 	        /*private*/ _conversationManager, 
 	        /*private*/ _profileManager, 
-	        /*private*/ _messageManager, _webSocketManager, _comapiConfig) {
+	        /*private*/ _messageManager, 
+	        /*private*/ _comapiConfig) {
 	        this._eventManager = _eventManager;
 	        this._logger = _logger;
-	        this._sessionManager = _sessionManager;
-	        this._webSocketManager = _webSocketManager;
-	        this._comapiConfig = _comapiConfig;
-	        var resolver = new resolver_1.SessionAndSocketResolver(_sessionManager, _webSocketManager);
+	        this._networkManager = _networkManager;
 	        var messagePager = new messagePager_1.MessagePager(_logger, _localStorageData, _messageManager);
-	        var appMessaging = new appMessaging_1.AppMessaging(resolver, _conversationManager, _messageManager, messagePager);
-	        var profile = new profile_1.Profile(resolver, _localStorageData, _profileManager);
+	        var appMessaging = new appMessaging_1.AppMessaging(this._networkManager, _conversationManager, _messageManager, messagePager);
+	        var profile = new profile_1.Profile(this._networkManager, _localStorageData, _profileManager);
 	        this._services = new services_1.Services(appMessaging, profile);
-	        this._device = new device_1.Device(resolver, _deviceManager);
-	        this._channels = new channels_1.Channels(resolver, _facebookManager);
+	        this._device = new device_1.Device(this._networkManager, _deviceManager);
+	        this._channels = new channels_1.Channels(this._networkManager, _facebookManager);
 	    }
 	    /**
 	     * Factory method to create a singleton instance of Foundation
@@ -109,28 +107,37 @@ var COMAPI =
 	     * @param {IComapiConfig} comapiConfig - the app config (use `ComapiConfig` to create)
 	     * @returns {Promise} - returns promise
 	     */
+	    Foundation.initialiseShared = function (comapiConfig) {
+	        return Foundation._initialise(comapiConfig, true);
+	    };
+	    /**
+	     * Factory method to create an instance of Foundation
+	     * @method Foundation#initialise
+	     * @param {IComapiConfig} comapiConfig - the app config (use `ComapiConfig` to create)
+	     * @returns {Promise} - returns promise
+	     */
 	    Foundation.initialise = function (comapiConfig) {
-	        if (Foundation._foundtion) {
-	            return Promise.resolve(Foundation._foundtion);
-	        }
-	        function _initialise(indexedDBLogger) {
-	            var eventManager = new eventManager_1.EventManager();
-	            var localStorageData = new localStorageData_1.LocalStorageData();
-	            var logger = new logger_1.Logger(eventManager, comapiConfig.logPersistence === interfaces_1.LogPersistences.LocalStorage ? localStorageData : undefined, indexedDBLogger);
-	            if (comapiConfig.logLevel) {
-	                logger.logLevel = comapiConfig.logLevel;
-	            }
-	            var restClient = new restClient_1.RestClient(logger);
-	            var sessionManager = new sessionManager_1.SessionManager(logger, restClient, localStorageData, comapiConfig);
-	            var authenticatedRestClient = new authenticatedRestClient_1.AuthenticatedRestClient(logger, sessionManager);
-	            var deviceManager = new deviceManager_1.DeviceManager(logger, authenticatedRestClient, localStorageData, comapiConfig);
-	            var facebookManager = new facebookManager_1.FacebookManager(authenticatedRestClient, comapiConfig);
-	            var conversationManager = new conversationManager_1.ConversationManager(logger, authenticatedRestClient, localStorageData, comapiConfig, sessionManager);
-	            var profileManager = new profileManager_1.ProfileManager(logger, authenticatedRestClient, localStorageData, comapiConfig, sessionManager);
-	            var messageManager = new messageManager_1.MessageManager(logger, authenticatedRestClient, localStorageData, comapiConfig, sessionManager, conversationManager);
-	            var webSocketManager = new webSocketManager_1.WebSocketManager(logger, localStorageData, comapiConfig, sessionManager, eventManager);
-	            var foundation = new Foundation(eventManager, logger, localStorageData, sessionManager, deviceManager, facebookManager, conversationManager, profileManager, messageManager, webSocketManager, comapiConfig);
-	            return foundation;
+	        return Foundation._initialise(comapiConfig, false);
+	    };
+	    Object.defineProperty(Foundation, "version", {
+	        /**
+	         * Property to get the SDK version
+	         * @method Foundation#version
+	         */
+	        get: function () {
+	            return "1.0.1.2";
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    /**
+	     * Private initialisation method
+	     * @param comapiConfig
+	     * @param indexedDBLogger
+	     */
+	    Foundation._initialise = function (comapiConfig, doSingleton) {
+	        if (doSingleton && Foundation._foundation) {
+	            return Promise.resolve(Foundation._foundation);
 	        }
 	        if (comapiConfig.logPersistence &&
 	            comapiConfig.logPersistence === interfaces_1.LogPersistences.IndexedDB) {
@@ -142,39 +149,50 @@ var COMAPI =
 	                return indexedDBLogger.purge(purgeDate);
 	            })
 	                .then(function () {
-	                Foundation._foundtion = _initialise(indexedDBLogger);
-	                return Promise.resolve(Foundation._foundtion);
+	                var foundation = foundationFactory(comapiConfig, indexedDBLogger);
+	                if (doSingleton) {
+	                    Foundation._foundation = foundation;
+	                }
+	                return Promise.resolve(foundation);
 	            });
 	        }
 	        else {
-	            Foundation._foundtion = _initialise();
-	            return Promise.resolve(Foundation._foundtion);
+	            var foundation = foundationFactory(comapiConfig);
+	            if (doSingleton) {
+	                Foundation._foundation = foundation;
+	            }
+	            return Promise.resolve(foundation);
+	        }
+	        function foundationFactory(config, indexedDBLogger) {
+	            var eventManager = new eventManager_1.EventManager();
+	            var localStorageData = new localStorageData_1.LocalStorageData();
+	            var logger = new logger_1.Logger(eventManager, config.logPersistence === interfaces_1.LogPersistences.LocalStorage ? localStorageData : undefined, indexedDBLogger);
+	            if (config.logLevel) {
+	                logger.logLevel = config.logLevel;
+	            }
+	            var restClient = new restClient_1.RestClient(logger);
+	            var sessionManager = new sessionManager_1.SessionManager(logger, restClient, localStorageData, config);
+	            var webSocketManager = new webSocketManager_1.WebSocketManager(logger, localStorageData, config, sessionManager, eventManager);
+	            var networkManager = new networkManager_1.NetworkManager(sessionManager, webSocketManager);
+	            var authenticatedRestClient = new authenticatedRestClient_1.AuthenticatedRestClient(logger, networkManager);
+	            var deviceManager = new deviceManager_1.DeviceManager(logger, authenticatedRestClient, localStorageData, config);
+	            var facebookManager = new facebookManager_1.FacebookManager(authenticatedRestClient, config);
+	            var conversationManager = new conversationManager_1.ConversationManager(logger, authenticatedRestClient, localStorageData, config, sessionManager);
+	            var profileManager = new profileManager_1.ProfileManager(logger, authenticatedRestClient, localStorageData, config, sessionManager);
+	            var messageManager = new messageManager_1.MessageManager(logger, authenticatedRestClient, localStorageData, config, sessionManager, conversationManager);
+	            var foundation = new Foundation(eventManager, logger, localStorageData, networkManager, deviceManager, facebookManager, conversationManager, profileManager, messageManager, config);
+	            return foundation;
 	        }
 	    };
-	    Object.defineProperty(Foundation, "version", {
-	        /**
-	         * Property to get the SDK version
-	         * @method Foundation#version
-	         */
-	        get: function () {
-	            return "1.0.0.0";
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
 	    /**
 	     * Method to start a new authenticated session
 	     * @method Foundation#startSession
 	     * @returns {Promise} - Returns a promise
 	     */
 	    Foundation.prototype.startSession = function () {
-	        var _this = this;
-	        return this._sessionManager.startSession()
+	        return this._networkManager.startSession()
 	            .then(function (sessionInfo) {
-	            return _this._webSocketManager.connect();
-	        })
-	            .then(function (connected) {
-	            return _this._sessionManager.sessionInfo.session;
+	            return sessionInfo.session;
 	        });
 	    };
 	    /**
@@ -183,11 +201,7 @@ var COMAPI =
 	     * @returns {Promise} - Returns a promise
 	     */
 	    Foundation.prototype.endSession = function () {
-	        var _this = this;
-	        return this._webSocketManager.disconnect()
-	            .then(function () {
-	            return _this._sessionManager.endSession();
-	        });
+	        return this._networkManager.endSession();
 	    };
 	    Object.defineProperty(Foundation.prototype, "services", {
 	        /**
@@ -232,7 +246,7 @@ var COMAPI =
 	         * @returns {ISession} - Returns an ISession interface
 	         */
 	        get: function () {
-	            return this._sessionManager.sessionInfo ? this._sessionManager.sessionInfo.session : null;
+	            return this._networkManager.session;
 	        },
 	        enumerable: true,
 	        configurable: true
@@ -622,11 +636,11 @@ var COMAPI =
 	     * @ignore
 	     * @classdesc Class that implements a RestClient.
 	     * @param {ILogger} [logger] - the logger
-	     * @param {ISessionManager} [sessionManager] - the session sessionManager
+	     * @param {INetworkManager} [networkManager] - the network Manager
 	     */
-	    function RestClient(logger, sessionManager) {
+	    function RestClient(logger, networkManager) {
 	        this.logger = logger;
-	        this.sessionManager = sessionManager;
+	        this.networkManager = networkManager;
 	        this._readyStates = [
 	            "request not initialized",
 	            "server connection established",
@@ -841,8 +855,11 @@ var COMAPI =
 	            return self._makeRequest(method, url, headers, data)
 	                .catch(function (result) {
 	                // TODO: refactor max retry count into some config ...
-	                if (i < 3 && result.statusCode === 401 && self.sessionManager) {
-	                    return self.sessionManager.startSession()
+	                if (i < 3 && result.statusCode === 401 && self.networkManager) {
+	                    // the old session is just dead so ending it is not reuired ...
+	                    //  - the old websocket will still be connected and needs to be cleanly disconnected 
+	                    // TODO: add a restartSession()which encapsuates this logic ?
+	                    return self.networkManager.restartSession()
 	                        .then(function (sessionInfo) {
 	                        headers.authorization = "Bearer " + sessionInfo.token;
 	                        return recurse(++i);
@@ -876,10 +893,10 @@ var COMAPI =
 	     * @ignore
 	     * @classdesc Class that implements an Authenticated RestClient.
 	     * @param {ILogger} logger - the logger
-	     * @param {ISessionManager} sessionManager - the Session Manager
+	     * @param {INetworkManager} networkManager - the Network Manager
 	     */
-	    function AuthenticatedRestClient(logger, sessionManager) {
-	        _super.call(this, logger, sessionManager);
+	    function AuthenticatedRestClient(logger, networkManager) {
+	        _super.call(this, logger, networkManager);
 	    }
 	    /**
 	     * Method to make a GET request
@@ -891,7 +908,7 @@ var COMAPI =
 	    AuthenticatedRestClient.prototype.get = function (url, headers) {
 	        var _this = this;
 	        headers = headers || {};
-	        return this.sessionManager.getValidToken()
+	        return this.networkManager.getValidToken()
 	            .then(function (token) {
 	            headers.authorization = _this.constructAUthHeader(token);
 	            return _super.prototype.get.call(_this, url, headers);
@@ -907,7 +924,7 @@ var COMAPI =
 	     */
 	    AuthenticatedRestClient.prototype.post = function (url, headers, data) {
 	        var _this = this;
-	        return this.sessionManager.getValidToken()
+	        return this.networkManager.getValidToken()
 	            .then(function (token) {
 	            headers.authorization = _this.constructAUthHeader(token);
 	            return _super.prototype.post.call(_this, url, headers, data);
@@ -923,7 +940,7 @@ var COMAPI =
 	     */
 	    AuthenticatedRestClient.prototype.put = function (url, headers, data) {
 	        var _this = this;
-	        return this.sessionManager.getValidToken()
+	        return this.networkManager.getValidToken()
 	            .then(function (token) {
 	            headers.authorization = _this.constructAUthHeader(token);
 	            return _super.prototype.put.call(_this, url, headers, data);
@@ -938,7 +955,7 @@ var COMAPI =
 	     */
 	    AuthenticatedRestClient.prototype.delete = function (url, headers) {
 	        var _this = this;
-	        return this.sessionManager.getValidToken()
+	        return this.networkManager.getValidToken()
 	            .then(function (token) {
 	            headers.authorization = _this.constructAUthHeader(token);
 	            return _super.prototype.delete.call(_this, url, headers);
@@ -992,18 +1009,18 @@ var COMAPI =
 	        var _this = this;
 	        return new Promise(function (resolve, reject) {
 	            if (_this.idbSupported) {
-	                var self = _this;
+	                var self_1 = _this;
 	                var openRequest = indexedDB.open(_this._name, _this._version);
 	                openRequest.onupgradeneeded = function (e) {
 	                    console.log("Upgrading database...");
 	                    var thisDB = e.target.result;
-	                    if (!thisDB.objectStoreNames.contains(self._store)) {
-	                        var os = thisDB.createObjectStore(self._store, { autoIncrement: true });
+	                    if (!thisDB.objectStoreNames.contains(self_1._store)) {
+	                        var os = thisDB.createObjectStore(self_1._store, { autoIncrement: true });
 	                        os.createIndex("created", "created", { unique: false });
 	                    }
 	                };
 	                openRequest.onsuccess = function (e) {
-	                    self._database = e.target.result;
+	                    self_1._database = e.target.result;
 	                    resolve(true);
 	                };
 	                openRequest.onerror = function (e) {
@@ -1315,6 +1332,7 @@ var COMAPI =
 	     * @parameter {ILogger} logger
 	     * @parameter {IRestClient} restClient
 	     * @parameter {ILocalStorageData} localStorageData
+	     * @parameter {IComapiConfig} comapiConfig
 	     */
 	    function SessionManager(_logger, _restClient, _localStorageData, _comapiConfig) {
 	        this._logger = _logger;
@@ -1468,7 +1486,7 @@ var COMAPI =
 	            platform: /*browserInfo.name*/ "javascript",
 	            platformVersion: browserInfo.version,
 	            sdkType: /*"javascript"*/ "native",
-	            sdkVersion: "1.0.0.0"
+	            sdkVersion: "1.0.1.2"
 	        };
 	        return this._restClient.post(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/sessions", {}, data)
 	            .then(function (result) {
@@ -1546,6 +1564,9 @@ var COMAPI =
 /* 9 */
 /***/ function(module, exports) {
 
+	/**
+	 * Utility class
+	 */
 	var Utils = (function () {
 	    /**
 	     * @class Utils
@@ -1611,6 +1632,31 @@ var COMAPI =
 	            name: M[0],
 	            version: M[1]
 	        };
+	    };
+	    /**
+	     * Method to call some async function on an array of data and you want them called sequentially
+	     * @param {any[]} arr
+	     * @param {Function} iteratorFn
+	     * @returns {Promise} - returns a Promise
+	     */
+	    Utils.eachSeries = function (arr, iteratorFn) {
+	        return arr.reduce(function (p, item) {
+	            return p.then(function () {
+	                return iteratorFn(item);
+	            });
+	        }, Promise.resolve());
+	    };
+	    /**
+	     * Method to encapsulate repeatdly calling an async method until a condition is met (tyoes defined at top)
+	     * @param {DoUntilOperationFunction} operation - the operation to perform
+	     * @param {DoUntilTestFunction} test - the condition that stops the repeats
+	     * @param {any} data - the data
+	     */
+	    Utils.doUntil = function (operation, test, data) {
+	        return operation(data)
+	            .then(function (rslt) {
+	            return test(rslt) ? Utils.doUntil(operation, test, rslt) : rslt;
+	        });
 	    };
 	    return Utils;
 	})();
@@ -1946,7 +1992,7 @@ var COMAPI =
 	        this._localStorage = _localStorage;
 	        this._messageManager = _messageManager;
 	        this._orphanedEevnts = {};
-	        this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
+	        this._orphanedEevnts = this._localStorage.getObject("orphanedEevnts") || {};
 	    }
 	    /**
 	     * Get a page of messages, internally deal with orphaned events etc ...
@@ -2059,6 +2105,13 @@ var COMAPI =
 	        }
 	    };
 	    /**
+	     * Method to reset any cached info abut a conversation
+	     */
+	    MessagePager.prototype.resetConversation = function (conversationId) {
+	        this._orphanedEevnts[conversationId] = {};
+	        this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
+	    };
+	    /**
 	     *
 	     */
 	    MessagePager.prototype.mergeOrphanedEvents = function (orphanedEventContainer, orphanedEvets) {
@@ -2084,13 +2137,13 @@ var COMAPI =
 	    MessagePager.prototype.applyOrphanedEvents = function (messages, orphanedEventContainer) {
 	        this._logger.log("==> applyOrphanedEvents: " + JSON.stringify(orphanedEventContainer.orphanedEvents));
 	        for (var i = orphanedEventContainer.orphanedEvents.length - 1; i >= 0; i--) {
-	            var event = orphanedEventContainer.orphanedEvents[i];
-	            if (this.playEvent(event, messages)) {
-	                this._logger.log("succesfuly played event " + event.conversationEventId);
+	            var event_2 = orphanedEventContainer.orphanedEvents[i];
+	            if (this.playEvent(event_2, messages)) {
+	                this._logger.log("succesfuly played event " + event_2.conversationEventId);
 	                orphanedEventContainer.orphanedEvents.splice(i, 1);
 	            }
 	            else {
-	                this._logger.warn("failed to play event " + event.conversationEventId, event);
+	                this._logger.warn("failed to play event " + event_2.conversationEventId, event_2);
 	            }
 	        }
 	        this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
@@ -2194,13 +2247,6 @@ var COMAPI =
 	        mapped.payload = event.data.payload;
 	        return mapped;
 	    };
-	    /**
-	     * Method to reset any cached info abut a conversation
-	     */
-	    MessagePager.prototype.resetConversation = function (conversationId) {
-	        this._orphanedEevnts[conversationId] = undefined;
-	        this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
-	    };
 	    return MessagePager;
 	})();
 	exports.MessagePager = MessagePager;
@@ -2229,9 +2275,11 @@ var COMAPI =
 	        this._localStorageData = _localStorageData;
 	        this._comapiConfig = _comapiConfig;
 	        this._sessionManager = _sessionManager;
-	        //  This obkect is an in-memory dictionary of last sent timestamps (conversationId: timestamp) ...
+	        //  This object is an in-memory dictionary of last sent timestamps (conversationId: timestamp) ...
 	        //  "FA93AA1B-DEA5-4182-BE67-3DEAF4021040": "2017-02-28T14:48:21.634Z"
 	        this.isTypingInfo = {};
+	        // same for typing off 
+	        this.isTypingOffInfo = {};
 	    }
 	    /**
 	     * Function to create a onversation
@@ -2360,20 +2408,19 @@ var COMAPI =
 	        });
 	    };
 	    /**
-	     * Function to get participantss in a conversation
+	     * Function to send an is-typing event
 	     * @method ConversationManager#sendIsTyping
 	     * @param {string} conversationId
 	     * @returns {Promise}
 	     */
 	    ConversationManager.prototype.sendIsTyping = function (conversationId) {
-	        // we only want to call this once every n seconds (10?)
-	        // so store a store a  
 	        var _this = this;
+	        // we only want to call this once every n seconds (10?)
 	        if (this.isTypingInfo[conversationId]) {
 	            var lastSentTime = new Date(this.isTypingInfo[conversationId]);
 	            var now = new Date();
 	            var diff = (now.getTime() - lastSentTime.getTime()) / 1000;
-	            if (diff < 5) {
+	            if (diff < (this._comapiConfig.isTypingTimeout || 10)) {
 	                return Promise.resolve(false);
 	            }
 	        }
@@ -2381,6 +2428,30 @@ var COMAPI =
 	        return this._restClient.post(url, {}, {})
 	            .then(function (result) {
 	            _this.isTypingInfo[conversationId] = new Date().toISOString();
+	            return Promise.resolve(true);
+	        });
+	    };
+	    /**
+	     * Function to send an is-typing off event
+	     * @method ConversationManager#sendIsTyping
+	     * @param {string} conversationId
+	     * @returns {Promise}
+	     */
+	    ConversationManager.prototype.sendIsTypingOff = function (conversationId) {
+	        var _this = this;
+	        // we only want to call this once every n seconds (10?)
+	        if (this.isTypingOffInfo[conversationId]) {
+	            var lastSentTime = new Date(this.isTypingOffInfo[conversationId]);
+	            var now = new Date();
+	            var diff = (now.getTime() - lastSentTime.getTime()) / 1000;
+	            if (diff < (this._comapiConfig.isTypingOffTimeout || 10)) {
+	                return Promise.resolve(false);
+	            }
+	        }
+	        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/typing";
+	        return this._restClient.delete(url, {})
+	            .then(function (result) {
+	            _this.isTypingOffInfo[conversationId] = new Date().toISOString();
 	            return Promise.resolve(true);
 	        });
 	    };
@@ -2669,6 +2740,17 @@ var COMAPI =
 	                    this._eventManager.publishLocalEvent("participantTyping", participantTypingEventData);
 	                }
 	                break;
+	            case "conversation.participantTypingOff":
+	                {
+	                    var participantTypingOffEventData = {
+	                        conversationId: event.payload.conversationId,
+	                        createdBy: event.context.createdBy,
+	                        profileId: event.payload.profileId,
+	                        timestamp: event.publishedOn,
+	                    };
+	                    this._eventManager.publishLocalEvent("participantTypingOff", participantTypingOffEventData);
+	                }
+	                break;
 	            case "conversationMessage.sent":
 	                {
 	                    var _event = {
@@ -2886,9 +2968,13 @@ var COMAPI =
 	 */
 	var MessageBuilder = (function () {
 	    function MessageBuilder() {
+	        this.id = undefined;
 	        this.metadata = {};
 	        this.parts = [];
 	        this.alert = undefined;
+	        this.context = undefined;
+	        this.sentEventId = undefined;
+	        this.statusUpdates = undefined;
 	    }
 	    /**
 	     * Method to create a simple text based message
@@ -3063,6 +3149,8 @@ var COMAPI =
 	        this.webSocketBase = "wss://api.comapi.com";
 	        this.logLevel = interfaces_1.LogLevels.Error;
 	        this.logPersistence = interfaces_1.LogPersistences.LocalStorage;
+	        this.isTypingTimeout = 10;
+	        this.isTypingOffTimeout = 10;
 	        this.apiSpaceId = undefined;
 	    }
 	    /**
@@ -3149,12 +3237,12 @@ var COMAPI =
 	     * AppMessaging class constructor.
 	     * @class  AppMessaging
 	     * @classdesc Class that implements AppMessaging
-	     * @parameter {SessionAndSocketResolver} resolver
-	     * @parameter {IConversationManager} conversationManager
-	     * @parameter {IMessageManager} messageManager
+	     * @param {INetworkManager} networkManager
+	     * @param {IConversationManager} conversationManager
+	     * @param {IMessageManager} messageManager
 	     */
-	    function AppMessaging(_sessionAndSocketResolver, _conversationManager, _messageManager, _messagePager) {
-	        this._sessionAndSocketResolver = _sessionAndSocketResolver;
+	    function AppMessaging(_networkManager, _conversationManager, _messageManager, _messagePager) {
+	        this._networkManager = _networkManager;
 	        this._conversationManager = _conversationManager;
 	        this._messageManager = _messageManager;
 	        this._messagePager = _messagePager;
@@ -3167,7 +3255,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.createConversation = function (conversationDetails) {
 	        var _this = this;
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            return _this._conversationManager.createConversation(conversationDetails);
 	        });
@@ -3181,7 +3269,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.updateConversation = function (conversationDetails, eTag) {
 	        var _this = this;
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            return _this._conversationManager.updateConversation(conversationDetails, eTag);
 	        });
@@ -3194,7 +3282,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.getConversation = function (conversationId) {
 	        var _this = this;
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            return _this._conversationManager.getConversation(conversationId);
 	        });
@@ -3207,8 +3295,9 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.deleteConversation = function (conversationId) {
 	        var _this = this;
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
+	            _this._messagePager.resetConversation(conversationId);
 	            return _this._conversationManager.deleteConversation(conversationId);
 	        });
 	    };
@@ -3221,7 +3310,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.addParticipantsToConversation = function (conversationId, participants) {
 	        var _this = this;
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            return _this._conversationManager.addParticipantsToConversation(conversationId, participants);
 	        });
@@ -3235,7 +3324,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.deleteParticipantsFromConversation = function (conversationId, participants) {
 	        var _this = this;
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            return _this._conversationManager.deleteParticipantsFromConversation(conversationId, participants);
 	        });
@@ -3248,7 +3337,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.getParticipantsInConversation = function (conversationId) {
 	        var _this = this;
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            return _this._conversationManager.getParticipantsInConversation(conversationId);
 	        });
@@ -3262,7 +3351,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.getConversations = function (scope, profileId) {
 	        var _this = this;
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            return _this._conversationManager.getConversations(scope, profileId);
 	        });
@@ -3277,7 +3366,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.getConversationEvents = function (conversationId, from, limit) {
 	        var _this = this;
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            return _this._messageManager.getConversationEvents(conversationId, from, limit);
 	        });
@@ -3291,7 +3380,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.sendMessageToConversation = function (conversationId, message) {
 	        var _this = this;
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            return _this._messageManager.sendMessageToConversation(conversationId, message);
 	        });
@@ -3305,7 +3394,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.sendMessageStatusUpdates = function (conversationId, statuses) {
 	        var _this = this;
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            return _this._messageManager.sendMessageStatusUpdates(conversationId, statuses);
 	        });
@@ -3322,7 +3411,7 @@ var COMAPI =
 	        var _this = this;
 	        var profileId;
 	        var _getMessagesResponse;
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            profileId = sessionInfo.session.profileId;
 	            return _this._messagePager.getMessages(conversationId, pageSize, continuationToken);
@@ -3343,9 +3432,22 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.sendIsTyping = function (conversationId) {
 	        var _this = this;
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            return _this._conversationManager.sendIsTyping(conversationId);
+	        });
+	    };
+	    /**
+	     * Function to send typing off event to a conversation
+	     * @method AppMessaging#sendIsTypingOff
+	     * @param {string} conversationId - the conversation Id
+	     * @returns {Promise}
+	     */
+	    AppMessaging.prototype.sendIsTypingOff = function (conversationId) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._conversationManager.sendIsTypingOff(conversationId);
 	        });
 	    };
 	    return AppMessaging;
@@ -3362,12 +3464,12 @@ var COMAPI =
 	     * Profile class constructor.
 	     * @class Profile
 	     * @classdesc Class that implements Profile.
-	     * @parameter {SessionAndSocketResolver} resolver
+	     * @parameter {INetworkManager} _networkManager
 	     * @parameter {ILocalStorageData} localStorageData
 	     * @parameter {IProfileManager} profileManager
 	     */
-	    function Profile(_sessionAndSocketResolver, _localStorage, _profileManager) {
-	        this._sessionAndSocketResolver = _sessionAndSocketResolver;
+	    function Profile(_networkManager, _localStorage, _profileManager) {
+	        this._networkManager = _networkManager;
 	        this._localStorage = _localStorage;
 	        this._profileManager = _profileManager;
 	    }
@@ -3379,7 +3481,7 @@ var COMAPI =
 	     */
 	    Profile.prototype.getProfile = function (profileId) {
 	        var _this = this;
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            return _this._profileManager.getProfile(profileId);
 	        });
@@ -3392,7 +3494,7 @@ var COMAPI =
 	     */
 	    Profile.prototype.queryProfiles = function (query) {
 	        var _this = this;
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            return _this._profileManager.queryProfiles(query);
 	        });
@@ -3407,7 +3509,7 @@ var COMAPI =
 	     */
 	    Profile.prototype.updateProfile = function (profileId, profile, eTag) {
 	        var _this = this;
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            return _this._profileManager.updateProfile(profileId, profile, eTag);
 	        });
@@ -3421,7 +3523,7 @@ var COMAPI =
 	    Profile.prototype.getMyProfile = function (useEtag) {
 	        var _this = this;
 	        if (useEtag === void 0) { useEtag = true; }
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            return _this._profileManager.getProfile(sessionInfo.session.profileId)
 	                .then(function (result) {
@@ -3442,7 +3544,7 @@ var COMAPI =
 	    Profile.prototype.updateMyProfile = function (profile, useEtag) {
 	        var _this = this;
 	        if (useEtag === void 0) { useEtag = true; }
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            return _this._profileManager.updateProfile(sessionInfo.session.profileId, profile, useEtag ? _this._localStorage.getString("MyProfileETag") : undefined)
 	                .then(function (result) {
@@ -3512,11 +3614,11 @@ var COMAPI =
 	     * Device class constructor.
 	     * @class Device
 	     * @classdesc Class that implements Device related functionality.
-	     * @parameter {SessionAndSocketResolver} resolver
+	     * @parameter {INetworkManager} _networkManager
 	     * @parameter {IDeviceManager} deviceManager
 	     */
-	    function Device(_sessionAndSocketResolver, _deviceManager) {
-	        this._sessionAndSocketResolver = _sessionAndSocketResolver;
+	    function Device(_networkManager, _deviceManager) {
+	        this._networkManager = _networkManager;
 	        this._deviceManager = _deviceManager;
 	    }
 	    /**
@@ -3528,7 +3630,7 @@ var COMAPI =
 	     */
 	    Device.prototype.setFCMPushDetails = function (packageName, registrationId) {
 	        var _this = this;
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            return _this._deviceManager.setFCMPushDetails(sessionInfo.session.id, packageName, registrationId);
 	        });
@@ -3543,7 +3645,7 @@ var COMAPI =
 	     */
 	    Device.prototype.setAPNSPushDetails = function (bundleId, environment, token) {
 	        var _this = this;
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            return _this._deviceManager.setAPNSPushDetails(sessionInfo.session.id, bundleId, environment, token);
 	        });
@@ -3555,7 +3657,7 @@ var COMAPI =
 	     */
 	    Device.prototype.removePushDetails = function () {
 	        var _this = this;
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            return _this._deviceManager.removePushDetails(sessionInfo.session.id);
 	        });
@@ -3574,11 +3676,11 @@ var COMAPI =
 	     * Channels class constructor.
 	     * @class Channels
 	     * @classdesc Class that implements Channels interface
-	     * @parameter {SessionAndSocketResolver} resolver
+	     * @parameter {NetworkManager} networkManager
 	     * @parameter {IFacebookManager} facebookManager
 	     */
-	    function Channels(_sessionAndSocketResolver, _facebookManager) {
-	        this._sessionAndSocketResolver = _sessionAndSocketResolver;
+	    function Channels(_networkManager, _facebookManager) {
+	        this._networkManager = _networkManager;
 	        this._facebookManager = _facebookManager;
 	    }
 	    /**
@@ -3588,7 +3690,7 @@ var COMAPI =
 	     */
 	    Channels.prototype.createFbOptInState = function (data) {
 	        var _this = this;
-	        return this._sessionAndSocketResolver.ensureSessionAndSocket()
+	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
 	            return _this._facebookManager.createSendToMessengerState(data);
 	        });
@@ -3602,32 +3704,89 @@ var COMAPI =
 /* 26 */
 /***/ function(module, exports) {
 
-	var SessionAndSocketResolver = (function () {
+	var NetworkManager = (function () {
 	    /**
-	     * SessionAndSocketResolver class constructor.
-	     * @class SessionAndSocketResolver
+	     * NetworkManager class constructor.
+	     * @class NetworkManager
 	     * @ignore
 	     * @classdesc Class that implements Session And Socket Resolution.
 	     * @parameter {ISessionManager} _sessionManager
 	     * @parameter {IWebSocketManager} _webSocketManager
 	     */
-	    function SessionAndSocketResolver(_sessionManager, _webSocketManager) {
+	    function NetworkManager(_sessionManager, _webSocketManager) {
 	        this._sessionManager = _sessionManager;
 	        this._webSocketManager = _webSocketManager;
 	    }
 	    /**
+	     * Method to start a new authenticated session AND connect up the websocket
+	     * @method Foundation#startSession
+	     * @returns {Promise} - Returns a promise
+	     */
+	    NetworkManager.prototype.startSession = function () {
+	        var _this = this;
+	        return this._sessionManager.startSession()
+	            .then(function (sessionInfo) {
+	            return _this._webSocketManager.connect();
+	        })
+	            .then(function (connected) {
+	            return _this._sessionManager.sessionInfo;
+	        });
+	    };
+	    /**
+	     * Method to restart an expired authenticated session
+	     * @method Foundation#restartSession
+	     * @returns {Promise} - Returns a promise
+	     */
+	    NetworkManager.prototype.restartSession = function () {
+	        var _this = this;
+	        return this._webSocketManager.disconnect()
+	            .then(function (succeeded) {
+	            return _this._sessionManager.startSession();
+	        })
+	            .then(function (sessionInfo) {
+	            return _this._webSocketManager.connect();
+	        })
+	            .then(function (connected) {
+	            return _this._sessionManager.sessionInfo;
+	        });
+	    };
+	    Object.defineProperty(NetworkManager.prototype, "session", {
+	        /**
+	         * Method to get current session
+	         * @method Foundation#session
+	         * @returns {ISession} - Returns an ISession interface
+	         */
+	        get: function () {
+	            return this._sessionManager.sessionInfo ? this._sessionManager.sessionInfo.session : null;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    /**
+	     * Method to end an existing authenticated session
+	     * @method Foundation#endSession
+	     * @returns {Promise} - Returns a promise
+	     */
+	    NetworkManager.prototype.endSession = function () {
+	        var _this = this;
+	        return this._webSocketManager.disconnect()
+	            .then(function () {
+	            return _this._sessionManager.endSession();
+	        });
+	    };
+	    NetworkManager.prototype.getValidToken = function () {
+	        return this._sessionManager.getValidToken();
+	    };
+	    /**
 	     * Ensure we have an active session and the websocket has been started
 	     * Socket may have disconected and be reconnecting. We just want to know that it was started
-	     * @method SessionAndSocketResolver#ensureSessionAndSocket
+	     * @method NetworkManager#ensureSessionAndSocket
 	     * @returns {Promise} - returns a Promise
 	     */
-	    SessionAndSocketResolver.prototype.ensureSessionAndSocket = function () {
+	    NetworkManager.prototype.ensureSessionAndSocket = function () {
 	        var _this = this;
 	        return this.ensureSession()
 	            .then(function (sessionInfo) {
-	            return _this.ensureSocket();
-	        })
-	            .then(function (connected) {
 	            return _this.ensureSocket();
 	        })
 	            .then(function (connected) {
@@ -3636,24 +3795,24 @@ var COMAPI =
 	    };
 	    /**
 	     * Create a session if we don't have one already ...
-	     * @method SessionAndSocketResolver#ensureSession
+	     * @method NetworkManager#ensureSession
 	     * @returns {Promise} - returns a Promise
 	     */
-	    SessionAndSocketResolver.prototype.ensureSession = function () {
+	    NetworkManager.prototype.ensureSession = function () {
 	        return this._sessionManager.sessionInfo ? Promise.resolve(this._sessionManager.sessionInfo) : this._sessionManager.startSession();
 	    };
 	    /**
 	     * Ensure the web socket has been started
-	     * @method SessionAndSocketResolver#ensureSocket
+	     * @method NetworkManager#ensureSocket
 	     * @returns {Promise} - returns a Promise
 	     */
-	    SessionAndSocketResolver.prototype.ensureSocket = function () {
+	    NetworkManager.prototype.ensureSocket = function () {
 	        return this._webSocketManager.hasSocket() ? Promise.resolve(true) : this._webSocketManager.connect();
 	    };
-	    return SessionAndSocketResolver;
+	    return NetworkManager;
 	})();
-	exports.SessionAndSocketResolver = SessionAndSocketResolver;
-	//# sourceMappingURL=resolver.js.map
+	exports.NetworkManager = NetworkManager;
+	//# sourceMappingURL=networkManager.js.map
 
 /***/ }
 /******/ ]);

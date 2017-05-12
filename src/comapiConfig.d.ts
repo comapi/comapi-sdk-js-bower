@@ -7,6 +7,8 @@ export declare class ComapiConfig implements IComapiConfig {
     webSocketBase: string;
     logLevel: LogLevels;
     logPersistence: LogPersistences;
+    isTypingTimeout: number;
+    isTypingOffTimeout: number;
     /**
      * ComapiConfig class constructor.
      * @class ComapiConfig

@@ -2,7 +2,7 @@
     "name": "@comapi/sdk-js-foundation",
     "author": "Comapi",
     "description": "Comapi Javascript SDK - Foundation",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "main": "./index.js",
     "types": "./index.d.ts",
     "repository": {

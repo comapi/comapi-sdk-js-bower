@@ -4,9 +4,13 @@ import { IConversationMessage, IMessagePart, IMessageAlert, IApnsAlert, IFcmAler
  * @classdesc Class that implements MessageBuilder
  */
 export declare class MessageBuilder implements IConversationMessage {
+    id: string;
     metadata: any;
     parts: IMessagePart[];
     alert: IMessageAlert;
+    context: any;
+    sentEventId: number;
+    statusUpdates: any;
     /**
      * Method to create a simple text based message
      * @method MessageBuilder#withText

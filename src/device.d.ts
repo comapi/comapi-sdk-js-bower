@@ -1,16 +1,15 @@
-import { IDeviceManager, Environment } from "./interfaces";
-import { SessionAndSocketResolver } from "./resolver";
-export declare class Device {
-    private _sessionAndSocketResolver;
+import { IDeviceManager, Environment, IDevice, INetworkManager } from "./interfaces";
+export declare class Device implements IDevice {
+    private _networkManager;
     private _deviceManager;
     /**
      * Device class constructor.
      * @class Device
      * @classdesc Class that implements Device related functionality.
-     * @parameter {SessionAndSocketResolver} resolver
+     * @parameter {INetworkManager} _networkManager
      * @parameter {IDeviceManager} deviceManager
      */
-    constructor(_sessionAndSocketResolver: SessionAndSocketResolver, _deviceManager: IDeviceManager);
+    constructor(_networkManager: INetworkManager, _deviceManager: IDeviceManager);
     /**
      * Function to set FCM push details for the current session
      * @method Device#setFCMPushDetails

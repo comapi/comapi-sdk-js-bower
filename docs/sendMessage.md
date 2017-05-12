@@ -10,7 +10,7 @@ The simplest message that can be sent is plain text, so lets start with that ...
 
 ### ES6
 ```javascript
-import { MessageBuilder } from "@comapi/foundation"
+import { MessageBuilder } from "@comapi/sdk-js-foundation"
 
 let message = new MessageBuilder().withText("Hello world");
 
@@ -108,7 +108,7 @@ If you woud like to manually create the parts yourself, then you can do the foll
 
 ## Push Notifications
 
-If you woud like to have a push notification sent with the message, you can specify a generic message for both FCM & APNS and further customise the platform specific payloads ...
+If you would like to have a push notification sent with the message, you can specify a generic message for both FCM & APNS and further customise the platform specific payloads ...
 
 ### Generic settings
 

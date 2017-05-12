@@ -4,9 +4,13 @@
  */
 var MessageBuilder = (function () {
     function MessageBuilder() {
+        this.id = undefined;
         this.metadata = {};
         this.parts = [];
         this.alert = undefined;
+        this.context = undefined;
+        this.sentEventId = undefined;
+        this.statusUpdates = undefined;
     }
     /**
      * Method to create a simple text based message

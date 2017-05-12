@@ -1,18 +1,17 @@
-import { ILocalStorageData, IProfileManager } from "./interfaces";
-import { SessionAndSocketResolver } from "./resolver";
+import { ILocalStorageData, IProfileManager, INetworkManager } from "./interfaces";
 export declare class Profile {
-    private _sessionAndSocketResolver;
+    private _networkManager;
     private _localStorage;
     private _profileManager;
     /**
      * Profile class constructor.
      * @class Profile
      * @classdesc Class that implements Profile.
-     * @parameter {SessionAndSocketResolver} resolver
+     * @parameter {INetworkManager} _networkManager
      * @parameter {ILocalStorageData} localStorageData
      * @parameter {IProfileManager} profileManager
      */
-    constructor(_sessionAndSocketResolver: SessionAndSocketResolver, _localStorage: ILocalStorageData, _profileManager: IProfileManager);
+    constructor(_networkManager: INetworkManager, _localStorage: ILocalStorageData, _profileManager: IProfileManager);
     /**
      * Get a profile
      * @method Profile#getProfile
