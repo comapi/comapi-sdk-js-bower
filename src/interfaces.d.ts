@@ -285,17 +285,16 @@ export interface IConversationDetails {
     description?: string;
     roles: IConversationRoles;
     isPublic: boolean;
-    participants?: IConversationParticipant[];
 }
 /**
  * Conversation details interface
  */
 export interface IConversationDetails2 extends IConversationDetails {
     _createdOn: string;
+    _etag?: string;
     _updatedOn: string;
     latestSentEventId?: number;
     participantCount?: number;
-    ETag?: string;
 }
 export interface ISendMessageResult {
     id: string;
@@ -461,6 +460,7 @@ export interface IConversationUpdatedEventData {
     roles: IConversationRoles;
     isPublic: boolean;
     timestamp: string;
+    eTag: string;
 }
 /**
  *
@@ -549,6 +549,15 @@ export interface IDevice {
 }
 export interface IChannels {
     createFbOptInState(data?: any): Promise<any>;
+}
+export interface IOrphanedEventManager {
+    clearAll(): Promise<boolean>;
+    clear(conversationId: string): Promise<boolean>;
+    getContinuationToken(conversationId: string): Promise<number>;
+    setContinuationToken(conversationId: string, continuationToken: number): Promise<boolean>;
+    addOrphanedEvent(event: IConversationMessageEvent): Promise<boolean>;
+    removeOrphanedEvent(event: IConversationMessageEvent): Promise<boolean>;
+    getOrphanedEvents(conversationId: string): Promise<IConversationMessageEvent[]>;
 }
 /**
  * Foundation interface definition

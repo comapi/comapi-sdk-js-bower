@@ -1,4 +1,6 @@
-;
+// import { IndexedDBOrphanedEventManager } from "./indexedDBOrphanedEventManager";
+// import { LocalStorageOrphanedEventManager } from "./LocalStorageOrphanedEventManager";
+var utils_1 = require("./utils");
 var MessagePager = (function () {
     /**
      * MessagePager class constructor.
@@ -9,12 +11,11 @@ var MessagePager = (function () {
      * @parameter {ILocalStorageData} _localStorage
      * @parameter {IMessageManager} _messageManager
      */
-    function MessagePager(_logger, _localStorage, _messageManager) {
+    function MessagePager(_logger, _localStorage, _messageManager, _orphanedEventManager) {
         this._logger = _logger;
         this._localStorage = _localStorage;
         this._messageManager = _messageManager;
-        this._orphanedEevnts = {};
-        this._orphanedEevnts = this._localStorage.getObject("orphanedEevnts") || {};
+        this._orphanedEventManager = _orphanedEventManager;
     }
     /**
      * Get a page of messages, internally deal with orphaned events etc ...
@@ -26,64 +27,79 @@ var MessagePager = (function () {
      */
     MessagePager.prototype.getMessages = function (conversationId, pageSize, continuationToken) {
         var _this = this;
-        var orphanedEventContainer;
-        // validate state ...
-        if (continuationToken !== undefined) {
-            if (continuationToken <= 0) {
-                return Promise.reject({ message: "All messages from conversation " + conversationId + " have been loaded" });
-            }
-            orphanedEventContainer = this._orphanedEevnts[conversationId];
-            if (orphanedEventContainer) {
-                if (orphanedEventContainer.continuationToken !== continuationToken) {
+        if (continuationToken <= 0) {
+            return Promise.reject({ message: "All messages from conversation " + conversationId + " have been loaded" });
+        }
+        var _continuationToken = null;
+        var _conversationMessagesResult;
+        // 1) get info & Validate
+        return this._orphanedEventManager.getContinuationToken(conversationId)
+            .then(function (token) {
+            _continuationToken = token;
+            if (continuationToken !== undefined) {
+                // check the continuationToken is correct
+                if (_continuationToken !== continuationToken) {
                     // get rid of our cached events as they are now useless
-                    delete this._orphanedEevnts[conversationId];
+                    // return this._orphanedEventManager.clear(conversationId)
+                    // .then(() => {
                     return Promise.reject({ message: "Invalid continuation token: " + continuationToken + " for " + conversationId + ", you nust start from the end" });
+                }
+                else {
+                    return Promise.resolve(true);
                 }
             }
             else {
-                return Promise.reject({ message: "Invalid continuation token: " + continuationToken + " for " + conversationId + ", you nust start from the end" });
+                // reset the store as they want to go from the beginning 
+                return _this._orphanedEventManager.clear(conversationId);
             }
-        }
-        else {
-            this.resetConversation(conversationId);
-        }
-        // get the messages ...
-        return this._messageManager.getConversationMessages(conversationId, pageSize, continuationToken)
+        })
+            .then(function () {
+            return _this._messageManager.getConversationMessages(conversationId, pageSize, continuationToken);
+        })
             .then(function (result) {
-            _this._logger.log("getConversationMessages(" + conversationId + ", " + pageSize + ", " + continuationToken + ") returned", result);
+            _conversationMessagesResult = result;
             if (result.messages === undefined) {
                 _this._logger.log("No messages in this channel yet");
                 return Promise.resolve({ messages: [] });
             }
             else {
-                // The next continuatioToken will be (result.earliestEventId - 1) 
-                if (!orphanedEventContainer) {
-                    orphanedEventContainer = {
-                        continuationToken: result.earliestEventId - 1,
-                        orphanedEvents: []
-                    };
-                    _this._orphanedEevnts[conversationId] = orphanedEventContainer;
-                }
-                else {
-                    orphanedEventContainer.continuationToken = result.earliestEventId - 1;
-                }
-                if (result.orphanedEvents.length) {
-                    var mapped = [];
-                    for (var _i = 0, _a = result.orphanedEvents; _i < _a.length; _i++) {
-                        var event_1 = _a[_i];
-                        mapped.push(_this.mapOrphanedEvent(event_1));
-                    }
-                    // could merge these after playing through our cache ...
-                    _this.mergeOrphanedEvents(orphanedEventContainer, mapped);
-                }
-                _this.applyOrphanedEvents(result.messages, orphanedEventContainer);
-                return Promise.resolve({
-                    continuationToken: orphanedEventContainer.continuationToken,
-                    earliestEventId: result.earliestEventId,
-                    latestEventId: result.latestEventId,
-                    messages: result.messages,
+                // merge any events we got from the call to getConversationMessages with whats in the store
+                return _this.getOrphanedEvents(conversationId, _conversationMessagesResult.orphanedEvents)
+                    .then(function (orphanedEvents) {
+                    return _this.applyOrphanedEvents(_conversationMessagesResult.messages, orphanedEvents);
+                })
+                    .then(function () {
+                    // update continuation token for this conv 
+                    _continuationToken = _conversationMessagesResult.earliestEventId - 1;
+                    return _this._orphanedEventManager.setContinuationToken(conversationId, _continuationToken);
+                })
+                    .then(function () {
+                    return Promise.resolve({
+                        continuationToken: _continuationToken,
+                        earliestEventId: _conversationMessagesResult.earliestEventId,
+                        latestEventId: _conversationMessagesResult.latestEventId,
+                        messages: _conversationMessagesResult.messages,
+                    });
                 });
             }
+        });
+    };
+    /**
+     * Method to append a new batch of orphaned events to the store and then return them all ..
+     * @param {string} conversationId
+     * @param {any[]} orphanedEvents
+     * @returns {Promise<IConversationMessageEvent[]>}
+     */
+    MessagePager.prototype.getOrphanedEvents = function (conversationId, orphanedEvents) {
+        var _this = this;
+        var mapped = orphanedEvents.map(function (e) { return _this.mapOrphanedEvent(e); });
+        // add them into the store 
+        return utils_1.Utils.eachSeries(mapped, function (event) {
+            return _this._orphanedEventManager.addOrphanedEvent(event);
+        })
+            .then(function (done) {
+            // get the store 
+            return _this._orphanedEventManager.getOrphanedEvents(conversationId);
         });
     };
     /**
@@ -130,46 +146,24 @@ var MessagePager = (function () {
      * Method to reset any cached info abut a conversation
      */
     MessagePager.prototype.resetConversation = function (conversationId) {
-        this._orphanedEevnts[conversationId] = {};
-        this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
-    };
-    /**
-     *
-     */
-    MessagePager.prototype.mergeOrphanedEvents = function (orphanedEventContainer, orphanedEvets) {
-        orphanedEventContainer.orphanedEvents = orphanedEventContainer.orphanedEvents.concat(orphanedEvets);
-        orphanedEventContainer.orphanedEvents = orphanedEventContainer.orphanedEvents.sort(function (e1, e2) {
-            if (e1.conversationEventId > e2.conversationEventId) {
-                return 1;
-            }
-            else if (e1.conversationEventId < e2.conversationEventId) {
-                return -1;
-            }
-            else {
-                return 0;
-            }
-        });
-        // this._paragonSDK.setObject("orphanedEevnts", this._orphanedEevnts);
-        this._logger.log("mergedOrphanedEvents: " + JSON.stringify(orphanedEventContainer.orphanedEvents));
+        return this._orphanedEventManager.clear(conversationId);
     };
     /**
      * Orphaned events must be applied in ascending order, so if we want to loop backwards through these they need to be sorted
      * by id descending
      */
-    MessagePager.prototype.applyOrphanedEvents = function (messages, orphanedEventContainer) {
-        this._logger.log("==> applyOrphanedEvents: " + JSON.stringify(orphanedEventContainer.orphanedEvents));
-        for (var i = orphanedEventContainer.orphanedEvents.length - 1; i >= 0; i--) {
-            var event_2 = orphanedEventContainer.orphanedEvents[i];
-            if (this.playEvent(event_2, messages)) {
-                this._logger.log("succesfuly played event " + event_2.conversationEventId);
-                orphanedEventContainer.orphanedEvents.splice(i, 1);
+    MessagePager.prototype.applyOrphanedEvents = function (messages, orphanedEvents) {
+        var _this = this;
+        return utils_1.Utils.eachSeries(orphanedEvents, function (event) {
+            if (_this.playEvent(event, messages)) {
+                _this._logger.log("succesfuly played event " + event.conversationEventId);
+                return _this._orphanedEventManager.removeOrphanedEvent(event);
             }
             else {
-                this._logger.warn("failed to play event " + event_2.conversationEventId, event_2);
+                _this._logger.warn("failed to play event " + event.conversationEventId, event);
+                return Promise.resolve(false);
             }
-        }
-        this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
-        this._logger.log("<== applyOrphanedEvents: " + JSON.stringify(orphanedEventContainer.orphanedEvents));
+        });
     };
     /**
      *

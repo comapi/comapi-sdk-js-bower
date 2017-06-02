@@ -66,14 +66,16 @@ var COMAPI =
 	exports.MessageBuilder = messageBuilder_1.MessageBuilder;
 	var messageStatusBuilder_1 = __webpack_require__(19);
 	exports.MessageStatusBuilder = messageStatusBuilder_1.MessageStatusBuilder;
-	var comapiConfig_1 = __webpack_require__(20);
+	var indexedDBOrphanedEventManager_1 = __webpack_require__(20);
+	var localStorageOrphanedEventManager_1 = __webpack_require__(21);
+	var comapiConfig_1 = __webpack_require__(22);
 	exports.ComapiConfig = comapiConfig_1.ComapiConfig;
-	var appMessaging_1 = __webpack_require__(21);
-	var profile_1 = __webpack_require__(22);
-	var services_1 = __webpack_require__(23);
-	var device_1 = __webpack_require__(24);
-	var channels_1 = __webpack_require__(25);
-	var networkManager_1 = __webpack_require__(26);
+	var appMessaging_1 = __webpack_require__(23);
+	var profile_1 = __webpack_require__(24);
+	var services_1 = __webpack_require__(25);
+	var device_1 = __webpack_require__(26);
+	var channels_1 = __webpack_require__(27);
+	var networkManager_1 = __webpack_require__(28);
 	/*
 	 * Exports to be added to COMAPI namespace
 	 */
@@ -94,7 +96,15 @@ var COMAPI =
 	        this._eventManager = _eventManager;
 	        this._logger = _logger;
 	        this._networkManager = _networkManager;
-	        var messagePager = new messagePager_1.MessagePager(_logger, _localStorageData, _messageManager);
+	        var dbSupported = "indexedDB" in window;
+	        var orphanedEventManager;
+	        if (dbSupported) {
+	            orphanedEventManager = new indexedDBOrphanedEventManager_1.IndexedDBOrphanedEventManager();
+	        }
+	        else {
+	            orphanedEventManager = new localStorageOrphanedEventManager_1.LocalStorageOrphanedEventManager(_localStorageData);
+	        }
+	        var messagePager = new messagePager_1.MessagePager(_logger, _localStorageData, _messageManager, orphanedEventManager);
 	        var appMessaging = new appMessaging_1.AppMessaging(this._networkManager, _conversationManager, _messageManager, messagePager);
 	        var profile = new profile_1.Profile(this._networkManager, _localStorageData, _profileManager);
 	        this._services = new services_1.Services(appMessaging, profile);
@@ -125,7 +135,7 @@ var COMAPI =
 	         * @method Foundation#version
 	         */
 	        get: function () {
-	            return "1.0.1.2";
+	            return "1.0.2.8";
 	        },
 	        enumerable: true,
 	        configurable: true
@@ -1486,7 +1496,7 @@ var COMAPI =
 	            platform: /*browserInfo.name*/ "javascript",
 	            platformVersion: browserInfo.version,
 	            sdkType: /*"javascript"*/ "native",
-	            sdkVersion: "1.0.1.2"
+	            sdkVersion: "1.0.2.8"
 	        };
 	        return this._restClient.post(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/sessions", {}, data)
 	            .then(function (result) {
@@ -1974,9 +1984,11 @@ var COMAPI =
 
 /***/ },
 /* 14 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	;
+	// import { IndexedDBOrphanedEventManager } from "./indexedDBOrphanedEventManager";
+	// import { LocalStorageOrphanedEventManager } from "./LocalStorageOrphanedEventManager";
+	var utils_1 = __webpack_require__(9);
 	var MessagePager = (function () {
 	    /**
 	     * MessagePager class constructor.
@@ -1987,12 +1999,11 @@ var COMAPI =
 	     * @parameter {ILocalStorageData} _localStorage
 	     * @parameter {IMessageManager} _messageManager
 	     */
-	    function MessagePager(_logger, _localStorage, _messageManager) {
+	    function MessagePager(_logger, _localStorage, _messageManager, _orphanedEventManager) {
 	        this._logger = _logger;
 	        this._localStorage = _localStorage;
 	        this._messageManager = _messageManager;
-	        this._orphanedEevnts = {};
-	        this._orphanedEevnts = this._localStorage.getObject("orphanedEevnts") || {};
+	        this._orphanedEventManager = _orphanedEventManager;
 	    }
 	    /**
 	     * Get a page of messages, internally deal with orphaned events etc ...
@@ -2004,64 +2015,79 @@ var COMAPI =
 	     */
 	    MessagePager.prototype.getMessages = function (conversationId, pageSize, continuationToken) {
 	        var _this = this;
-	        var orphanedEventContainer;
-	        // validate state ...
-	        if (continuationToken !== undefined) {
-	            if (continuationToken <= 0) {
-	                return Promise.reject({ message: "All messages from conversation " + conversationId + " have been loaded" });
-	            }
-	            orphanedEventContainer = this._orphanedEevnts[conversationId];
-	            if (orphanedEventContainer) {
-	                if (orphanedEventContainer.continuationToken !== continuationToken) {
+	        if (continuationToken <= 0) {
+	            return Promise.reject({ message: "All messages from conversation " + conversationId + " have been loaded" });
+	        }
+	        var _continuationToken = null;
+	        var _conversationMessagesResult;
+	        // 1) get info & Validate
+	        return this._orphanedEventManager.getContinuationToken(conversationId)
+	            .then(function (token) {
+	            _continuationToken = token;
+	            if (continuationToken !== undefined) {
+	                // check the continuationToken is correct
+	                if (_continuationToken !== continuationToken) {
 	                    // get rid of our cached events as they are now useless
-	                    delete this._orphanedEevnts[conversationId];
+	                    // return this._orphanedEventManager.clear(conversationId)
+	                    // .then(() => {
 	                    return Promise.reject({ message: "Invalid continuation token: " + continuationToken + " for " + conversationId + ", you nust start from the end" });
+	                }
+	                else {
+	                    return Promise.resolve(true);
 	                }
 	            }
 	            else {
-	                return Promise.reject({ message: "Invalid continuation token: " + continuationToken + " for " + conversationId + ", you nust start from the end" });
+	                // reset the store as they want to go from the beginning 
+	                return _this._orphanedEventManager.clear(conversationId);
 	            }
-	        }
-	        else {
-	            this.resetConversation(conversationId);
-	        }
-	        // get the messages ...
-	        return this._messageManager.getConversationMessages(conversationId, pageSize, continuationToken)
+	        })
+	            .then(function () {
+	            return _this._messageManager.getConversationMessages(conversationId, pageSize, continuationToken);
+	        })
 	            .then(function (result) {
-	            _this._logger.log("getConversationMessages(" + conversationId + ", " + pageSize + ", " + continuationToken + ") returned", result);
+	            _conversationMessagesResult = result;
 	            if (result.messages === undefined) {
 	                _this._logger.log("No messages in this channel yet");
 	                return Promise.resolve({ messages: [] });
 	            }
 	            else {
-	                // The next continuatioToken will be (result.earliestEventId - 1) 
-	                if (!orphanedEventContainer) {
-	                    orphanedEventContainer = {
-	                        continuationToken: result.earliestEventId - 1,
-	                        orphanedEvents: []
-	                    };
-	                    _this._orphanedEevnts[conversationId] = orphanedEventContainer;
-	                }
-	                else {
-	                    orphanedEventContainer.continuationToken = result.earliestEventId - 1;
-	                }
-	                if (result.orphanedEvents.length) {
-	                    var mapped = [];
-	                    for (var _i = 0, _a = result.orphanedEvents; _i < _a.length; _i++) {
-	                        var event_1 = _a[_i];
-	                        mapped.push(_this.mapOrphanedEvent(event_1));
-	                    }
-	                    // could merge these after playing through our cache ...
-	                    _this.mergeOrphanedEvents(orphanedEventContainer, mapped);
-	                }
-	                _this.applyOrphanedEvents(result.messages, orphanedEventContainer);
-	                return Promise.resolve({
-	                    continuationToken: orphanedEventContainer.continuationToken,
-	                    earliestEventId: result.earliestEventId,
-	                    latestEventId: result.latestEventId,
-	                    messages: result.messages,
+	                // merge any events we got from the call to getConversationMessages with whats in the store
+	                return _this.getOrphanedEvents(conversationId, _conversationMessagesResult.orphanedEvents)
+	                    .then(function (orphanedEvents) {
+	                    return _this.applyOrphanedEvents(_conversationMessagesResult.messages, orphanedEvents);
+	                })
+	                    .then(function () {
+	                    // update continuation token for this conv 
+	                    _continuationToken = _conversationMessagesResult.earliestEventId - 1;
+	                    return _this._orphanedEventManager.setContinuationToken(conversationId, _continuationToken);
+	                })
+	                    .then(function () {
+	                    return Promise.resolve({
+	                        continuationToken: _continuationToken,
+	                        earliestEventId: _conversationMessagesResult.earliestEventId,
+	                        latestEventId: _conversationMessagesResult.latestEventId,
+	                        messages: _conversationMessagesResult.messages,
+	                    });
 	                });
 	            }
+	        });
+	    };
+	    /**
+	     * Method to append a new batch of orphaned events to the store and then return them all ..
+	     * @param {string} conversationId
+	     * @param {any[]} orphanedEvents
+	     * @returns {Promise<IConversationMessageEvent[]>}
+	     */
+	    MessagePager.prototype.getOrphanedEvents = function (conversationId, orphanedEvents) {
+	        var _this = this;
+	        var mapped = orphanedEvents.map(function (e) { return _this.mapOrphanedEvent(e); });
+	        // add them into the store 
+	        return utils_1.Utils.eachSeries(mapped, function (event) {
+	            return _this._orphanedEventManager.addOrphanedEvent(event);
+	        })
+	            .then(function (done) {
+	            // get the store 
+	            return _this._orphanedEventManager.getOrphanedEvents(conversationId);
 	        });
 	    };
 	    /**
@@ -2108,46 +2134,24 @@ var COMAPI =
 	     * Method to reset any cached info abut a conversation
 	     */
 	    MessagePager.prototype.resetConversation = function (conversationId) {
-	        this._orphanedEevnts[conversationId] = {};
-	        this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
-	    };
-	    /**
-	     *
-	     */
-	    MessagePager.prototype.mergeOrphanedEvents = function (orphanedEventContainer, orphanedEvets) {
-	        orphanedEventContainer.orphanedEvents = orphanedEventContainer.orphanedEvents.concat(orphanedEvets);
-	        orphanedEventContainer.orphanedEvents = orphanedEventContainer.orphanedEvents.sort(function (e1, e2) {
-	            if (e1.conversationEventId > e2.conversationEventId) {
-	                return 1;
-	            }
-	            else if (e1.conversationEventId < e2.conversationEventId) {
-	                return -1;
-	            }
-	            else {
-	                return 0;
-	            }
-	        });
-	        // this._paragonSDK.setObject("orphanedEevnts", this._orphanedEevnts);
-	        this._logger.log("mergedOrphanedEvents: " + JSON.stringify(orphanedEventContainer.orphanedEvents));
+	        return this._orphanedEventManager.clear(conversationId);
 	    };
 	    /**
 	     * Orphaned events must be applied in ascending order, so if we want to loop backwards through these they need to be sorted
 	     * by id descending
 	     */
-	    MessagePager.prototype.applyOrphanedEvents = function (messages, orphanedEventContainer) {
-	        this._logger.log("==> applyOrphanedEvents: " + JSON.stringify(orphanedEventContainer.orphanedEvents));
-	        for (var i = orphanedEventContainer.orphanedEvents.length - 1; i >= 0; i--) {
-	            var event_2 = orphanedEventContainer.orphanedEvents[i];
-	            if (this.playEvent(event_2, messages)) {
-	                this._logger.log("succesfuly played event " + event_2.conversationEventId);
-	                orphanedEventContainer.orphanedEvents.splice(i, 1);
+	    MessagePager.prototype.applyOrphanedEvents = function (messages, orphanedEvents) {
+	        var _this = this;
+	        return utils_1.Utils.eachSeries(orphanedEvents, function (event) {
+	            if (_this.playEvent(event, messages)) {
+	                _this._logger.log("succesfuly played event " + event.conversationEventId);
+	                return _this._orphanedEventManager.removeOrphanedEvent(event);
 	            }
 	            else {
-	                this._logger.warn("failed to play event " + event_2.conversationEventId, event_2);
+	                _this._logger.warn("failed to play event " + event.conversationEventId, event);
+	                return Promise.resolve(false);
 	            }
-	        }
-	        this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
-	        this._logger.log("<== applyOrphanedEvents: " + JSON.stringify(orphanedEventContainer.orphanedEvents));
+	        });
 	    };
 	    /**
 	     *
@@ -2290,7 +2294,7 @@ var COMAPI =
 	    ConversationManager.prototype.createConversation = function (conversationDetails) {
 	        return this._restClient.post(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations", {}, conversationDetails)
 	            .then(function (result) {
-	            result.response.ETag = result.headers.ETag;
+	            result.response._etag = result.headers.ETag;
 	            return Promise.resolve(result.response);
 	        });
 	    };
@@ -2314,7 +2318,7 @@ var COMAPI =
 	        };
 	        return this._restClient.put(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationDetails.id, headers, args)
 	            .then(function (result) {
-	            result.response.ETag = result.headers.ETag;
+	            result.response._etag = result.headers.ETag;
 	            return Promise.resolve(result.response);
 	        });
 	    };
@@ -2327,7 +2331,7 @@ var COMAPI =
 	    ConversationManager.prototype.getConversation = function (conversationId) {
 	        return this._restClient.get(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId)
 	            .then(function (result) {
-	            result.response.ETag = result.headers.ETag;
+	            result.response._etag = result.headers.ETag;
 	            return Promise.resolve(result.response);
 	        });
 	    };
@@ -2698,6 +2702,7 @@ var COMAPI =
 	                        // the user who updated the conversation
 	                        createdBy: event.context.createdBy,
 	                        description: event.payload.description,
+	                        eTag: event.etag,
 	                        isPublic: event.payload.isPublic,
 	                        name: event.payload.name,
 	                        roles: event.payload.roles,
@@ -3134,6 +3139,416 @@ var COMAPI =
 
 /***/ },
 /* 20 */
+/***/ function(module, exports) {
+
+	;
+	var IndexedDBOrphanedEventManager = (function () {
+	    function IndexedDBOrphanedEventManager() {
+	        this.idbSupported = "indexedDB" in window;
+	        this._name = "Comapi.OrphanedEvents";
+	        this._version = 1;
+	        this._continuationTokenStore = "ContinuationTokens";
+	        this._orphanedEventStore = "OrphanedEvents";
+	    }
+	    /**
+	     *
+	     */
+	    IndexedDBOrphanedEventManager.prototype.clearAll = function () {
+	        var _this = this;
+	        return this.ensureInitialised()
+	            .then(function (initialised) {
+	            return _this.clearObjectStore(_this._continuationTokenStore);
+	        })
+	            .then(function (cleared) {
+	            return _this.clearObjectStore(_this._orphanedEventStore);
+	        });
+	    };
+	    /**
+	     *
+	     */
+	    IndexedDBOrphanedEventManager.prototype.clear = function (conversationId) {
+	        var _this = this;
+	        return this.ensureInitialised()
+	            .then(function (initialised) {
+	            return _this.deleteTokenInfo(conversationId);
+	        })
+	            .then(function (deleted) {
+	            return _this.deleteEvents(conversationId);
+	        });
+	    };
+	    /**
+	     *
+	     */
+	    IndexedDBOrphanedEventManager.prototype.getContinuationToken = function (conversationId) {
+	        var _this = this;
+	        return this.ensureInitialised()
+	            .then(function (initialised) {
+	            return new Promise(function (resolve, reject) {
+	                var transaction = _this._database.transaction([_this._continuationTokenStore], "readonly");
+	                var objectStore = transaction.objectStore(_this._continuationTokenStore);
+	                // we want all the messages from this conversation ...
+	                // using a keyrange to encapsulate just the specified conversationId and all the dates
+	                var keyRange = IDBKeyRange.only(conversationId);
+	                var cursorRequest = objectStore.openCursor(keyRange);
+	                cursorRequest.onsuccess = function (event) {
+	                    var cursor = event.target.result;
+	                    // only one record ...
+	                    if (cursor) {
+	                        var info = cursor.value;
+	                        resolve(info.continuationToken);
+	                    }
+	                    else {
+	                        resolve(null);
+	                    }
+	                };
+	                cursorRequest.onerror = function (e) {
+	                    reject({ message: "Failed to openCursor: " + e.target.error.name });
+	                };
+	            });
+	        });
+	    };
+	    /**
+	     *
+	     */
+	    IndexedDBOrphanedEventManager.prototype.setContinuationToken = function (conversationId, continuationToken) {
+	        var _this = this;
+	        return this.ensureInitialised()
+	            .then(function (initialised) {
+	            return new Promise(function (resolve, reject) {
+	                var transaction = _this._database.transaction([_this._continuationTokenStore], "readwrite");
+	                var store = transaction.objectStore(_this._continuationTokenStore);
+	                var request = store.put({
+	                    continuationToken: continuationToken,
+	                    conversationId: conversationId
+	                });
+	                request.onerror = function (event) {
+	                    reject({ message: "add failed: " + event.target.error.name });
+	                };
+	                request.onsuccess = function (event) {
+	                    // http://stackoverflow.com/questions/12502830/how-to-return-auto-increment-id-from-objectstore-put-in-an-indexeddb
+	                    // returns auto incremented id ...
+	                    // resolve((<IDBRequest>event.target).result);
+	                    resolve(true);
+	                };
+	            });
+	        });
+	    };
+	    /**
+	     *
+	     */
+	    IndexedDBOrphanedEventManager.prototype.addOrphanedEvent = function (event) {
+	        var _this = this;
+	        return this.ensureInitialised()
+	            .then(function (initialised) {
+	            return new Promise(function (resolve, reject) {
+	                var transaction = _this._database.transaction([_this._orphanedEventStore], "readwrite");
+	                var store = transaction.objectStore(_this._orphanedEventStore);
+	                var request = store.put(event);
+	                request.onerror = function (e) {
+	                    console.error("Error", e.target.error.name);
+	                    reject({ message: "add failed: " + e.target.error.name });
+	                };
+	                request.onsuccess = function (e) {
+	                    // http://stackoverflow.com/questions/12502830/how-to-return-auto-increment-id-from-objectstore-put-in-an-indexeddb
+	                    // returns auto incremented id ...
+	                    // resolve((<IDBRequest>event.target).result);
+	                    resolve(true);
+	                };
+	            });
+	        });
+	    };
+	    /**
+	     *
+	     */
+	    IndexedDBOrphanedEventManager.prototype.removeOrphanedEvent = function (event) {
+	        var _this = this;
+	        return this.ensureInitialised()
+	            .then(function (initialised) {
+	            return new Promise(function (resolve, reject) {
+	                var transaction = _this._database.transaction([_this._orphanedEventStore], "readwrite");
+	                var store = transaction.objectStore(_this._orphanedEventStore);
+	                var request = store.delete(event.eventId);
+	                request.onerror = function (e) {
+	                    reject({ message: "delete failed: " + e.target.error.name });
+	                };
+	                request.onsuccess = function (e) {
+	                    console.log("store.delete", e.target.result);
+	                    resolve(true);
+	                };
+	            });
+	        });
+	    };
+	    /**
+	     *
+	     */
+	    IndexedDBOrphanedEventManager.prototype.getOrphanedEvents = function (conversationId) {
+	        var _this = this;
+	        return this.ensureInitialised()
+	            .then(function (initialised) {
+	            return new Promise(function (resolve, reject) {
+	                var transaction = _this._database.transaction([_this._orphanedEventStore], "readonly");
+	                var objectStore = transaction.objectStore(_this._orphanedEventStore);
+	                var index = objectStore.index("conversationId");
+	                var keyRange = IDBKeyRange.only(conversationId);
+	                var events = [];
+	                var cursorRequest = index.openCursor(keyRange, "prev");
+	                cursorRequest.onsuccess = function (event) {
+	                    var cursor = event.target.result;
+	                    if (cursor) {
+	                        events.unshift(cursor.value);
+	                        cursor.continue();
+	                    }
+	                    else {
+	                        resolve(events.sort(function (e1, e2) {
+	                            return e1.conversationEventId - e2.conversationEventId;
+	                        }));
+	                    }
+	                };
+	                cursorRequest.onerror = function (event) {
+	                    reject({ message: "Failed to openCursor: " + event.target.error.name });
+	                };
+	            });
+	        });
+	    };
+	    IndexedDBOrphanedEventManager.prototype.ensureInitialised = function () {
+	        return this._database ? Promise.resolve(true) : this.initialise();
+	    };
+	    /**
+	     *
+	     */
+	    IndexedDBOrphanedEventManager.prototype.initialise = function () {
+	        var _this = this;
+	        return new Promise(function (resolve, reject) {
+	            if (_this.idbSupported) {
+	                var self_1 = _this;
+	                var openRequest = indexedDB.open(_this._name, _this._version);
+	                openRequest.onupgradeneeded = function (event) {
+	                    var thisDB = event.target.result;
+	                    /**
+	                     * will be an array of IOrphanedEventContainer objects
+	                     */
+	                    if (!thisDB.objectStoreNames.contains(self_1._continuationTokenStore)) {
+	                        thisDB.createObjectStore(self_1._continuationTokenStore, { keyPath: "conversationId" });
+	                    }
+	                    /**
+	                     * Will be an array of IConversationMessageEvent objects
+	                     */
+	                    if (!thisDB.objectStoreNames.contains(self_1._orphanedEventStore)) {
+	                        var os = thisDB.createObjectStore(self_1._orphanedEventStore, { keyPath: "eventId" });
+	                        os.createIndex("conversationId", "conversationId", { unique: false });
+	                    }
+	                };
+	                openRequest.onsuccess = function (event) {
+	                    _this._database = event.target.result;
+	                    resolve(true);
+	                };
+	                openRequest.onerror = function (event) {
+	                    reject({ message: "IndexedDBOrphanedEventManager.initialise failed : " + event.target.error.name });
+	                };
+	            }
+	            else {
+	                reject({ message: "IndexedDBOrphanedEventManager not supported on this platform" });
+	            }
+	        });
+	    };
+	    /**
+	     * Method to clear the data in an object store
+	     * @method ConversationStore#clearObjectStore
+	     * @param {string} objectStore : the object store to clear
+	     * @returns {Promise} - returns a promise
+	     */
+	    IndexedDBOrphanedEventManager.prototype.clearObjectStore = function (objectStoreName) {
+	        var _this = this;
+	        // can't reference objectStore in the promise without this ...
+	        var _objectStoreName = objectStoreName;
+	        return new Promise(function (resolve, reject) {
+	            // open a read/write db transaction, ready for clearing the data
+	            var transaction = _this._database.transaction([_objectStoreName], "readwrite");
+	            transaction.onerror = function (event) {
+	                console.error("Transaction not opened due to error: " + transaction.error);
+	            };
+	            var objectStore = transaction.objectStore(_objectStoreName);
+	            var objectStoreRequest = objectStore.clear();
+	            objectStoreRequest.onsuccess = function (event) {
+	                resolve(true);
+	            };
+	            objectStoreRequest.onerror = function (event) {
+	                reject({ message: "Failed to clear object store: " + event.target.error.name });
+	            };
+	        });
+	    };
+	    /**
+	     *
+	     */
+	    IndexedDBOrphanedEventManager.prototype.deleteTokenInfo = function (conversationId) {
+	        var _this = this;
+	        return new Promise(function (resolve, reject) {
+	            var transaction = _this._database.transaction([_this._continuationTokenStore], "readwrite");
+	            var store = transaction.objectStore(_this._continuationTokenStore);
+	            var request = store.delete(conversationId);
+	            request.onerror = function (event) {
+	                reject({ message: "delete failed: " + event.target.error.name });
+	            };
+	            request.onsuccess = function (event) {
+	                console.log("store.delete", event.target.result);
+	                resolve(true);
+	            };
+	        });
+	    };
+	    /**
+	     *
+	     */
+	    IndexedDBOrphanedEventManager.prototype.deleteEvents = function (conversationId) {
+	        var _this = this;
+	        return new Promise(function (resolve, reject) {
+	            var transaction = _this._database.transaction([_this._orphanedEventStore], "readwrite");
+	            var objectStore = transaction.objectStore(_this._orphanedEventStore);
+	            var index = objectStore.index("conversationId");
+	            var keyRange = IDBKeyRange.only(conversationId);
+	            // we want all the messages from this conversation ...
+	            // using a keyrange to encapsulate just the specified conversationId and all the dates
+	            var cursorRequest = index.openCursor(keyRange, "next");
+	            cursorRequest.onsuccess = function (event) {
+	                var cursor = event.target.result;
+	                if (cursor) {
+	                    objectStore.delete(cursor.primaryKey);
+	                    cursor.continue();
+	                }
+	                else {
+	                    resolve(true);
+	                }
+	            };
+	            cursorRequest.onerror = function (e) {
+	                reject({ message: "Failed to openCursor: " + e.target.error.name });
+	            };
+	        });
+	    };
+	    return IndexedDBOrphanedEventManager;
+	})();
+	exports.IndexedDBOrphanedEventManager = IndexedDBOrphanedEventManager;
+	//# sourceMappingURL=indexedDBOrphanedEventManager.js.map
+
+/***/ },
+/* 21 */
+/***/ function(module, exports) {
+
+	;
+	var LocalStorageOrphanedEventManager = (function () {
+	    /**
+	     *
+	     */
+	    function LocalStorageOrphanedEventManager(_localStorage) {
+	        this._localStorage = _localStorage;
+	        this._orphanedEevnts = {};
+	        this._orphanedEevnts = this._localStorage.getObject("orphanedEevnts") || {};
+	    }
+	    /**
+	     *
+	     */
+	    LocalStorageOrphanedEventManager.prototype.clearAll = function () {
+	        this._orphanedEevnts = {};
+	        this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
+	        return Promise.resolve(true);
+	    };
+	    /**
+	     *
+	     */
+	    LocalStorageOrphanedEventManager.prototype.clear = function (conversationId) {
+	        this._orphanedEevnts[conversationId] = {
+	            orphanedEvents: []
+	        };
+	        this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
+	        return Promise.resolve(true);
+	    };
+	    /**
+	     *
+	     */
+	    LocalStorageOrphanedEventManager.prototype.getContinuationToken = function (conversationId) {
+	        var container = this._orphanedEevnts[conversationId];
+	        return Promise.resolve(container ? container.continuationToken : null);
+	    };
+	    /**
+	     *
+	     */
+	    LocalStorageOrphanedEventManager.prototype.setContinuationToken = function (conversationId, continuationToken) {
+	        var _info = this._orphanedEevnts[conversationId];
+	        if (_info) {
+	            _info.continuationToken = continuationToken;
+	        }
+	        else {
+	            this._orphanedEevnts[conversationId] = {
+	                continuationToken: continuationToken,
+	                orphanedEvents: []
+	            };
+	        }
+	        return Promise.resolve(true);
+	    };
+	    /**
+	     *
+	     */
+	    LocalStorageOrphanedEventManager.prototype.addOrphanedEvent = function (event) {
+	        var info = this._orphanedEevnts[event.conversationId];
+	        if (info) {
+	            // check for dupe 
+	            var found = info.orphanedEvents.filter(function (e) { return e.eventId === event.eventId; });
+	            if (found.length === 0) {
+	                // insert
+	                info.orphanedEvents.unshift(event);
+	                // sort
+	                info.orphanedEvents = info.orphanedEvents.sort(function (e1, e2) {
+	                    if (e1.conversationEventId > e2.conversationEventId) {
+	                        return 1;
+	                    }
+	                    else if (e1.conversationEventId < e2.conversationEventId) {
+	                        return -1;
+	                    }
+	                    else {
+	                        return 0;
+	                    }
+	                });
+	                // save
+	                this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
+	            }
+	        }
+	        else {
+	            return Promise.reject({ message: "No container for conversation " + event.conversationId });
+	        }
+	    };
+	    /**
+	     *
+	     */
+	    LocalStorageOrphanedEventManager.prototype.removeOrphanedEvent = function (event) {
+	        var info = this._orphanedEevnts[event.conversationId];
+	        if (info) {
+	            for (var i = info.orphanedEvents.length - 1; i >= 0; i--) {
+	                var e = info.orphanedEvents[i];
+	                if (e.eventId === event.eventId) {
+	                    info.orphanedEvents.splice(i, 1);
+	                    break;
+	                }
+	            }
+	            // save
+	            this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
+	            return Promise.resolve(true);
+	        }
+	        else {
+	            return Promise.reject({ message: "No container for conversation " + event.conversationId });
+	        }
+	    };
+	    /**
+	     *
+	     */
+	    LocalStorageOrphanedEventManager.prototype.getOrphanedEvents = function (conversationId) {
+	        var info = this._orphanedEevnts[conversationId];
+	        return Promise.resolve(info ? info.orphanedEvents : []);
+	    };
+	    return LocalStorageOrphanedEventManager;
+	})();
+	exports.LocalStorageOrphanedEventManager = LocalStorageOrphanedEventManager;
+	//# sourceMappingURL=localStorageOrphanedEventManager.js.map
+
+/***/ },
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var interfaces_1 = __webpack_require__(1);
@@ -3229,7 +3644,7 @@ var COMAPI =
 	//# sourceMappingURL=comapiConfig.js.map
 
 /***/ },
-/* 21 */
+/* 23 */
 /***/ function(module, exports) {
 
 	var AppMessaging = (function () {
@@ -3297,8 +3712,10 @@ var COMAPI =
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
-	            _this._messagePager.resetConversation(conversationId);
 	            return _this._conversationManager.deleteConversation(conversationId);
+	        })
+	            .then(function (deleted) {
+	            return _this._messagePager.resetConversation(conversationId);
 	        });
 	    };
 	    /**
@@ -3456,7 +3873,7 @@ var COMAPI =
 	//# sourceMappingURL=appMessaging.js.map
 
 /***/ },
-/* 22 */
+/* 24 */
 /***/ function(module, exports) {
 
 	var Profile = (function () {
@@ -3561,7 +3978,7 @@ var COMAPI =
 	//# sourceMappingURL=profile.js.map
 
 /***/ },
-/* 23 */
+/* 25 */
 /***/ function(module, exports) {
 
 	var Services = (function () {
@@ -3606,7 +4023,7 @@ var COMAPI =
 	//# sourceMappingURL=services.js.map
 
 /***/ },
-/* 24 */
+/* 26 */
 /***/ function(module, exports) {
 
 	var Device = (function () {
@@ -3668,7 +4085,7 @@ var COMAPI =
 	//# sourceMappingURL=device.js.map
 
 /***/ },
-/* 25 */
+/* 27 */
 /***/ function(module, exports) {
 
 	var Channels = (function () {
@@ -3701,7 +4118,7 @@ var COMAPI =
 	//# sourceMappingURL=channels.js.map
 
 /***/ },
-/* 26 */
+/* 28 */
 /***/ function(module, exports) {
 
 	var NetworkManager = (function () {

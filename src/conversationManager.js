@@ -32,7 +32,7 @@ var ConversationManager = (function () {
     ConversationManager.prototype.createConversation = function (conversationDetails) {
         return this._restClient.post(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations", {}, conversationDetails)
             .then(function (result) {
-            result.response.ETag = result.headers.ETag;
+            result.response._etag = result.headers.ETag;
             return Promise.resolve(result.response);
         });
     };
@@ -56,7 +56,7 @@ var ConversationManager = (function () {
         };
         return this._restClient.put(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationDetails.id, headers, args)
             .then(function (result) {
-            result.response.ETag = result.headers.ETag;
+            result.response._etag = result.headers.ETag;
             return Promise.resolve(result.response);
         });
     };
@@ -69,7 +69,7 @@ var ConversationManager = (function () {
     ConversationManager.prototype.getConversation = function (conversationId) {
         return this._restClient.get(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId)
             .then(function (result) {
-            result.response.ETag = result.headers.ETag;
+            result.response._etag = result.headers.ETag;
             return Promise.resolve(result.response);
         });
     };

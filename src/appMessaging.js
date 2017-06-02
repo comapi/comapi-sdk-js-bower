@@ -63,8 +63,10 @@ var AppMessaging = (function () {
         var _this = this;
         return this._networkManager.ensureSessionAndSocket()
             .then(function (sessionInfo) {
-            _this._messagePager.resetConversation(conversationId);
             return _this._conversationManager.deleteConversation(conversationId);
+        })
+            .then(function (deleted) {
+            return _this._messagePager.resetConversation(conversationId);
         });
     };
     /**

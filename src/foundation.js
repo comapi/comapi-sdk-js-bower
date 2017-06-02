@@ -19,6 +19,8 @@ var messageBuilder_1 = require("./messageBuilder");
 exports.MessageBuilder = messageBuilder_1.MessageBuilder;
 var messageStatusBuilder_1 = require("./messageStatusBuilder");
 exports.MessageStatusBuilder = messageStatusBuilder_1.MessageStatusBuilder;
+var indexedDBOrphanedEventManager_1 = require("./indexedDBOrphanedEventManager");
+var localStorageOrphanedEventManager_1 = require("./localStorageOrphanedEventManager");
 var comapiConfig_1 = require("./comapiConfig");
 exports.ComapiConfig = comapiConfig_1.ComapiConfig;
 var appMessaging_1 = require("./appMessaging");
@@ -47,7 +49,15 @@ var Foundation = (function () {
         this._eventManager = _eventManager;
         this._logger = _logger;
         this._networkManager = _networkManager;
-        var messagePager = new messagePager_1.MessagePager(_logger, _localStorageData, _messageManager);
+        var dbSupported = "indexedDB" in window;
+        var orphanedEventManager;
+        if (dbSupported) {
+            orphanedEventManager = new indexedDBOrphanedEventManager_1.IndexedDBOrphanedEventManager();
+        }
+        else {
+            orphanedEventManager = new localStorageOrphanedEventManager_1.LocalStorageOrphanedEventManager(_localStorageData);
+        }
+        var messagePager = new messagePager_1.MessagePager(_logger, _localStorageData, _messageManager, orphanedEventManager);
         var appMessaging = new appMessaging_1.AppMessaging(this._networkManager, _conversationManager, _messageManager, messagePager);
         var profile = new profile_1.Profile(this._networkManager, _localStorageData, _profileManager);
         this._services = new services_1.Services(appMessaging, profile);
@@ -78,7 +88,7 @@ var Foundation = (function () {
          * @method Foundation#version
          */
         get: function () {
-            return "1.0.1.2";
+            return "1.0.2.8";
         },
         enumerable: true,
         configurable: true
