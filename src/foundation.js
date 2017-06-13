@@ -88,7 +88,7 @@ var Foundation = (function () {
          * @method Foundation#version
          */
         get: function () {
-            return "1.0.2.8";
+            return "1.0.2.27";
         },
         enumerable: true,
         configurable: true
@@ -210,6 +210,18 @@ var Foundation = (function () {
          */
         get: function () {
             return this._networkManager.session;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Foundation.prototype, "logger", {
+        /**
+         * Method to get the logger
+         * @method Foundation#logger
+         * @returns {ILogger} - Returns an ILogger interface
+         */
+        get: function () {
+            return this._logger;
         },
         enumerable: true,
         configurable: true

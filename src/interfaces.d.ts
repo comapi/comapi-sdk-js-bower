@@ -71,6 +71,7 @@ export interface IRestClient {
     get(url: string, headers?: any): Promise<IRestClientResult>;
     post(url: string, headers: any, data: any): Promise<IRestClientResult>;
     put(url: string, headers: any, data: any): Promise<IRestClientResult>;
+    patch(url: string, headers: any, data: any): Promise<IRestClientResult>;
     delete(url: string, headers: any): Promise<IRestClientResult>;
 }
 /**
@@ -230,6 +231,7 @@ export interface IComapiConfig {
 export interface IProfileManager {
     getProfile(id: string): Promise<any>;
     updateProfile(id: string, profile: Object, eTag?: string): Promise<any>;
+    patchProfile(id: string, profile: Object, eTag?: string): Promise<any>;
     queryProfiles(query: string): Promise<any>;
 }
 /**
@@ -298,6 +300,7 @@ export interface IConversationDetails2 extends IConversationDetails {
 }
 export interface ISendMessageResult {
     id: string;
+    eventId: number;
 }
 /**
  *
@@ -535,8 +538,10 @@ export interface IProfile {
     getProfile(profileId: string): Promise<any>;
     queryProfiles(query?: string): Promise<any>;
     updateProfile(profileId: string, profile: any, eTag?: string): Promise<any>;
+    patchProfile(id: string, profile: Object, eTag?: string): Promise<any>;
     getMyProfile(useEtag?: boolean): Promise<any>;
     updateMyProfile(profile: any, useEtag?: boolean): Promise<any>;
+    patchMyProfile(profile: any, useEtag?: boolean): Promise<any>;
 }
 export interface IServices {
     appMessaging: IAppMessaging;
@@ -568,6 +573,7 @@ export interface IFoundation {
     device: IDevice;
     channels: IChannels;
     session: ISession;
+    logger: ILogger;
     startSession(): Promise<ISession>;
     endSession(): Promise<boolean>;
     on(eventType: string, handler: Function): void;

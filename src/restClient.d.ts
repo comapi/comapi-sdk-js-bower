@@ -39,6 +39,15 @@ export declare class RestClient implements IRestClient {
      */
     put(url: string, headers: any, data: any): Promise<IRestClientResult>;
     /**
+     * Method to make a PATCH request
+     * @method RestClient#patch
+     * @param  {string} url
+     * @param  {any} headers
+     * @param  {any} data
+     * @returns {Promise} - returns a promise
+     */
+    patch(url: string, headers: any, data: any): Promise<IRestClientResult>;
+    /**
      * Method to make a DELETE request
      * @method RestClient#delete
      * @param  {string} url

@@ -54,6 +54,21 @@ var Profile = (function () {
         });
     };
     /**
+     * Function to patch a profile
+     * @method Profile#updateProfile
+     * @param {string} profileId - the id of the profile to update
+     * @param {any} profile - the profile to patch
+     * @param {string} [eTag] - the eTag (returned in headers from getProfile())
+     * @returns {Promise}
+     */
+    Profile.prototype.patchProfile = function (profileId, profile, eTag) {
+        var _this = this;
+        return this._networkManager.ensureSessionAndSocket()
+            .then(function (sessionInfo) {
+            return _this._profileManager.patchProfile(profileId, profile, eTag);
+        });
+    };
+    /**
      * Get current user's profile
      * @method Profile#getMyProfile
      * @param {boolean} [useEtag=true] - Whether to use eTags to maintain consistency of profile data (defaults to true)
@@ -64,13 +79,13 @@ var Profile = (function () {
         if (useEtag === void 0) { useEtag = true; }
         return this._networkManager.ensureSessionAndSocket()
             .then(function (sessionInfo) {
-            return _this._profileManager.getProfile(sessionInfo.session.profileId)
-                .then(function (result) {
-                if (useEtag) {
-                    _this._localStorage.setString("MyProfileETag", result.headers.ETag);
-                }
-                return Promise.resolve(result.response);
-            });
+            return _this._profileManager.getProfile(sessionInfo.session.profileId);
+        })
+            .then(function (result) {
+            if (useEtag) {
+                _this._localStorage.setString("MyProfileETag", result.headers.ETag);
+            }
+            return Promise.resolve(result.response);
         });
     };
     /**
@@ -85,13 +100,32 @@ var Profile = (function () {
         if (useEtag === void 0) { useEtag = true; }
         return this._networkManager.ensureSessionAndSocket()
             .then(function (sessionInfo) {
-            return _this._profileManager.updateProfile(sessionInfo.session.profileId, profile, useEtag ? _this._localStorage.getString("MyProfileETag") : undefined)
-                .then(function (result) {
-                if (useEtag) {
-                    _this._localStorage.setString("MyProfileETag", result.headers.ETag);
-                }
-                return Promise.resolve(result.response);
-            });
+            return _this._profileManager.updateProfile(sessionInfo.session.profileId, profile, useEtag ? _this._localStorage.getString("MyProfileETag") : undefined);
+        })
+            .then(function (result) {
+            if (useEtag) {
+                _this._localStorage.setString("MyProfileETag", result.headers.ETag);
+            }
+            return Promise.resolve(result.response);
+        });
+    };
+    /**
+     * Patch current user's profile
+     * @method Profile#patchMyProfile
+     * @param {any} profile - the profile of the logged in user to update
+     * @returns {Promise} - returns a Promise
+     */
+    Profile.prototype.patchMyProfile = function (profile, useEtag) {
+        var _this = this;
+        return this._networkManager.ensureSessionAndSocket()
+            .then(function (sessionInfo) {
+            return _this._profileManager.patchProfile(sessionInfo.session.profileId, profile, useEtag ? _this._localStorage.getString("MyProfileETag") : undefined);
+        })
+            .then(function (result) {
+            if (useEtag) {
+                _this._localStorage.setString("MyProfileETag", result.headers.ETag);
+            }
+            return Promise.resolve(result.response);
         });
     };
     return Profile;

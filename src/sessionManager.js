@@ -162,7 +162,7 @@ var SessionManager = (function () {
             platform: /*browserInfo.name*/ "javascript",
             platformVersion: browserInfo.version,
             sdkType: /*"javascript"*/ "native",
-            sdkVersion: "1.0.2.8"
+            sdkVersion: "1.0.2.27"
         };
         return this._restClient.post(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/sessions", {}, data)
             .then(function (result) {

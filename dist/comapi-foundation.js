@@ -135,7 +135,7 @@ var COMAPI =
 	         * @method Foundation#version
 	         */
 	        get: function () {
-	            return "1.0.2.8";
+	            return "1.0.2.27";
 	        },
 	        enumerable: true,
 	        configurable: true
@@ -257,6 +257,18 @@ var COMAPI =
 	         */
 	        get: function () {
 	            return this._networkManager.session;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(Foundation.prototype, "logger", {
+	        /**
+	         * Method to get the logger
+	         * @method Foundation#logger
+	         * @returns {ILogger} - Returns an ILogger interface
+	         */
+	        get: function () {
+	            return this._logger;
 	        },
 	        enumerable: true,
 	        configurable: true
@@ -692,6 +704,17 @@ var COMAPI =
 	        return this.makeRequest("PUT", url, headers, data);
 	    };
 	    /**
+	     * Method to make a PATCH request
+	     * @method RestClient#patch
+	     * @param  {string} url
+	     * @param  {any} headers
+	     * @param  {any} data
+	     * @returns {Promise} - returns a promise
+	     */
+	    RestClient.prototype.patch = function (url, headers, data) {
+	        return this.makeRequest("PATCH", url, headers, data);
+	    };
+	    /**
 	     * Method to make a DELETE request
 	     * @method RestClient#delete
 	     * @param  {string} url
@@ -938,6 +961,22 @@ var COMAPI =
 	            .then(function (token) {
 	            headers.authorization = _this.constructAUthHeader(token);
 	            return _super.prototype.post.call(_this, url, headers, data);
+	        });
+	    };
+	    /**
+	     * Method to make a PATCH request
+	     * @method AuthenticatedRestClient#patch
+	     * @param  {string} url
+	     * @param  {any} data
+	     * @param  {any} headers
+	     * @returns {Promise} - returns a promise
+	     */
+	    AuthenticatedRestClient.prototype.patch = function (url, headers, data) {
+	        var _this = this;
+	        return this.networkManager.getValidToken()
+	            .then(function (token) {
+	            headers.authorization = _this.constructAUthHeader(token);
+	            return _super.prototype.patch.call(_this, url, headers, data);
 	        });
 	    };
 	    /**
@@ -1496,7 +1535,7 @@ var COMAPI =
 	            platform: /*browserInfo.name*/ "javascript",
 	            platformVersion: browserInfo.version,
 	            sdkType: /*"javascript"*/ "native",
-	            sdkVersion: "1.0.2.8"
+	            sdkVersion: "1.0.2.27"
 	        };
 	        return this._restClient.post(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/sessions", {}, data)
 	            .then(function (result) {
@@ -1866,6 +1905,27 @@ var COMAPI =
 	        }
 	        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/profiles/" + id;
 	        return this._restClient.put(url, headers, data);
+	    };
+	    /**
+	     * Function to patch a profile
+	     * @method ProfileManager#updateProfile
+	     * @param {string} id
+	     * @param {Object} profile
+	     * @param {string} [eTag]
+	     * @returns {Promise}
+	     */
+	    ProfileManager.prototype.patchProfile = function (id, profile, eTag) {
+	        var headers = {};
+	        if (eTag) {
+	            headers["If-Match"] = eTag;
+	        }
+	        // take a copy of it prior to messing with it ...
+	        var data = utils_1.Utils.clone(profile);
+	        if (data.id === undefined) {
+	            data.id = id;
+	        }
+	        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/profiles/" + id;
+	        return this._restClient.patch(url, headers, data);
 	    };
 	    return ProfileManager;
 	})();
@@ -3932,6 +3992,21 @@ var COMAPI =
 	        });
 	    };
 	    /**
+	     * Function to patch a profile
+	     * @method Profile#updateProfile
+	     * @param {string} profileId - the id of the profile to update
+	     * @param {any} profile - the profile to patch
+	     * @param {string} [eTag] - the eTag (returned in headers from getProfile())
+	     * @returns {Promise}
+	     */
+	    Profile.prototype.patchProfile = function (profileId, profile, eTag) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._profileManager.patchProfile(profileId, profile, eTag);
+	        });
+	    };
+	    /**
 	     * Get current user's profile
 	     * @method Profile#getMyProfile
 	     * @param {boolean} [useEtag=true] - Whether to use eTags to maintain consistency of profile data (defaults to true)
@@ -3942,13 +4017,13 @@ var COMAPI =
 	        if (useEtag === void 0) { useEtag = true; }
 	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
-	            return _this._profileManager.getProfile(sessionInfo.session.profileId)
-	                .then(function (result) {
-	                if (useEtag) {
-	                    _this._localStorage.setString("MyProfileETag", result.headers.ETag);
-	                }
-	                return Promise.resolve(result.response);
-	            });
+	            return _this._profileManager.getProfile(sessionInfo.session.profileId);
+	        })
+	            .then(function (result) {
+	            if (useEtag) {
+	                _this._localStorage.setString("MyProfileETag", result.headers.ETag);
+	            }
+	            return Promise.resolve(result.response);
 	        });
 	    };
 	    /**
@@ -3963,13 +4038,32 @@ var COMAPI =
 	        if (useEtag === void 0) { useEtag = true; }
 	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
-	            return _this._profileManager.updateProfile(sessionInfo.session.profileId, profile, useEtag ? _this._localStorage.getString("MyProfileETag") : undefined)
-	                .then(function (result) {
-	                if (useEtag) {
-	                    _this._localStorage.setString("MyProfileETag", result.headers.ETag);
-	                }
-	                return Promise.resolve(result.response);
-	            });
+	            return _this._profileManager.updateProfile(sessionInfo.session.profileId, profile, useEtag ? _this._localStorage.getString("MyProfileETag") : undefined);
+	        })
+	            .then(function (result) {
+	            if (useEtag) {
+	                _this._localStorage.setString("MyProfileETag", result.headers.ETag);
+	            }
+	            return Promise.resolve(result.response);
+	        });
+	    };
+	    /**
+	     * Patch current user's profile
+	     * @method Profile#patchMyProfile
+	     * @param {any} profile - the profile of the logged in user to update
+	     * @returns {Promise} - returns a Promise
+	     */
+	    Profile.prototype.patchMyProfile = function (profile, useEtag) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._profileManager.patchProfile(sessionInfo.session.profileId, profile, useEtag ? _this._localStorage.getString("MyProfileETag") : undefined);
+	        })
+	            .then(function (result) {
+	            if (useEtag) {
+	                _this._localStorage.setString("MyProfileETag", result.headers.ETag);
+	            }
+	            return Promise.resolve(result.response);
 	        });
 	    };
 	    return Profile;

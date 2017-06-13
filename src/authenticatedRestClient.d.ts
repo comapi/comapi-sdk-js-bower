@@ -28,6 +28,15 @@ export declare class AuthenticatedRestClient extends RestClient implements IRest
      */
     post(url: string, headers: any, data: any): Promise<IRestClientResult>;
     /**
+     * Method to make a PATCH request
+     * @method AuthenticatedRestClient#patch
+     * @param  {string} url
+     * @param  {any} data
+     * @param  {any} headers
+     * @returns {Promise} - returns a promise
+     */
+    patch(url: string, headers: any, data: any): Promise<IRestClientResult>;
+    /**
      * Method to make a PUT request
      * @method AuthenticatedRestClient#put
      * @param  {string} url

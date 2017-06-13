@@ -99,6 +99,12 @@ export declare class Foundation implements IFoundation {
      */
     session: ISession;
     /**
+     * Method to get the logger
+     * @method Foundation#logger
+     * @returns {ILogger} - Returns an ILogger interface
+     */
+    logger: ILogger;
+    /**
      * Subscribes the caller to a comapi event.
      * @method Foundation#on
      * @param {string} eventType - The type of event to subscribe to

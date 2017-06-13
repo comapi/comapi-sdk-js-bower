@@ -51,6 +51,17 @@ var RestClient = (function () {
         return this.makeRequest("PUT", url, headers, data);
     };
     /**
+     * Method to make a PATCH request
+     * @method RestClient#patch
+     * @param  {string} url
+     * @param  {any} headers
+     * @param  {any} data
+     * @returns {Promise} - returns a promise
+     */
+    RestClient.prototype.patch = function (url, headers, data) {
+        return this.makeRequest("PATCH", url, headers, data);
+    };
+    /**
      * Method to make a DELETE request
      * @method RestClient#delete
      * @param  {string} url

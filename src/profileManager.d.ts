@@ -40,4 +40,13 @@ export declare class ProfileManager implements IProfileManager {
      * @returns {Promise}
      */
     updateProfile(id: string, profile: Object, eTag?: string): Promise<any>;
+    /**
+     * Function to patch a profile
+     * @method ProfileManager#updateProfile
+     * @param {string} id
+     * @param {Object} profile
+     * @param {string} [eTag]
+     * @returns {Promise}
+     */
+    patchProfile(id: string, profile: Object, eTag?: string): Promise<any>;
 }

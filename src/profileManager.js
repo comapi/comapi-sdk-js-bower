@@ -62,6 +62,27 @@ var ProfileManager = (function () {
         var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/profiles/" + id;
         return this._restClient.put(url, headers, data);
     };
+    /**
+     * Function to patch a profile
+     * @method ProfileManager#updateProfile
+     * @param {string} id
+     * @param {Object} profile
+     * @param {string} [eTag]
+     * @returns {Promise}
+     */
+    ProfileManager.prototype.patchProfile = function (id, profile, eTag) {
+        var headers = {};
+        if (eTag) {
+            headers["If-Match"] = eTag;
+        }
+        // take a copy of it prior to messing with it ...
+        var data = utils_1.Utils.clone(profile);
+        if (data.id === undefined) {
+            data.id = id;
+        }
+        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/profiles/" + id;
+        return this._restClient.patch(url, headers, data);
+    };
     return ProfileManager;
 })();
 exports.ProfileManager = ProfileManager;

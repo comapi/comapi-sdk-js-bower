@@ -50,6 +50,22 @@ var AuthenticatedRestClient = (function (_super) {
         });
     };
     /**
+     * Method to make a PATCH request
+     * @method AuthenticatedRestClient#patch
+     * @param  {string} url
+     * @param  {any} data
+     * @param  {any} headers
+     * @returns {Promise} - returns a promise
+     */
+    AuthenticatedRestClient.prototype.patch = function (url, headers, data) {
+        var _this = this;
+        return this.networkManager.getValidToken()
+            .then(function (token) {
+            headers.authorization = _this.constructAUthHeader(token);
+            return _super.prototype.patch.call(_this, url, headers, data);
+        });
+    };
+    /**
      * Method to make a PUT request
      * @method AuthenticatedRestClient#put
      * @param  {string} url
