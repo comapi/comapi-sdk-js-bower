@@ -1,3 +1,4 @@
+var utils_1 = require("./utils");
 var MessageManager = (function () {
     /**
      * MessagesManager class constructor.
@@ -27,7 +28,11 @@ var MessageManager = (function () {
      * @returns {Promise}
      */
     MessageManager.prototype.getConversationEvents = function (conversationId, from, limit) {
-        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/events";
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.events, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            conversationId: conversationId,
+            urlBase: this._comapiConfig.urlBase,
+        });
         url += "?from=" + from;
         url += "&limit=" + limit;
         return this._restClient.get(url)
@@ -43,7 +48,11 @@ var MessageManager = (function () {
      * @returns {Promise}
      */
     MessageManager.prototype.getConversationMessages = function (conversationId, limit, from) {
-        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/messages";
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.messages, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            conversationId: conversationId,
+            urlBase: this._comapiConfig.urlBase,
+        });
         url += "?limit=" + limit;
         if (from !== undefined) {
             url += "&from=" + from;
@@ -68,7 +77,12 @@ var MessageManager = (function () {
             metadata: metadata,
             parts: parts,
         };
-        return this._restClient.post(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/messages", {}, request)
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.messages, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            conversationId: conversationId,
+            urlBase: this._comapiConfig.urlBase,
+        });
+        return this._restClient.post(url, {}, request)
             .then(function (result) {
             return Promise.resolve(result.response);
         });
@@ -79,7 +93,12 @@ var MessageManager = (function () {
      * @parameter {IConversationMessage} message
      */
     MessageManager.prototype.sendMessageToConversation = function (conversationId, message) {
-        return this._restClient.post(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/messages", {}, message)
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.messages, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            conversationId: conversationId,
+            urlBase: this._comapiConfig.urlBase,
+        });
+        return this._restClient.post(url, {}, message)
             .then(function (result) {
             return Promise.resolve(result.response);
         });
@@ -94,7 +113,12 @@ var MessageManager = (function () {
         var headers = {
             "Content-Type": "application/json",
         };
-        return this._restClient.post(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/messages/statusupdates", headers, statuses)
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.statusUpdates, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            conversationId: conversationId,
+            urlBase: this._comapiConfig.urlBase,
+        });
+        return this._restClient.post(url, headers, statuses)
             .then(function (result) {
             return Promise.resolve(result.response);
         });

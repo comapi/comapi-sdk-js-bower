@@ -162,9 +162,13 @@ var SessionManager = (function () {
             platform: /*browserInfo.name*/ "javascript",
             platformVersion: browserInfo.version,
             sdkType: /*"javascript"*/ "native",
-            sdkVersion: "1.0.2.27"
+            sdkVersion: "1.0.2.36"
         };
-        return this._restClient.post(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/sessions", {}, data)
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            urlBase: this._comapiConfig.urlBase,
+        });
+        return this._restClient.post(url, {}, data)
             .then(function (result) {
             return Promise.resolve(result.response);
         });
@@ -174,7 +178,11 @@ var SessionManager = (function () {
      * @returns {Promise} - Returns a promise
      */
     SessionManager.prototype._startAuth = function () {
-        return this._restClient.get(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/sessions/start")
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessionStart, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            urlBase: this._comapiConfig.urlBase,
+        });
+        return this._restClient.get(url)
             .then(function (result) {
             return Promise.resolve(result.response);
         });
@@ -188,7 +196,11 @@ var SessionManager = (function () {
             "Content-Type": "application/json",
             "authorization": this.getAuthHeader(),
         };
-        return this._restClient.delete(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/sessions/" + this._sessionInfo.session.id, headers)
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.session, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            urlBase: this._comapiConfig.urlBase,
+        });
+        return this._restClient.delete(url, headers)
             .then(function (result) {
             return Promise.resolve(true);
         });

@@ -50,6 +50,12 @@ export declare class Utils {
      */
     static doUntil(operation: DoUntilOperationFunction, test: DoUntilTestFunction, data?: any): Promise<any>;
     /**
+     * Mustache/handlebars style formatting ...
+     * @param {string} content
+     * @param {Object} tags
+     */
+    static format(content: string, tags: Object): any;
+    /**
      * @class Utils
      * @ignore
      * @classdesc Class that implements a Utils.

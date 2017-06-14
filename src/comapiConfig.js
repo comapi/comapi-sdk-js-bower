@@ -1,4 +1,5 @@
 var interfaces_1 = require("./interfaces");
+var urlConfig_1 = require("./urlConfig");
 var ComapiConfig = (function () {
     /**
      * ComapiConfig class constructor.
@@ -13,6 +14,7 @@ var ComapiConfig = (function () {
         this.logPersistence = interfaces_1.LogPersistences.LocalStorage;
         this.isTypingTimeout = 10;
         this.isTypingOffTimeout = 10;
+        this.foundationRestUrls = new urlConfig_1.FoundationRestUrls();
         this.apiSpaceId = undefined;
     }
     /**
@@ -83,6 +85,16 @@ var ComapiConfig = (function () {
      */
     ComapiConfig.prototype.withLogPersistence = function (logPersistence) {
         this.logPersistence = logPersistence;
+        return this;
+    };
+    /**
+     * Function to override foundationRestUrls
+     * @method ComapiConfig#withFoundationRestUrls
+     * @param {IFoundationRestUrls} foundationRestUrls - the foundationRestUrls
+     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+     */
+    ComapiConfig.prototype.withFoundationRestUrls = function (foundationRestUrls) {
+        this.foundationRestUrls = foundationRestUrls;
         return this;
     };
     return ComapiConfig;

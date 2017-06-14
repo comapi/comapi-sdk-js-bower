@@ -1,4 +1,5 @@
 var interfaces_1 = require("./interfaces");
+var utils_1 = require("./utils");
 var ConversationManager = (function () {
     /**
      * ConversationManager class constructor.
@@ -30,7 +31,11 @@ var ConversationManager = (function () {
      * @returns {Promise}
      */
     ConversationManager.prototype.createConversation = function (conversationDetails) {
-        return this._restClient.post(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations", {}, conversationDetails)
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.conversations, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            urlBase: this._comapiConfig.urlBase,
+        });
+        return this._restClient.post(url, {}, conversationDetails)
             .then(function (result) {
             result.response._etag = result.headers.ETag;
             return Promise.resolve(result.response);
@@ -54,7 +59,12 @@ var ConversationManager = (function () {
             name: conversationDetails.name,
             roles: conversationDetails.roles,
         };
-        return this._restClient.put(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationDetails.id, headers, args)
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.conversation, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            conversationId: conversationDetails.id,
+            urlBase: this._comapiConfig.urlBase,
+        });
+        return this._restClient.put(url, headers, args)
             .then(function (result) {
             result.response._etag = result.headers.ETag;
             return Promise.resolve(result.response);
@@ -67,7 +77,12 @@ var ConversationManager = (function () {
      * @returns {Promise}
      */
     ConversationManager.prototype.getConversation = function (conversationId) {
-        return this._restClient.get(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId)
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.conversation, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            conversationId: conversationId,
+            urlBase: this._comapiConfig.urlBase,
+        });
+        return this._restClient.get(url)
             .then(function (result) {
             result.response._etag = result.headers.ETag;
             return Promise.resolve(result.response);
@@ -80,7 +95,12 @@ var ConversationManager = (function () {
      * @returns {Promise}
      */
     ConversationManager.prototype.deleteConversation = function (conversationId) {
-        return this._restClient.delete(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId, {})
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.conversation, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            conversationId: conversationId,
+            urlBase: this._comapiConfig.urlBase,
+        });
+        return this._restClient.delete(url, {})
             .then(function (result) {
             return Promise.resolve(true);
         });
@@ -93,7 +113,12 @@ var ConversationManager = (function () {
      * @returns {Promise}
      */
     ConversationManager.prototype.addParticipantsToConversation = function (conversationId, participants) {
-        return this._restClient.post(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/participants", {}, participants)
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.participants, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            conversationId: conversationId,
+            urlBase: this._comapiConfig.urlBase,
+        });
+        return this._restClient.post(url, {}, participants)
             .then(function (result) {
             return Promise.resolve(true);
         });
@@ -110,7 +135,12 @@ var ConversationManager = (function () {
         for (var i = 0; i < participants.length; i++) {
             query += (i === 0 ? "?id=" + participants[i] : "&id=" + participants[i]);
         }
-        return this._restClient.delete((this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/participants") + query, {})
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.participants, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            conversationId: conversationId,
+            urlBase: this._comapiConfig.urlBase,
+        });
+        return this._restClient.delete(url + query, {})
             .then(function (result) {
             return Promise.resolve(true);
         });
@@ -122,7 +152,12 @@ var ConversationManager = (function () {
      * @returns {Promise}
      */
     ConversationManager.prototype.getParticipantsInConversation = function (conversationId) {
-        return this._restClient.get(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/participants")
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.participants, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            conversationId: conversationId,
+            urlBase: this._comapiConfig.urlBase,
+        });
+        return this._restClient.get(url)
             .then(function (result) {
             return Promise.resolve(result.response);
         });
@@ -134,7 +169,10 @@ var ConversationManager = (function () {
      * @returns {Promise}
      */
     ConversationManager.prototype.getConversations = function (scope, profileId) {
-        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations";
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.conversations, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            urlBase: this._comapiConfig.urlBase,
+        });
         if (scope || profileId) {
             url += "?";
             if (scope !== undefined) {
@@ -166,7 +204,11 @@ var ConversationManager = (function () {
                 return Promise.resolve(false);
             }
         }
-        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/typing";
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.typing, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            conversationId: conversationId,
+            urlBase: this._comapiConfig.urlBase,
+        });
         return this._restClient.post(url, {}, {})
             .then(function (result) {
             _this.isTypingInfo[conversationId] = new Date().toISOString();
@@ -190,7 +232,11 @@ var ConversationManager = (function () {
                 return Promise.resolve(false);
             }
         }
-        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/typing";
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.typing, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            conversationId: conversationId,
+            urlBase: this._comapiConfig.urlBase,
+        });
         return this._restClient.delete(url, {})
             .then(function (result) {
             _this.isTypingOffInfo[conversationId] = new Date().toISOString();

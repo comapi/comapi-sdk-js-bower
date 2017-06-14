@@ -1,3 +1,4 @@
+var utils_1 = require("./utils");
 var FacebookManager = (function () {
     /**
      * FacebookManager class constructor.
@@ -15,7 +16,10 @@ var FacebookManager = (function () {
      * @param {any} [data] - the data to post
      */
     FacebookManager.prototype.createSendToMessengerState = function (data) {
-        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/channels/facebook/state";
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.facebook, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            urlBase: this._comapiConfig.urlBase,
+        });
         return this._restClient.post(url, {}, data || {});
     };
     return FacebookManager;

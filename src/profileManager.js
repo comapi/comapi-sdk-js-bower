@@ -25,7 +25,11 @@ var ProfileManager = (function () {
      * @returns {Promise}
      */
     ProfileManager.prototype.getProfile = function (id) {
-        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/profiles/" + id;
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.profile, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            profileId: id,
+            urlBase: this._comapiConfig.urlBase,
+        });
         return this._restClient.get(url);
     };
     /**
@@ -35,7 +39,10 @@ var ProfileManager = (function () {
      * @returns {Promise}
      */
     ProfileManager.prototype.queryProfiles = function (query) {
-        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/profiles";
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.profiles, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            urlBase: this._comapiConfig.urlBase,
+        });
         if (query) {
             url += ("?" + query);
         }
@@ -59,7 +66,11 @@ var ProfileManager = (function () {
         if (data.id === undefined) {
             data.id = id;
         }
-        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/profiles/" + id;
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.profile, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            profileId: id,
+            urlBase: this._comapiConfig.urlBase,
+        });
         return this._restClient.put(url, headers, data);
     };
     /**
@@ -80,7 +91,11 @@ var ProfileManager = (function () {
         if (data.id === undefined) {
             data.id = id;
         }
-        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/profiles/" + id;
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.profile, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            profileId: id,
+            urlBase: this._comapiConfig.urlBase,
+        });
         return this._restClient.patch(url, headers, data);
     };
     return ProfileManager;

@@ -1,5 +1,5 @@
 var interfaces_1 = require("./interfaces");
-// import { Utils } from "./utils";
+var utils_1 = require("./utils");
 var DeviceManager = (function () {
     // private _deviceId: string;
     /**
@@ -83,7 +83,11 @@ var DeviceManager = (function () {
      * @returns {string}
      */
     DeviceManager.prototype.getPushUrl = function (sessionId) {
-        return this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/sessions/" + sessionId + "/push";
+        return utils_1.Utils.format(this._comapiConfig.foundationRestUrls.push, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            sessionId: sessionId,
+            urlBase: this._comapiConfig.urlBase,
+        });
     };
     return DeviceManager;
 })();

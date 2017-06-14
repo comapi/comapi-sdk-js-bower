@@ -1,4 +1,4 @@
-import { IComapiConfig, IAuthChallenge, LogLevels, LogPersistences } from "./interfaces";
+import { IComapiConfig, IAuthChallenge, LogLevels, LogPersistences, IFoundationRestUrls } from "./interfaces";
 export declare class ComapiConfig implements IComapiConfig {
     apiSpaceId: string;
     logRetentionHours: number;
@@ -9,6 +9,7 @@ export declare class ComapiConfig implements IComapiConfig {
     logPersistence: LogPersistences;
     isTypingTimeout: number;
     isTypingOffTimeout: number;
+    foundationRestUrls: IFoundationRestUrls;
     /**
      * ComapiConfig class constructor.
      * @class ComapiConfig
@@ -64,4 +65,11 @@ export declare class ComapiConfig implements IComapiConfig {
      * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
      */
     withLogPersistence(logPersistence: LogPersistences): ComapiConfig;
+    /**
+     * Function to override foundationRestUrls
+     * @method ComapiConfig#withFoundationRestUrls
+     * @param {IFoundationRestUrls} foundationRestUrls - the foundationRestUrls
+     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+     */
+    withFoundationRestUrls(foundationRestUrls: IFoundationRestUrls): ComapiConfig;
 }

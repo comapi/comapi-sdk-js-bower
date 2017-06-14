@@ -92,6 +92,25 @@ var Utils = (function () {
             return test(rslt) ? Utils.doUntil(operation, test, rslt) : rslt;
         });
     };
+    /**
+     * Mustache/handlebars style formatting ...
+     * @param {string} content
+     * @param {Object} tags
+     */
+    Utils.format = function (content, tags) {
+        return content.replace(/{{(.*?)}}/g, function (tag, key) {
+            var replacement = false;
+            if (typeof tags[key] === "string") {
+                replacement = tags[key];
+            }
+            if (typeof replacement === "string") {
+                return replacement;
+            }
+            else {
+                return tag;
+            }
+        });
+    };
     return Utils;
 })();
 exports.Utils = Utils;

@@ -14,5 +14,5 @@ export declare class ApiSpaceManager implements IApiSpaceManager {
     /**
      *
      */
-    updateAuth(token: string, appspaceId: string, authInfo: IApiSpaceAuthInfo): Promise<IApiSpaceAuthInfo>;
+    updateAuth(token: string, apiSpaceId: string, authInfo: IApiSpaceAuthInfo): Promise<IApiSpaceAuthInfo>;
 }

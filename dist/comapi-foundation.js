@@ -70,12 +70,13 @@ var COMAPI =
 	var localStorageOrphanedEventManager_1 = __webpack_require__(21);
 	var comapiConfig_1 = __webpack_require__(22);
 	exports.ComapiConfig = comapiConfig_1.ComapiConfig;
-	var appMessaging_1 = __webpack_require__(23);
-	var profile_1 = __webpack_require__(24);
-	var services_1 = __webpack_require__(25);
-	var device_1 = __webpack_require__(26);
-	var channels_1 = __webpack_require__(27);
-	var networkManager_1 = __webpack_require__(28);
+	var appMessaging_1 = __webpack_require__(24);
+	var profile_1 = __webpack_require__(25);
+	var services_1 = __webpack_require__(26);
+	var device_1 = __webpack_require__(27);
+	var channels_1 = __webpack_require__(28);
+	var networkManager_1 = __webpack_require__(29);
+	var urlConfig_1 = __webpack_require__(23);
 	/*
 	 * Exports to be added to COMAPI namespace
 	 */
@@ -135,7 +136,7 @@ var COMAPI =
 	         * @method Foundation#version
 	         */
 	        get: function () {
-	            return "1.0.2.27";
+	            return "1.0.2.36";
 	        },
 	        enumerable: true,
 	        configurable: true
@@ -148,6 +149,9 @@ var COMAPI =
 	    Foundation._initialise = function (comapiConfig, doSingleton) {
 	        if (doSingleton && Foundation._foundation) {
 	            return Promise.resolve(Foundation._foundation);
+	        }
+	        if (comapiConfig.foundationRestUrls === undefined) {
+	            comapiConfig.foundationRestUrls = new urlConfig_1.FoundationRestUrls();
 	        }
 	        if (comapiConfig.logPersistence &&
 	            comapiConfig.logPersistence === interfaces_1.LogPersistences.IndexedDB) {
@@ -1535,9 +1539,13 @@ var COMAPI =
 	            platform: /*browserInfo.name*/ "javascript",
 	            platformVersion: browserInfo.version,
 	            sdkType: /*"javascript"*/ "native",
-	            sdkVersion: "1.0.2.27"
+	            sdkVersion: "1.0.2.36"
 	        };
-	        return this._restClient.post(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/sessions", {}, data)
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
+	        return this._restClient.post(url, {}, data)
 	            .then(function (result) {
 	            return Promise.resolve(result.response);
 	        });
@@ -1547,7 +1555,11 @@ var COMAPI =
 	     * @returns {Promise} - Returns a promise
 	     */
 	    SessionManager.prototype._startAuth = function () {
-	        return this._restClient.get(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/sessions/start")
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessionStart, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
+	        return this._restClient.get(url)
 	            .then(function (result) {
 	            return Promise.resolve(result.response);
 	        });
@@ -1561,7 +1573,11 @@ var COMAPI =
 	            "Content-Type": "application/json",
 	            "authorization": this.getAuthHeader(),
 	        };
-	        return this._restClient.delete(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/sessions/" + this._sessionInfo.session.id, headers)
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.session, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
+	        return this._restClient.delete(url, headers)
 	            .then(function (result) {
 	            return Promise.resolve(true);
 	        });
@@ -1707,6 +1723,25 @@ var COMAPI =
 	            return test(rslt) ? Utils.doUntil(operation, test, rslt) : rslt;
 	        });
 	    };
+	    /**
+	     * Mustache/handlebars style formatting ...
+	     * @param {string} content
+	     * @param {Object} tags
+	     */
+	    Utils.format = function (content, tags) {
+	        return content.replace(/{{(.*?)}}/g, function (tag, key) {
+	            var replacement = false;
+	            if (typeof tags[key] === "string") {
+	                replacement = tags[key];
+	            }
+	            if (typeof replacement === "string") {
+	                return replacement;
+	            }
+	            else {
+	                return tag;
+	            }
+	        });
+	    };
 	    return Utils;
 	})();
 	exports.Utils = Utils;
@@ -1718,7 +1753,7 @@ var COMAPI =
 /***/ function(module, exports, __webpack_require__) {
 
 	var interfaces_1 = __webpack_require__(1);
-	// import { Utils } from "./utils";
+	var utils_1 = __webpack_require__(9);
 	var DeviceManager = (function () {
 	    // private _deviceId: string;
 	    /**
@@ -1802,7 +1837,11 @@ var COMAPI =
 	     * @returns {string}
 	     */
 	    DeviceManager.prototype.getPushUrl = function (sessionId) {
-	        return this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/sessions/" + sessionId + "/push";
+	        return utils_1.Utils.format(this._comapiConfig.foundationRestUrls.push, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            sessionId: sessionId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
 	    };
 	    return DeviceManager;
 	})();
@@ -1811,8 +1850,9 @@ var COMAPI =
 
 /***/ },
 /* 11 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
+	var utils_1 = __webpack_require__(9);
 	var FacebookManager = (function () {
 	    /**
 	     * FacebookManager class constructor.
@@ -1830,7 +1870,10 @@ var COMAPI =
 	     * @param {any} [data] - the data to post
 	     */
 	    FacebookManager.prototype.createSendToMessengerState = function (data) {
-	        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/channels/facebook/state";
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.facebook, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
 	        return this._restClient.post(url, {}, data || {});
 	    };
 	    return FacebookManager;
@@ -1869,7 +1912,11 @@ var COMAPI =
 	     * @returns {Promise}
 	     */
 	    ProfileManager.prototype.getProfile = function (id) {
-	        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/profiles/" + id;
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.profile, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            profileId: id,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
 	        return this._restClient.get(url);
 	    };
 	    /**
@@ -1879,7 +1926,10 @@ var COMAPI =
 	     * @returns {Promise}
 	     */
 	    ProfileManager.prototype.queryProfiles = function (query) {
-	        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/profiles";
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.profiles, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
 	        if (query) {
 	            url += ("?" + query);
 	        }
@@ -1903,7 +1953,11 @@ var COMAPI =
 	        if (data.id === undefined) {
 	            data.id = id;
 	        }
-	        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/profiles/" + id;
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.profile, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            profileId: id,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
 	        return this._restClient.put(url, headers, data);
 	    };
 	    /**
@@ -1924,7 +1978,11 @@ var COMAPI =
 	        if (data.id === undefined) {
 	            data.id = id;
 	        }
-	        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/profiles/" + id;
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.profile, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            profileId: id,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
 	        return this._restClient.patch(url, headers, data);
 	    };
 	    return ProfileManager;
@@ -1934,8 +1992,9 @@ var COMAPI =
 
 /***/ },
 /* 13 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
+	var utils_1 = __webpack_require__(9);
 	var MessageManager = (function () {
 	    /**
 	     * MessagesManager class constructor.
@@ -1965,7 +2024,11 @@ var COMAPI =
 	     * @returns {Promise}
 	     */
 	    MessageManager.prototype.getConversationEvents = function (conversationId, from, limit) {
-	        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/events";
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.events, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            conversationId: conversationId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
 	        url += "?from=" + from;
 	        url += "&limit=" + limit;
 	        return this._restClient.get(url)
@@ -1981,7 +2044,11 @@ var COMAPI =
 	     * @returns {Promise}
 	     */
 	    MessageManager.prototype.getConversationMessages = function (conversationId, limit, from) {
-	        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/messages";
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.messages, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            conversationId: conversationId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
 	        url += "?limit=" + limit;
 	        if (from !== undefined) {
 	            url += "&from=" + from;
@@ -2006,7 +2073,12 @@ var COMAPI =
 	            metadata: metadata,
 	            parts: parts,
 	        };
-	        return this._restClient.post(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/messages", {}, request)
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.messages, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            conversationId: conversationId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
+	        return this._restClient.post(url, {}, request)
 	            .then(function (result) {
 	            return Promise.resolve(result.response);
 	        });
@@ -2017,7 +2089,12 @@ var COMAPI =
 	     * @parameter {IConversationMessage} message
 	     */
 	    MessageManager.prototype.sendMessageToConversation = function (conversationId, message) {
-	        return this._restClient.post(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/messages", {}, message)
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.messages, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            conversationId: conversationId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
+	        return this._restClient.post(url, {}, message)
 	            .then(function (result) {
 	            return Promise.resolve(result.response);
 	        });
@@ -2032,7 +2109,12 @@ var COMAPI =
 	        var headers = {
 	            "Content-Type": "application/json",
 	        };
-	        return this._restClient.post(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/messages/statusupdates", headers, statuses)
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.statusUpdates, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            conversationId: conversationId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
+	        return this._restClient.post(url, headers, statuses)
 	            .then(function (result) {
 	            return Promise.resolve(result.response);
 	        });
@@ -2321,6 +2403,7 @@ var COMAPI =
 /***/ function(module, exports, __webpack_require__) {
 
 	var interfaces_1 = __webpack_require__(1);
+	var utils_1 = __webpack_require__(9);
 	var ConversationManager = (function () {
 	    /**
 	     * ConversationManager class constructor.
@@ -2352,7 +2435,11 @@ var COMAPI =
 	     * @returns {Promise}
 	     */
 	    ConversationManager.prototype.createConversation = function (conversationDetails) {
-	        return this._restClient.post(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations", {}, conversationDetails)
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.conversations, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
+	        return this._restClient.post(url, {}, conversationDetails)
 	            .then(function (result) {
 	            result.response._etag = result.headers.ETag;
 	            return Promise.resolve(result.response);
@@ -2376,7 +2463,12 @@ var COMAPI =
 	            name: conversationDetails.name,
 	            roles: conversationDetails.roles,
 	        };
-	        return this._restClient.put(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationDetails.id, headers, args)
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.conversation, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            conversationId: conversationDetails.id,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
+	        return this._restClient.put(url, headers, args)
 	            .then(function (result) {
 	            result.response._etag = result.headers.ETag;
 	            return Promise.resolve(result.response);
@@ -2389,7 +2481,12 @@ var COMAPI =
 	     * @returns {Promise}
 	     */
 	    ConversationManager.prototype.getConversation = function (conversationId) {
-	        return this._restClient.get(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId)
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.conversation, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            conversationId: conversationId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
+	        return this._restClient.get(url)
 	            .then(function (result) {
 	            result.response._etag = result.headers.ETag;
 	            return Promise.resolve(result.response);
@@ -2402,7 +2499,12 @@ var COMAPI =
 	     * @returns {Promise}
 	     */
 	    ConversationManager.prototype.deleteConversation = function (conversationId) {
-	        return this._restClient.delete(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId, {})
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.conversation, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            conversationId: conversationId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
+	        return this._restClient.delete(url, {})
 	            .then(function (result) {
 	            return Promise.resolve(true);
 	        });
@@ -2415,7 +2517,12 @@ var COMAPI =
 	     * @returns {Promise}
 	     */
 	    ConversationManager.prototype.addParticipantsToConversation = function (conversationId, participants) {
-	        return this._restClient.post(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/participants", {}, participants)
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.participants, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            conversationId: conversationId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
+	        return this._restClient.post(url, {}, participants)
 	            .then(function (result) {
 	            return Promise.resolve(true);
 	        });
@@ -2432,7 +2539,12 @@ var COMAPI =
 	        for (var i = 0; i < participants.length; i++) {
 	            query += (i === 0 ? "?id=" + participants[i] : "&id=" + participants[i]);
 	        }
-	        return this._restClient.delete((this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/participants") + query, {})
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.participants, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            conversationId: conversationId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
+	        return this._restClient.delete(url + query, {})
 	            .then(function (result) {
 	            return Promise.resolve(true);
 	        });
@@ -2444,7 +2556,12 @@ var COMAPI =
 	     * @returns {Promise}
 	     */
 	    ConversationManager.prototype.getParticipantsInConversation = function (conversationId) {
-	        return this._restClient.get(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/participants")
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.participants, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            conversationId: conversationId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
+	        return this._restClient.get(url)
 	            .then(function (result) {
 	            return Promise.resolve(result.response);
 	        });
@@ -2456,7 +2573,10 @@ var COMAPI =
 	     * @returns {Promise}
 	     */
 	    ConversationManager.prototype.getConversations = function (scope, profileId) {
-	        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations";
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.conversations, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
 	        if (scope || profileId) {
 	            url += "?";
 	            if (scope !== undefined) {
@@ -2488,7 +2608,11 @@ var COMAPI =
 	                return Promise.resolve(false);
 	            }
 	        }
-	        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/typing";
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.typing, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            conversationId: conversationId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
 	        return this._restClient.post(url, {}, {})
 	            .then(function (result) {
 	            _this.isTypingInfo[conversationId] = new Date().toISOString();
@@ -2512,7 +2636,11 @@ var COMAPI =
 	                return Promise.resolve(false);
 	            }
 	        }
-	        var url = this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/conversations/" + conversationId + "/typing";
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.typing, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            conversationId: conversationId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
 	        return this._restClient.delete(url, {})
 	            .then(function (result) {
 	            _this.isTypingOffInfo[conversationId] = new Date().toISOString();
@@ -3612,6 +3740,7 @@ var COMAPI =
 /***/ function(module, exports, __webpack_require__) {
 
 	var interfaces_1 = __webpack_require__(1);
+	var urlConfig_1 = __webpack_require__(23);
 	var ComapiConfig = (function () {
 	    /**
 	     * ComapiConfig class constructor.
@@ -3626,6 +3755,7 @@ var COMAPI =
 	        this.logPersistence = interfaces_1.LogPersistences.LocalStorage;
 	        this.isTypingTimeout = 10;
 	        this.isTypingOffTimeout = 10;
+	        this.foundationRestUrls = new urlConfig_1.FoundationRestUrls();
 	        this.apiSpaceId = undefined;
 	    }
 	    /**
@@ -3698,6 +3828,16 @@ var COMAPI =
 	        this.logPersistence = logPersistence;
 	        return this;
 	    };
+	    /**
+	     * Function to override foundationRestUrls
+	     * @method ComapiConfig#withFoundationRestUrls
+	     * @param {IFoundationRestUrls} foundationRestUrls - the foundationRestUrls
+	     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+	     */
+	    ComapiConfig.prototype.withFoundationRestUrls = function (foundationRestUrls) {
+	        this.foundationRestUrls = foundationRestUrls;
+	        return this;
+	    };
 	    return ComapiConfig;
 	})();
 	exports.ComapiConfig = ComapiConfig;
@@ -3705,6 +3845,38 @@ var COMAPI =
 
 /***/ },
 /* 23 */
+/***/ function(module, exports) {
+
+	var FoundationRestUrls = (function () {
+	    function FoundationRestUrls() {
+	        // Conversations
+	        this.conversations = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations";
+	        this.conversation = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}";
+	        this.participants = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/participants";
+	        this.typing = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/typing";
+	        // DEVICES
+	        this.push = "{{urlBase}}/apispaces/{{apiSpaceId}}/sessions/{{sessionId}}/push";
+	        // FACEBOOK
+	        this.facebook = "{{urlBase}}/apispaces/{{apiSpaceId}}/channels/facebook/state";
+	        // Messages
+	        this.events = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/events";
+	        this.messages = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/messages";
+	        this.statusUpdates = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/messages/statusupdates";
+	        // Profile
+	        this.profiles = "{{urlBase}}/apispaces/{{apiSpaceId}}/profiles";
+	        this.profile = "{{urlBase}}/apispaces/{{apiSpaceId}}/profiles/{{profileId}}";
+	        // session
+	        this.sessions = "{{urlBase}}/apispaces/{{apiSpaceId}}/sessions";
+	        this.sessionStart = "{{urlBase}}/apispaces/{{apiSpaceId}}/sessions/start";
+	        this.session = "{{urlBase}}/apispaces/{{apiSpaceId}}/sessions/{{sessionId}}";
+	    }
+	    return FoundationRestUrls;
+	})();
+	exports.FoundationRestUrls = FoundationRestUrls;
+	//# sourceMappingURL=urlConfig.js.map
+
+/***/ },
+/* 24 */
 /***/ function(module, exports) {
 
 	var AppMessaging = (function () {
@@ -3933,7 +4105,7 @@ var COMAPI =
 	//# sourceMappingURL=appMessaging.js.map
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports) {
 
 	var Profile = (function () {
@@ -4072,7 +4244,7 @@ var COMAPI =
 	//# sourceMappingURL=profile.js.map
 
 /***/ },
-/* 25 */
+/* 26 */
 /***/ function(module, exports) {
 
 	var Services = (function () {
@@ -4117,7 +4289,7 @@ var COMAPI =
 	//# sourceMappingURL=services.js.map
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports) {
 
 	var Device = (function () {
@@ -4179,7 +4351,7 @@ var COMAPI =
 	//# sourceMappingURL=device.js.map
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports) {
 
 	var Channels = (function () {
@@ -4212,7 +4384,7 @@ var COMAPI =
 	//# sourceMappingURL=channels.js.map
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports) {
 
 	var NetworkManager = (function () {

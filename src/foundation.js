@@ -29,6 +29,7 @@ var services_1 = require("./services");
 var device_1 = require("./device");
 var channels_1 = require("./channels");
 var networkManager_1 = require("./networkManager");
+var urlConfig_1 = require("./urlConfig");
 /*
  * Exports to be added to COMAPI namespace
  */
@@ -88,7 +89,7 @@ var Foundation = (function () {
          * @method Foundation#version
          */
         get: function () {
-            return "1.0.2.27";
+            return "1.0.2.36";
         },
         enumerable: true,
         configurable: true
@@ -101,6 +102,9 @@ var Foundation = (function () {
     Foundation._initialise = function (comapiConfig, doSingleton) {
         if (doSingleton && Foundation._foundation) {
             return Promise.resolve(Foundation._foundation);
+        }
+        if (comapiConfig.foundationRestUrls === undefined) {
+            comapiConfig.foundationRestUrls = new urlConfig_1.FoundationRestUrls();
         }
         if (comapiConfig.logPersistence &&
             comapiConfig.logPersistence === interfaces_1.LogPersistences.IndexedDB) {
