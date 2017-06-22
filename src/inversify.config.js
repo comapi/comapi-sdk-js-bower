@@ -15,7 +15,6 @@ var facebookManager_1 = require("./facebookManager");
 var conversationManager_1 = require("./conversationManager");
 var profileManager_1 = require("./profileManager");
 var messageManager_1 = require("./messageManager");
-var foundation_1 = require("./foundation");
 var container = new inversify_1.Container();
 exports.container = container;
 container.bind("EventManager").to(eventManager_1.EventManager).inSingletonScope();
@@ -31,5 +30,4 @@ container.bind("FacebookManager").to(facebookManager_1.FacebookManager);
 container.bind("ConversationManager").to(conversationManager_1.ConversationManager);
 container.bind("ProfileManager").to(profileManager_1.ProfileManager);
 container.bind("MessageManager").to(messageManager_1.MessageManager);
-container.bind("Foundation").to(foundation_1.Foundation);
 //# sourceMappingURL=inversify.config.js.map

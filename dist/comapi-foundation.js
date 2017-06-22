@@ -1437,7 +1437,7 @@ var COMAPI =
 	    };
 	    Object.defineProperty(Foundation, "version", {
 	        get: function () {
-	            return "1.0.2.104";
+	            return "1.0.2.107";
 	        },
 	        enumerable: true,
 	        configurable: true
@@ -1465,7 +1465,7 @@ var COMAPI =
 	                return indexedDBLogger_2.purge(purgeDate);
 	            })
 	                .then(function () {
-	                var foundation = inversify_config_1.container.get("Foundation");
+	                var foundation = foundationFactory(comapiConfig, indexedDBLogger_2);
 	                if (doSingleton) {
 	                    Foundation_1._foundation = foundation;
 	                }
@@ -1473,11 +1473,27 @@ var COMAPI =
 	            });
 	        }
 	        else {
-	            var foundation = inversify_config_1.container.get("Foundation");
+	            var foundation = foundationFactory(comapiConfig);
 	            if (doSingleton) {
 	                Foundation_1._foundation = foundation;
 	            }
 	            return Promise.resolve(foundation);
+	        }
+	        function foundationFactory(config, indexedDBLogger) {
+	            var eventManager = inversify_config_1.container.get("EventManager");
+	            var localStorageData = inversify_config_1.container.get("LocalStorageData");
+	            var logger = inversify_config_1.container.get("Logger");
+	            if (config.logLevel) {
+	                logger.logLevel = config.logLevel;
+	            }
+	            var networkManager = inversify_config_1.container.get("NetworkManager");
+	            var deviceManager = inversify_config_1.container.get("DeviceManager");
+	            var facebookManager = inversify_config_1.container.get("FacebookManager");
+	            var conversationManager = inversify_config_1.container.get("ConversationManager");
+	            var profileManager = inversify_config_1.container.get("ProfileManager");
+	            var messageManager = inversify_config_1.container.get("MessageManager");
+	            var foundation = new Foundation_1(eventManager, logger, localStorageData, networkManager, deviceManager, facebookManager, conversationManager, profileManager, messageManager, config);
+	            return foundation;
 	        }
 	    };
 	    Foundation.prototype.startSession = function () {
@@ -4905,7 +4921,6 @@ var COMAPI =
 	var conversationManager_1 = __webpack_require__(70);
 	var profileManager_1 = __webpack_require__(71);
 	var messageManager_1 = __webpack_require__(72);
-	var foundation_1 = __webpack_require__(3);
 	var container = new inversify_1.Container();
 	exports.container = container;
 	container.bind("EventManager").to(eventManager_1.EventManager).inSingletonScope();
@@ -4921,7 +4936,6 @@ var COMAPI =
 	container.bind("ConversationManager").to(conversationManager_1.ConversationManager);
 	container.bind("ProfileManager").to(profileManager_1.ProfileManager);
 	container.bind("MessageManager").to(messageManager_1.MessageManager);
-	container.bind("Foundation").to(foundation_1.Foundation);
 	//# sourceMappingURL=inversify.config.js.map
 
 /***/ }),
@@ -5630,7 +5644,7 @@ var COMAPI =
 	            platform: "javascript",
 	            platformVersion: browserInfo.version,
 	            sdkType: "native",
-	            sdkVersion: "1.0.2.104"
+	            sdkVersion: "1.0.2.107"
 	        };
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,

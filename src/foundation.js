@@ -61,7 +61,7 @@ var Foundation = Foundation_1 = (function () {
     };
     Object.defineProperty(Foundation, "version", {
         get: function () {
-            return "1.0.2.104";
+            return "1.0.2.107";
         },
         enumerable: true,
         configurable: true
@@ -89,7 +89,7 @@ var Foundation = Foundation_1 = (function () {
                 return indexedDBLogger_2.purge(purgeDate);
             })
                 .then(function () {
-                var foundation = inversify_config_1.container.get("Foundation");
+                var foundation = foundationFactory(comapiConfig, indexedDBLogger_2);
                 if (doSingleton) {
                     Foundation_1._foundation = foundation;
                 }
@@ -97,11 +97,27 @@ var Foundation = Foundation_1 = (function () {
             });
         }
         else {
-            var foundation = inversify_config_1.container.get("Foundation");
+            var foundation = foundationFactory(comapiConfig);
             if (doSingleton) {
                 Foundation_1._foundation = foundation;
             }
             return Promise.resolve(foundation);
+        }
+        function foundationFactory(config, indexedDBLogger) {
+            var eventManager = inversify_config_1.container.get("EventManager");
+            var localStorageData = inversify_config_1.container.get("LocalStorageData");
+            var logger = inversify_config_1.container.get("Logger");
+            if (config.logLevel) {
+                logger.logLevel = config.logLevel;
+            }
+            var networkManager = inversify_config_1.container.get("NetworkManager");
+            var deviceManager = inversify_config_1.container.get("DeviceManager");
+            var facebookManager = inversify_config_1.container.get("FacebookManager");
+            var conversationManager = inversify_config_1.container.get("ConversationManager");
+            var profileManager = inversify_config_1.container.get("ProfileManager");
+            var messageManager = inversify_config_1.container.get("MessageManager");
+            var foundation = new Foundation_1(eventManager, logger, localStorageData, networkManager, deviceManager, facebookManager, conversationManager, profileManager, messageManager, config);
+            return foundation;
         }
     };
     Foundation.prototype.startSession = function () {
