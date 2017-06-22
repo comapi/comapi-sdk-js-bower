@@ -1,79 +1,49 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var inversify_1 = require("inversify");
 var interfaces_1 = require("./interfaces");
+var indexedDBLogger_1 = require("./indexedDBLogger");
 var Logger = (function () {
-    /**
-     * Logger class constructor.
-     * @class Logger
-     * @ignore
-     * @classdesc Class that implements all the Logger functionality.
-     * @param {IEventManager} [eventManager] - event manager interface - for publishing log events
-     * @param {ILocalStorageData} [localStorageData] - local storage interface  - for publishing log events
-     * @param {IndexedDB} [indexedDB] - indexedDB interface - assumed to be open and ready to go
-     */
     function Logger(_eventManager, _localStorageData, _indexedDB) {
         this._eventManager = _eventManager;
         this._localStorageData = _localStorageData;
         this._indexedDB = _indexedDB;
         this._logLevel = interfaces_1.LogLevels.Debug;
-        // used as an id to identify each "session" - it will change on page reload and if 2 windows are open you can identify each log entry for diagnostics
         this._uid = ("0000" + (Math.random() * Math.pow(36, 4) << 0).toString(36)).slice(-4);
         this._maxLocalStorageLogSize = 1024;
         this._localStorageKey = "rollingLogfile";
     }
     Object.defineProperty(Logger.prototype, "logLevel", {
-        /**
-         * Getter to get the log level
-         * @method Logger#logLevel
-         * @returns {LogLevels} - returns the current log level
-         */
         get: function () {
             return this._logLevel;
         },
-        /**
-         * Setter to set the log level
-         * @method Logger#logLevel
-         * @param {LogLevels} theLogLevel - the log level
-         */
         set: function (theLogLevel) {
             this._logLevel = theLogLevel;
         },
         enumerable: true,
         configurable: true
     });
-    /**
-     * Write custon content to the diagnostic log of type info.
-     * @method Logger#log
-     * @param  {String} message
-     * @param  {Object} [data]
-     * @returns {Promise} - returns promise
-     */
     Logger.prototype.log = function (message, data) {
         return this._log(interfaces_1.LogLevels.Debug, message, data);
     };
-    /**
-     * Write custon content to the diagnostic log of type warning.
-     * @method Logger#warn
-     * @param  {String} message
-     * @param  {Object} [data]
-     * @returns {Promise} - returns promise
-     */
     Logger.prototype.warn = function (message, data) {
         return this._log(interfaces_1.LogLevels.Warn, message, data);
     };
-    /**
-     * Write custon content to the diagnostic log of type error.
-     * @method Logger#error
-     * @param  {String} message
-     * @param  {Object} [data]
-     * @returns {Promise} - returns promise
-     */
     Logger.prototype.error = function (message, data) {
         return this._log(interfaces_1.LogLevels.Error, message, data);
     };
-    /**
-     * Method to get the current logfile
-     * @method Logger#getLog
-     * @returns {Promise} - returns promise
-     */
     Logger.prototype.getLog = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
@@ -92,11 +62,6 @@ var Logger = (function () {
             }
         });
     };
-    /**
-     * Method to clear the current logfile.
-     * @method Logger#clearLog
-     * @returns {Promise} - returns promise
-     */
     Logger.prototype.clearLog = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
@@ -117,11 +82,6 @@ var Logger = (function () {
             }
         });
     };
-    /**
-     * Private method to get a string representation of a log level
-     * @param {LogLevels} level
-     * @returns {String}
-     */
     Logger.prototype._stringForLogLevel = function (level) {
         switch (level) {
             case interfaces_1.LogLevels.Debug:
@@ -134,13 +94,6 @@ var Logger = (function () {
                 return "?";
         }
     };
-    /**
-     * Private method to log a message
-     * @param  {LogLevels} level
-     * @param  {string} message
-     * @param  {Object} [data]
-     * @returns Promise
-     */
     Logger.prototype._log = function (level, message, data) {
         var _this = this;
         return new Promise(function (resolve, reject) {
@@ -175,7 +128,6 @@ var Logger = (function () {
                     });
                 }
                 else if (_this._localStorageData) {
-                    // fall back to using local storage
                     var log = _this._localStorageData.getString(_this._localStorageKey);
                     if (log !== null) {
                         log += formattedMessage;
@@ -199,6 +151,13 @@ var Logger = (function () {
         });
     };
     return Logger;
-})();
+}());
+Logger = __decorate([
+    inversify_1.injectable(),
+    __param(0, inversify_1.inject("EventManager")),
+    __param(1, inversify_1.inject("LocalStorageData")),
+    __param(2, inversify_1.inject("IndexedDBLogger")), __param(2, inversify_1.optional()),
+    __metadata("design:paramtypes", [Object, Object, indexedDBLogger_1.IndexedDBLogger])
+], Logger);
 exports.Logger = Logger;
 //# sourceMappingURL=logger.js.map

@@ -1,15 +1,8 @@
-/**
- * @class MessageStatusBuilder
- * @classdesc Class that implements MessageStatusBuilder
- */
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var MessageStatusBuilder = (function () {
     function MessageStatusBuilder() {
     }
-    /**
-     * @method MessageStatusBuilder#deliveredStatusUpdate
-     * @param {String} messageId
-     * @returns {IMessageStatus} - Returns Mesage status object
-     */
     MessageStatusBuilder.prototype.deliveredStatusUpdate = function (messageId) {
         return {
             messageIds: [messageId],
@@ -17,11 +10,6 @@ var MessageStatusBuilder = (function () {
             timestamp: new Date().toISOString()
         };
     };
-    /**
-     * @method MessageStatusBuilder#deliveredStatusUpdates
-     * @param {String[]} messageIds
-     * @returns {IMessageStatus} - Returns Mesage status object
-     */
     MessageStatusBuilder.prototype.deliveredStatusUpdates = function (messageIds) {
         return {
             messageIds: messageIds,
@@ -29,11 +17,6 @@ var MessageStatusBuilder = (function () {
             timestamp: new Date().toISOString()
         };
     };
-    /**
-     * @method MessageStatusBuilder#readStatusUpdate
-     * @param {String} messageId
-     * @returns {IMessageStatus} - Returns Mesage status object
-     */
     MessageStatusBuilder.prototype.readStatusUpdate = function (messageId) {
         return {
             messageIds: [messageId],
@@ -41,11 +24,6 @@ var MessageStatusBuilder = (function () {
             timestamp: new Date().toISOString()
         };
     };
-    /**
-     * @method MessageStatusBuilder#readStatusUpdates
-     * @param {String[]} messageIds
-     * @returns {IMessageStatus} - Returns Mesage status object
-     */
     MessageStatusBuilder.prototype.readStatusUpdates = function (messageIds) {
         return {
             messageIds: messageIds,
@@ -54,6 +32,6 @@ var MessageStatusBuilder = (function () {
         };
     };
     return MessageStatusBuilder;
-})();
+}());
 exports.MessageStatusBuilder = MessageStatusBuilder;
 //# sourceMappingURL=messageStatusBuilder.js.map

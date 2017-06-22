@@ -1,24 +1,17 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 ;
 var LocalStorageOrphanedEventManager = (function () {
-    /**
-     *
-     */
     function LocalStorageOrphanedEventManager(_localStorage) {
         this._localStorage = _localStorage;
         this._orphanedEevnts = {};
         this._orphanedEevnts = this._localStorage.getObject("orphanedEevnts") || {};
     }
-    /**
-     *
-     */
     LocalStorageOrphanedEventManager.prototype.clearAll = function () {
         this._orphanedEevnts = {};
         this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
         return Promise.resolve(true);
     };
-    /**
-     *
-     */
     LocalStorageOrphanedEventManager.prototype.clear = function (conversationId) {
         this._orphanedEevnts[conversationId] = {
             orphanedEvents: []
@@ -26,16 +19,10 @@ var LocalStorageOrphanedEventManager = (function () {
         this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
         return Promise.resolve(true);
     };
-    /**
-     *
-     */
     LocalStorageOrphanedEventManager.prototype.getContinuationToken = function (conversationId) {
         var container = this._orphanedEevnts[conversationId];
         return Promise.resolve(container ? container.continuationToken : null);
     };
-    /**
-     *
-     */
     LocalStorageOrphanedEventManager.prototype.setContinuationToken = function (conversationId, continuationToken) {
         var _info = this._orphanedEevnts[conversationId];
         if (_info) {
@@ -49,18 +36,12 @@ var LocalStorageOrphanedEventManager = (function () {
         }
         return Promise.resolve(true);
     };
-    /**
-     *
-     */
     LocalStorageOrphanedEventManager.prototype.addOrphanedEvent = function (event) {
         var info = this._orphanedEevnts[event.conversationId];
         if (info) {
-            // check for dupe 
             var found = info.orphanedEvents.filter(function (e) { return e.eventId === event.eventId; });
             if (found.length === 0) {
-                // insert
                 info.orphanedEvents.unshift(event);
-                // sort
                 info.orphanedEvents = info.orphanedEvents.sort(function (e1, e2) {
                     if (e1.conversationEventId > e2.conversationEventId) {
                         return 1;
@@ -72,7 +53,6 @@ var LocalStorageOrphanedEventManager = (function () {
                         return 0;
                     }
                 });
-                // save
                 this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
             }
         }
@@ -80,9 +60,6 @@ var LocalStorageOrphanedEventManager = (function () {
             return Promise.reject({ message: "No container for conversation " + event.conversationId });
         }
     };
-    /**
-     *
-     */
     LocalStorageOrphanedEventManager.prototype.removeOrphanedEvent = function (event) {
         var info = this._orphanedEevnts[event.conversationId];
         if (info) {
@@ -93,7 +70,6 @@ var LocalStorageOrphanedEventManager = (function () {
                     break;
                 }
             }
-            // save
             this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
             return Promise.resolve(true);
         }
@@ -101,14 +77,11 @@ var LocalStorageOrphanedEventManager = (function () {
             return Promise.reject({ message: "No container for conversation " + event.conversationId });
         }
     };
-    /**
-     *
-     */
     LocalStorageOrphanedEventManager.prototype.getOrphanedEvents = function (conversationId) {
         var info = this._orphanedEevnts[conversationId];
         return Promise.resolve(info ? info.orphanedEvents : []);
     };
     return LocalStorageOrphanedEventManager;
-})();
+}());
 exports.LocalStorageOrphanedEventManager = LocalStorageOrphanedEventManager;
 //# sourceMappingURL=localStorageOrphanedEventManager.js.map

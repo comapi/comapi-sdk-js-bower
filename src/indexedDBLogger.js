@@ -1,15 +1,6 @@
-/*
- * http://blog.vanamco.com/indexeddb-fundamentals-plus-a-indexeddb-example-tutorial/
- * http://code.tutsplus.com/tutorials/working-with-indexeddb--net-34673
- */
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var IndexedDBLogger = (function () {
-    /**
-     * IndexedDBLogger class constructor.
-     * @class IndexedDBLogger
-     * @ignore
-     * @classdesc Class that implements an IndexedDBLogger.
-     * @param {string} name - database name (for overriding in unit tests)
-     */
     function IndexedDBLogger(name) {
         this.idbSupported = "indexedDB" in window;
         this._name = "Comapi";
@@ -19,11 +10,6 @@ var IndexedDBLogger = (function () {
             this._name = name;
         }
     }
-    /**
-     * Method to open a connection to the database
-     * @method IndexedDBLogger#openDatabase
-     * @returns {Promise} - returns a promise
-     */
     IndexedDBLogger.prototype.openDatabase = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
@@ -51,29 +37,21 @@ var IndexedDBLogger = (function () {
             }
         });
     };
-    /**
-     * Removes all records older than specified date
-     * @method IndexedDBLogger#purge
-     * @param {Date} date threshold (messages older than this will be deleted)
-     * @returns {Promise} - returns a promise
-     */
     IndexedDBLogger.prototype.purge = function (when) {
         var _this = this;
         return new Promise(function (resolve, reject) {
             if (_this._database) {
                 var transaction = _this._database.transaction([_this._store], "readwrite");
-                var objectStore = transaction.objectStore(_this._store);
-                var index = objectStore.index("created");
-                // we want all keys less than this date
+                var objectStore_1 = transaction.objectStore(_this._store);
+                var index = objectStore_1.index("created");
                 var keyRangeValue = IDBKeyRange.upperBound(when.valueOf());
                 index.openCursor(keyRangeValue).onsuccess = function (event) {
                     var cursor = event.target.result;
                     if (cursor) {
-                        objectStore["delete"](cursor.primaryKey);
+                        objectStore_1["delete"](cursor.primaryKey);
                         cursor["continue"]();
                     }
                     else {
-                        // should be all deleted 
                         resolve(true);
                     }
                 };
@@ -83,11 +61,6 @@ var IndexedDBLogger = (function () {
             }
         });
     };
-    /**
-     * Method to delete a database
-     * @method IndexedDBLogger#deleteDatabase
-     * @returns {Promise} - returns a promise
-     */
     IndexedDBLogger.prototype.deleteDatabase = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
@@ -105,23 +78,15 @@ var IndexedDBLogger = (function () {
             };
         });
     };
-    /**
-     * Method to clear the data in an object store
-     * @method IndexedDBLogger#clearData
-     * @returns {Promise} - returns a promise
-     */
     IndexedDBLogger.prototype.clearData = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
             if (_this._database) {
-                // open a read/write db transaction, ready for clearing the data
-                var transaction = _this._database.transaction([_this._store], "readwrite");
-                transaction.onerror = function (event) {
-                    console.error("Transaction not opened due to error: " + transaction.error);
+                var transaction_1 = _this._database.transaction([_this._store], "readwrite");
+                transaction_1.onerror = function (event) {
+                    console.error("Transaction not opened due to error: " + transaction_1.error);
                 };
-                // create an object store on the transaction
-                var objectStore = transaction.objectStore(_this._store);
-                // clear all the data out of the object store
+                var objectStore = transaction_1.objectStore(_this._store);
                 var objectStoreRequest = objectStore.clear();
                 objectStoreRequest.onsuccess = function (event) {
                     resolve(true);
@@ -135,13 +100,6 @@ var IndexedDBLogger = (function () {
             }
         });
     };
-    /**
-     * Method to get all or the first n objects in an object store
-     * @method IndexedDBLogger#getData
-     * @param {number} [count] - number of records to query - retrieves all if not specified
-     * @param {boolean} [getIndexes] - whether to add the key into the returned record - doesn'tadd by default
-     * @returns {Promise} - returns a promise
-     */
     IndexedDBLogger.prototype.getData = function (count, getIndexes) {
         var _this = this;
         return new Promise(function (resolve, reject) {
@@ -149,26 +107,26 @@ var IndexedDBLogger = (function () {
                 var transaction = _this._database.transaction([_this._store], "readonly");
                 var objectStore = transaction.objectStore(_this._store);
                 var cursorRequest = objectStore.openCursor();
-                var numRetrieved = 0;
-                var data = [];
+                var numRetrieved_1 = 0;
+                var data_1 = [];
                 cursorRequest.onsuccess = function (event) {
                     var cursor = event.target.result;
-                    numRetrieved++;
+                    numRetrieved_1++;
                     if (cursor) {
                         var record = cursor.value;
                         if (getIndexes === true) {
                             record.key = cursor.key;
                         }
-                        data.push(cursor.value);
-                        if (numRetrieved && numRetrieved >= count) {
-                            resolve(data);
+                        data_1.push(cursor.value);
+                        if (numRetrieved_1 && numRetrieved_1 >= count) {
+                            resolve(data_1);
                         }
                         else {
                             cursor.continue();
                         }
                     }
                     else {
-                        resolve(data);
+                        resolve(data_1);
                     }
                 };
                 cursorRequest.onerror = function (e) {
@@ -180,23 +138,18 @@ var IndexedDBLogger = (function () {
             }
         });
     };
-    /**
-     * Method to get the count of objects in the object store
-     * @method IndexedDBLogger#getCount
-     * @returns {Promise} - returns a promise
-     */
     IndexedDBLogger.prototype.getCount = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
             if (_this._database) {
                 var transaction = _this._database.transaction([_this._store], "readonly");
                 var objectStore = transaction.objectStore(_this._store);
-                var count = objectStore.count();
-                count.onerror = function (e) {
+                var count_1 = objectStore.count();
+                count_1.onerror = function (e) {
                     reject({ message: "Failed to get count: " + e.target.error.name });
                 };
-                count.onsuccess = function () {
-                    resolve(count.result);
+                count_1.onsuccess = function () {
+                    resolve(count_1.result);
                 };
             }
             else {
@@ -204,36 +157,23 @@ var IndexedDBLogger = (function () {
             }
         });
     };
-    /**
-     * Method to close a database connection
-     * @method IndexedDBLogger#closeDatabase
-     */
     IndexedDBLogger.prototype.closeDatabase = function () {
         if (this._database) {
             this._database.close();
         }
     };
-    /**
-     * Method to add a record to a previously opened indexed database
-     * @method IndexedDBLogger#addRecord
-     * @param {Object} entity - The entity
-     * @returns {Promise} - returns a promise
-     */
     IndexedDBLogger.prototype.addRecord = function (entity) {
         var _this = this;
         return new Promise(function (resolve, reject) {
             if (_this._database) {
                 var transaction = _this._database.transaction([_this._store], "readwrite");
                 var store = transaction.objectStore(_this._store);
-                // Perform the add
                 var request = store.add(entity);
                 request.onerror = function (e) {
                     console.error("Error", e.target.error.name);
                     reject({ message: "add failed: " + e.target.error.name });
                 };
                 request.onsuccess = function (e) {
-                    // http://stackoverflow.com/questions/12502830/how-to-return-auto-increment-id-from-objectstore-put-in-an-indexeddb
-                    // returns auto incremented id ...
                     resolve(e.target.result);
                 };
             }
@@ -243,6 +183,6 @@ var IndexedDBLogger = (function () {
         });
     };
     return IndexedDBLogger;
-})();
+}());
 exports.IndexedDBLogger = IndexedDBLogger;
 //# sourceMappingURL=indexedDBLogger.js.map

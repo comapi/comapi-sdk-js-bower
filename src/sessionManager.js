@@ -1,15 +1,20 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var inversify_1 = require("inversify");
 var utils_1 = require("./utils");
 var SessionManager = (function () {
-    /**
-     * SessionManager class constructor.
-     * @class SessionManager
-     * @ignore
-     * @classdesc Class that implements all the SessionManager functionality.
-     * @parameter {ILogger} logger
-     * @parameter {IRestClient} restClient
-     * @parameter {ILocalStorageData} localStorageData
-     * @parameter {IComapiConfig} comapiConfig
-     */
     function SessionManager(_logger, _restClient, _localStorageData, _comapiConfig) {
         this._logger = _logger;
         this._restClient = _restClient;
@@ -20,15 +25,9 @@ var SessionManager = (function () {
             this._deviceId = utils_1.Utils.uuid();
             _localStorageData.setString("deviceId", this._deviceId);
         }
-        // Load in cached session on startup
         this._getSession();
     }
     Object.defineProperty(SessionManager.prototype, "sessionInfo", {
-        /**
-         * Getter to get the current sessionInfo
-         * @method SessionManager#sessionInfo
-         * @returns {ISessionInfo}
-         */
         get: function () {
             return this._sessionInfo;
         },
@@ -36,11 +35,6 @@ var SessionManager = (function () {
         configurable: true
     });
     Object.defineProperty(SessionManager.prototype, "expiry", {
-        /**
-         * Getter to get the current sessionInfo expiry time
-         * @method SessionManager#expiry
-         * @returns {string}
-         */
         get: function () {
             return this._sessionInfo.session.expiresOn;
         },
@@ -48,12 +42,8 @@ var SessionManager = (function () {
         configurable: true
     });
     Object.defineProperty(SessionManager.prototype, "isActive", {
-        /**
-         * @method SessionManager#isActive
-         */
         get: function () {
             var result = false;
-            // check we have a token and also that the token hasn't expired ...
             if (this._sessionInfo) {
                 var now = new Date();
                 var expiry = new Date(this._sessionInfo.session.expiresOn);
@@ -69,11 +59,6 @@ var SessionManager = (function () {
         enumerable: true,
         configurable: true
     });
-    /**
-     * Function to get auth token
-     * @method SessionManager#token
-     * @returns {Promise} - returns the auth token via a promise
-     */
     SessionManager.prototype.getValidToken = function () {
         return this.isActive
             ? Promise.resolve(this._sessionInfo.token)
@@ -82,12 +67,6 @@ var SessionManager = (function () {
                 return Promise.resolve(sessionInfo.token);
             });
     };
-    /**
-     * Function to start a new session
-     * @method SessionManager#startSession
-     * @param {any} userDefined -  Additional client-specific information
-     * @returns {Promise} - Returns a promise
-     */
     SessionManager.prototype.startSession = function () {
         var _this = this;
         var self = this;
@@ -97,25 +76,21 @@ var SessionManager = (function () {
                 resolve(_this._getSession());
             }
             else {
-                // call comapi service startAuth                
                 _this._startAuth().then(function (sessionStartResponse) {
                     var authChallengeOptions = {
                         nonce: sessionStartResponse.nonce
                     };
-                    // call integrators auth challenge method
                     self._comapiConfig.authChallenge(authChallengeOptions, function (jwt) {
                         if (jwt) {
                             self._createAuthenticatedSession(jwt, sessionStartResponse.authenticationId, {})
                                 .then(function (sessionInfo) {
                                 self._setSession(sessionInfo);
-                                // pass back to client
                                 resolve(sessionInfo);
                             }).catch(function (error) {
                                 reject(error);
                             });
                         }
                         else {
-                            // client failed to fulfil the auth challenge for some reason ...
                             reject({ message: "Failed to get a JWT from authChallenge", statusCode: 401 });
                         }
                     });
@@ -123,11 +98,6 @@ var SessionManager = (function () {
             }
         });
     };
-    /**
-     * Function to end the current session
-     * @method SessionManager#endSession
-     * @returns {Promise} - Returns a promise
-     */
     SessionManager.prototype.endSession = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
@@ -146,23 +116,16 @@ var SessionManager = (function () {
             }
         });
     };
-    /**
-     * Internal function to create an authenticated session
-     * @param (String) jwt - the jwt retrieved from the integrator
-     * @param (String) authenticationId - the authenticationId given by comapi back end
-     * @param (Object) deviceInfo - the deviceInfo
-     * @returns {Promise} - Returns a promise
-     */
     SessionManager.prototype._createAuthenticatedSession = function (jwt, authenticationId, deviceInfo) {
         var browserInfo = utils_1.Utils.getBrowserInfo();
         var data = {
             authenticationId: authenticationId,
             authenticationToken: jwt,
             deviceId: this._deviceId,
-            platform: /*browserInfo.name*/ "javascript",
+            platform: "javascript",
             platformVersion: browserInfo.version,
-            sdkType: /*"javascript"*/ "native",
-            sdkVersion: "1.0.2.36"
+            sdkType: "native",
+            sdkVersion: "1.0.2.104"
         };
         var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
             apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -173,10 +136,6 @@ var SessionManager = (function () {
             return Promise.resolve(result.response);
         });
     };
-    /**
-     * Internal function to start an authenticated session
-     * @returns {Promise} - Returns a promise
-     */
     SessionManager.prototype._startAuth = function () {
         var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessionStart, {
             apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -187,10 +146,6 @@ var SessionManager = (function () {
             return Promise.resolve(result.response);
         });
     };
-    /**
-     * Internal function to end an authenticated session
-     * @returns {Promise} - Returns a promise
-     */
     SessionManager.prototype._endAuth = function () {
         var headers = {
             "Content-Type": "application/json",
@@ -205,10 +160,6 @@ var SessionManager = (function () {
             return Promise.resolve(true);
         });
     };
-    /**
-     * Internal function to load in an existing session if available
-     * @returns {ISessionInfo} - returns session info if available
-     */
     SessionManager.prototype._getSession = function () {
         var sessionInfo = this._localStorageData.getObject("session");
         if (sessionInfo) {
@@ -216,10 +167,6 @@ var SessionManager = (function () {
         }
         return sessionInfo;
     };
-    /**
-     * Internal function to load in an existing session if available
-     * @returns {boolean} - returns boolean reault
-     */
     SessionManager.prototype._setSession = function (sessionInfo) {
         var expiry = new Date(sessionInfo.session.expiresOn);
         var now = new Date();
@@ -229,21 +176,22 @@ var SessionManager = (function () {
         this._sessionInfo = sessionInfo;
         this._localStorageData.setObject("session", sessionInfo);
     };
-    /**
-     * Internal function to remove an existing session
-     * @returns {boolean} - returns boolean reault
-     */
     SessionManager.prototype._removeSession = function () {
         this._localStorageData.remove("session");
         this._sessionInfo = undefined;
     };
-    /**
-     *
-     */
     SessionManager.prototype.getAuthHeader = function () {
         return "Bearer " + this.sessionInfo.token;
     };
     return SessionManager;
-})();
+}());
+SessionManager = __decorate([
+    inversify_1.injectable(),
+    __param(0, inversify_1.inject("Logger")),
+    __param(1, inversify_1.inject("RestClient")),
+    __param(2, inversify_1.inject("LocalStorageData")),
+    __param(3, inversify_1.inject("ComapiConfig")),
+    __metadata("design:paramtypes", [Object, Object, Object, Object])
+], SessionManager);
 exports.SessionManager = SessionManager;
 //# sourceMappingURL=sessionManager.js.map

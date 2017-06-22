@@ -1,43 +1,37 @@
-// https://gist.github.com/strife25/9310539
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var inversify_1 = require("inversify");
 var WebSocketManager = (function () {
-    /**
-     * WebSocketManager class constructor.
-     * @class  WebSocketManager
-     * @ignore
-     * @classdesc Class that implements WebSocketManager
-     * @param {ILogger} _logger
-     * @param {ILocalStorageData} _localStorageData
-     * @param {IComapiConfig} _comapiConfig
-     * @param {ISessionManager} _sessionManager
-     * @param {IEventManager} _eventManager
-     */
     function WebSocketManager(_logger, _localStorageData, _comapiConfig, _sessionManager, _eventManager) {
         this._logger = _logger;
         this._localStorageData = _localStorageData;
         this._comapiConfig = _comapiConfig;
         this._sessionManager = _sessionManager;
         this._eventManager = _eventManager;
-        // ready state code mapping ...
         this.readystates = [
             "Connecting",
             "Open",
             "Closing",
-            "Closed" // 3
+            "Closed"
         ];
         this.manuallyClosed = false;
-        // current state of socket connetcion
         this.connected = false;
-        // whether socket ever connected - set to true on first connect and used to determine whether to reconnect on close if not a manual close
         this.didConnect = false;
         this.attempts = 1;
-        // TODO: make configurable ...
-        this.echoIntervalTimeout = 1000 * 60 * 3; // 3 minutes
+        this.echoIntervalTimeout = 1000 * 60 * 3;
     }
-    /**
-     * Function to connect websocket
-     * @method WebSocketManager#connect
-     * @returns {Promise}
-     */
     WebSocketManager.prototype.connect = function () {
         var _this = this;
         this._logger.log("WebSocketManager.connect();");
@@ -47,7 +41,6 @@ var WebSocketManager = (function () {
                 _this._sessionManager.getValidToken()
                     .then(function (token) {
                     _this._logger.log("WebSocketManager.connect() - got auth token", token);
-                    // reset this in case someone is opening / closing
                     _this.manuallyClosed = false;
                     var url = _this._comapiConfig.webSocketBase + "/apispaces/" + _this._comapiConfig.apiSpaceId + "/socket";
                     var queryString = "?token=" + token;
@@ -55,9 +48,6 @@ var WebSocketManager = (function () {
                     _this._logger.log("connecting ...", fullUrl);
                     _this.webSocket = new WebSocket(fullUrl);
                     _this.echoIntervalId = setInterval(function () { return _this.echo(); }, _this.echoIntervalTimeout);
-                    /**
-                     *
-                     */
                     _this.webSocket.onopen = function () {
                         _this._logger.log("websocket onopen");
                         _this.connected = true;
@@ -66,7 +56,6 @@ var WebSocketManager = (function () {
                             _this._logger.log("resolving connect() promise");
                             resolve(true);
                         }
-                        // this._eventManager.publishLocalEvent("WebsocketOpened", { timestamp: new Date().toISOString() });
                     };
                     _this.webSocket.onerror = function (event) {
                         _this._logger.log("websocket onerror - readystate: " + _this.readystates[_this.webSocket.readyState]);
@@ -88,18 +77,14 @@ var WebSocketManager = (function () {
                         _this.connected = false;
                         _this.webSocket = undefined;
                         _this._logger.log("WebSocket Connection closed.");
-                        // this._eventManager.publishLocalEvent("WebsocketClosed", { timestamp: new Date().toISOString() });
                         if (_this.didConnect === false) {
                             reject();
                         }
-                        // only retry if we didng manually close it and it actually connected in the first place
                         if (!_this.manuallyClosed && _this.didConnect) {
                             _this._logger.log("socket not manually closed, reconnecting ...");
                             var time = _this.generateInterval(_this.attempts);
                             setTimeout(function () {
-                                // We've tried to reconnect so increment the attempts by 1
                                 _this.attempts++;
-                                // Connection has closed so try to reconnect every 10 seconds.
                                 _this._logger.log("reconnecting ...");
                                 _this.connect();
                             }, time);
@@ -117,49 +102,26 @@ var WebSocketManager = (function () {
             }
         });
     };
-    /**
-     * Function to send some data from the client down the websocket
-     * @method WebSocketManager#send
-     * @param {any} data -  the data to send
-     * @returns {Promise}
-     */
     WebSocketManager.prototype.send = function (data) {
         if (this.webSocket) {
             this.webSocket.send(JSON.stringify(data));
         }
     };
-    /**
-     * Function to determine te connection state of the websocket - rturns hether ther socket `did` connect rather than the current status as there is reconnection logic running.
-     * @method WebSocketManager#isConnected
-     * @returns {boolean}
-     */
     WebSocketManager.prototype.isConnected = function () {
         return this.didConnect;
     };
-    /**
-     * Function to determine te whether there is an ative socket or not (connected or disconnected)
-     * @method WebSocketManager#hasSocket
-     * @returns {boolean}
-     */
     WebSocketManager.prototype.hasSocket = function () {
         return this.webSocket ? true : false;
     };
-    /**
-     * Function to disconnect websocket
-     * @method WebSocketManager#disconnect
-     * @returns {Promise}
-     */
     WebSocketManager.prototype.disconnect = function () {
         var _this = this;
         this._logger.log("WebSocketManager.disconnect();");
         return new Promise(function (resolve, reject) {
             if (_this.webSocket) {
-                // overwrite the onclose callback so we can use it ... 
                 _this.webSocket.onclose = function () {
                     _this.connected = false;
                     _this.didConnect = false;
                     _this._logger.log("socket closed.");
-                    // TODO: will this crater it ?
                     _this.webSocket = undefined;
                     resolve(true);
                 };
@@ -172,25 +134,15 @@ var WebSocketManager = (function () {
             }
         });
     };
-    /**
-     * Function to generate an interval for reconnecton purposes
-     * @method WebSocketManager#generateInterval
-     * @param {number} k
-     * @returns {Promise}
-     */
     WebSocketManager.prototype.generateInterval = function (k) {
         var maxInterval = (Math.pow(2, k) - 1) * 1000;
         if (maxInterval > 30 * 1000) {
-            maxInterval = 30 * 1000; // If the generated interval is more than 30 seconds, truncate it down to 30 seconds.
+            maxInterval = 30 * 1000;
         }
-        // generate the interval to a random number between 0 and the maxInterval determined from above
         var interval = Math.random() * maxInterval;
         this._logger.log("generateInterval() => " + interval);
         return interval;
     };
-    /**
-     *
-     */
     WebSocketManager.prototype.echo = function () {
         if (this.connected) {
             this.send({
@@ -200,11 +152,30 @@ var WebSocketManager = (function () {
             });
         }
     };
-    /**
-     * Map internal event structure to a defined interface ...
-     */
+    WebSocketManager.prototype.mapEventName = function (name) {
+        if (this._comapiConfig.eventMapping) {
+            if (name) {
+                var split = name.split(".");
+                var category = split[0];
+                var type = split[1];
+                for (var eventCategory in this._comapiConfig.eventMapping) {
+                    if (this._comapiConfig.eventMapping.hasOwnProperty(eventCategory)) {
+                        var aliases = this._comapiConfig.eventMapping[eventCategory];
+                        for (var _i = 0, aliases_1 = aliases; _i < aliases_1.length; _i++) {
+                            var val = aliases_1[_i];
+                            if (val === category) {
+                                return eventCategory + "." + type;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return name;
+    };
     WebSocketManager.prototype.publishWebsocketEvent = function (event) {
-        switch (event.name) {
+        var mappedName = this.mapEventName(event.name);
+        switch (mappedName) {
             case "conversation.delete":
                 {
                     var conversationDeletedEventData = {
@@ -229,7 +200,6 @@ var WebSocketManager = (function () {
                 {
                     var conversationUpdatedEventData = {
                         conversationId: event.conversationId,
-                        // the user who updated the conversation
                         createdBy: event.context.createdBy,
                         description: event.payload.description,
                         eTag: event.etag,
@@ -357,6 +327,15 @@ var WebSocketManager = (function () {
         }
     };
     return WebSocketManager;
-})();
+}());
+WebSocketManager = __decorate([
+    inversify_1.injectable(),
+    __param(0, inversify_1.inject("Logger")),
+    __param(1, inversify_1.inject("LocalStorageData")),
+    __param(2, inversify_1.inject("ComapiConfig")),
+    __param(3, inversify_1.inject("SessionManager")),
+    __param(4, inversify_1.inject("EventManager")),
+    __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
+], WebSocketManager);
 exports.WebSocketManager = WebSocketManager;
 //# sourceMappingURL=webSocketManager.js.map
