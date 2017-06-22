@@ -13,4 +13,7 @@ var messageBuilder_1 = require("./src/messageBuilder");
 exports.MessageBuilder = messageBuilder_1.MessageBuilder;
 var messageStatusBuilder_1 = require("./src/messageStatusBuilder");
 exports.MessageStatusBuilder = messageStatusBuilder_1.MessageStatusBuilder;
+var interfaceManager_1 = require("./src/interfaceManager");
+exports.InterfaceManager = interfaceManager_1.InterfaceManager;
+
 __export(require("./src/interfaces"));
