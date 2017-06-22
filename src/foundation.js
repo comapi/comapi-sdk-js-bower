@@ -65,7 +65,7 @@ var Foundation = Foundation_1 = (function () {
     };
     Object.defineProperty(Foundation, "version", {
         get: function () {
-            return "1.0.2.116";
+            return "1.0.2.117";
         },
         enumerable: true,
         configurable: true
