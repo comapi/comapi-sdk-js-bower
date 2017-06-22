@@ -13,6 +13,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var inversify_1 = require("inversify");
+var interfaceSymbols_1 = require("./interfaceSymbols");
 var NetworkManager = (function () {
     function NetworkManager(_sessionManager, _webSocketManager) {
         this._sessionManager = _sessionManager;
@@ -78,7 +79,8 @@ var NetworkManager = (function () {
 }());
 NetworkManager = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject("SessionManager")), __param(1, inversify_1.inject("WebSocketManager")),
+    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
+    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager)),
     __metadata("design:paramtypes", [Object, Object])
 ], NetworkManager);
 exports.NetworkManager = NetworkManager;

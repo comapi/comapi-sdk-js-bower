@@ -13,6 +13,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var inversify_1 = require("inversify");
+var interfaceSymbols_1 = require("./interfaceSymbols");
 var WebSocketManager = (function () {
     function WebSocketManager(_logger, _localStorageData, _comapiConfig, _sessionManager, _eventManager) {
         this._logger = _logger;
@@ -330,11 +331,11 @@ var WebSocketManager = (function () {
 }());
 WebSocketManager = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject("Logger")),
-    __param(1, inversify_1.inject("LocalStorageData")),
-    __param(2, inversify_1.inject("ComapiConfig")),
-    __param(3, inversify_1.inject("SessionManager")),
-    __param(4, inversify_1.inject("EventManager")),
+    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
+    __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager)),
     __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
 ], WebSocketManager);
 exports.WebSocketManager = WebSocketManager;

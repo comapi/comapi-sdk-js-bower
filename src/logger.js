@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var inversify_1 = require("inversify");
 var interfaces_1 = require("./interfaces");
 var indexedDBLogger_1 = require("./indexedDBLogger");
+var interfaceSymbols_1 = require("./interfaceSymbols");
 var Logger = (function () {
     function Logger(_eventManager, _localStorageData, _indexedDB) {
         this._eventManager = _eventManager;
@@ -154,9 +155,9 @@ var Logger = (function () {
 }());
 Logger = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject("EventManager")),
-    __param(1, inversify_1.inject("LocalStorageData")),
-    __param(2, inversify_1.inject("IndexedDBLogger")), __param(2, inversify_1.optional()),
+    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager)),
+    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)), __param(2, inversify_1.optional()),
     __metadata("design:paramtypes", [Object, Object, indexedDBLogger_1.IndexedDBLogger])
 ], Logger);
 exports.Logger = Logger;

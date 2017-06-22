@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var inversify_1 = require("inversify");
 var interfaces_1 = require("./interfaces");
 var utils_1 = require("./utils");
+var interfaceSymbols_1 = require("./interfaceSymbols");
 var ConversationManager = (function () {
     function ConversationManager(_logger, _restClient, _localStorageData, _comapiConfig, _sessionManager) {
         this._logger = _logger;
@@ -183,11 +184,11 @@ var ConversationManager = (function () {
 }());
 ConversationManager = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject("Logger")),
-    __param(1, inversify_1.inject("AuthenticatedRestClient")),
-    __param(2, inversify_1.inject("LocalStorageData")),
-    __param(3, inversify_1.inject("ComapiConfig")),
-    __param(4, inversify_1.inject("SessionManager")),
+    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient)),
+    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+    __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
     __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
 ], ConversationManager);
 exports.ConversationManager = ConversationManager;

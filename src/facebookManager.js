@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var inversify_1 = require("inversify");
 var utils_1 = require("./utils");
+var interfaceSymbols_1 = require("./interfaceSymbols");
 var FacebookManager = (function () {
     function FacebookManager(_restClient, _comapiConfig) {
         this._restClient = _restClient;
@@ -30,8 +31,8 @@ var FacebookManager = (function () {
 }());
 FacebookManager = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject("AuthenticatedRestClient")),
-    __param(1, inversify_1.inject("ComapiConfig")),
+    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient)),
+    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
     __metadata("design:paramtypes", [Object, Object])
 ], FacebookManager);
 exports.FacebookManager = FacebookManager;

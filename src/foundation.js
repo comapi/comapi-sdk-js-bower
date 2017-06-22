@@ -32,6 +32,10 @@ var services_1 = require("./services");
 var device_1 = require("./device");
 var channels_1 = require("./channels");
 var urlConfig_1 = require("./urlConfig");
+var interfaceManager_1 = require("./interfaceManager");
+exports.InterfaceManager = interfaceManager_1.InterfaceManager;
+var interfaceSymbols_1 = require("./interfaceSymbols");
+exports.INTERFACE_SYMBOLS = interfaceSymbols_1.INTERFACE_SYMBOLS;
 var inversify_config_1 = require("./inversify.config");
 var Foundation = Foundation_1 = (function () {
     function Foundation(_eventManager, _logger, _localStorageData, _networkManager, _deviceManager, _facebookManager, _conversationManager, _profileManager, _messageManager, _comapiConfig) {
@@ -61,16 +65,16 @@ var Foundation = Foundation_1 = (function () {
     };
     Object.defineProperty(Foundation, "version", {
         get: function () {
-            return "1.0.2.107";
+            return "1.0.2.115";
         },
         enumerable: true,
         configurable: true
     });
     Foundation._initialise = function (comapiConfig, doSingleton) {
-        if (inversify_config_1.container.isBound("ComapiConfig")) {
-            inversify_config_1.container.unbind("ComapiConfig");
+        if (inversify_config_1.container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)) {
+            inversify_config_1.container.unbind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig);
         }
-        inversify_config_1.container.bind("ComapiConfig").toDynamicValue(function (context) {
+        inversify_config_1.container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig).toDynamicValue(function (context) {
             return comapiConfig;
         });
         if (doSingleton && Foundation_1._foundation) {
@@ -104,18 +108,18 @@ var Foundation = Foundation_1 = (function () {
             return Promise.resolve(foundation);
         }
         function foundationFactory(config, indexedDBLogger) {
-            var eventManager = inversify_config_1.container.get("EventManager");
-            var localStorageData = inversify_config_1.container.get("LocalStorageData");
-            var logger = inversify_config_1.container.get("Logger");
+            var eventManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager);
+            var localStorageData = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData);
+            var logger = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger);
             if (config.logLevel) {
                 logger.logLevel = config.logLevel;
             }
-            var networkManager = inversify_config_1.container.get("NetworkManager");
-            var deviceManager = inversify_config_1.container.get("DeviceManager");
-            var facebookManager = inversify_config_1.container.get("FacebookManager");
-            var conversationManager = inversify_config_1.container.get("ConversationManager");
-            var profileManager = inversify_config_1.container.get("ProfileManager");
-            var messageManager = inversify_config_1.container.get("MessageManager");
+            var networkManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager);
+            var deviceManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager);
+            var facebookManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager);
+            var conversationManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager);
+            var profileManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager);
+            var messageManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager);
             var foundation = new Foundation_1(eventManager, logger, localStorageData, networkManager, deviceManager, facebookManager, conversationManager, profileManager, messageManager, config);
             return foundation;
         }
@@ -177,16 +181,16 @@ var Foundation = Foundation_1 = (function () {
 }());
 Foundation = Foundation_1 = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject("EventManager")),
-    __param(1, inversify_1.inject("Logger")),
-    __param(2, inversify_1.inject("LocalStorageData")),
-    __param(3, inversify_1.inject("NetworkManager")),
-    __param(4, inversify_1.inject("DeviceManager")),
-    __param(5, inversify_1.inject("FacebookManager")),
-    __param(6, inversify_1.inject("ConversationManager")),
-    __param(7, inversify_1.inject("ProfileManager")),
-    __param(8, inversify_1.inject("MessageManager")),
-    __param(9, inversify_1.inject("ComapiConfig")),
+    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager)),
+    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
+    __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager)),
+    __param(5, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager)),
+    __param(6, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager)),
+    __param(7, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager)),
+    __param(8, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager)),
+    __param(9, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
     __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object, Object, Object, Object, Object])
 ], Foundation);
 exports.Foundation = Foundation;

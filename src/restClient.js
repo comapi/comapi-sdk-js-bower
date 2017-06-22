@@ -13,6 +13,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var inversify_1 = require("inversify");
+var interfaceSymbols_1 = require("./interfaceSymbols");
 var RestClient = (function () {
     function RestClient(logger) {
         this.logger = logger;
@@ -158,7 +159,7 @@ var RestClient = (function () {
 }());
 RestClient = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject("Logger")), __param(0, inversify_1.optional()),
+    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)), __param(0, inversify_1.optional()),
     __metadata("design:paramtypes", [Object])
 ], RestClient);
 exports.RestClient = RestClient;

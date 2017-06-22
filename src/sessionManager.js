@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var inversify_1 = require("inversify");
 var utils_1 = require("./utils");
+var interfaceSymbols_1 = require("./interfaceSymbols");
 var SessionManager = (function () {
     function SessionManager(_logger, _restClient, _localStorageData, _comapiConfig) {
         this._logger = _logger;
@@ -125,7 +126,7 @@ var SessionManager = (function () {
             platform: "javascript",
             platformVersion: browserInfo.version,
             sdkType: "native",
-            sdkVersion: "1.0.2.107"
+            sdkVersion: "1.0.2.115"
         };
         var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
             apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -187,10 +188,10 @@ var SessionManager = (function () {
 }());
 SessionManager = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject("Logger")),
-    __param(1, inversify_1.inject("RestClient")),
-    __param(2, inversify_1.inject("LocalStorageData")),
-    __param(3, inversify_1.inject("ComapiConfig")),
+    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient)),
+    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
     __metadata("design:paramtypes", [Object, Object, Object, Object])
 ], SessionManager);
 exports.SessionManager = SessionManager;
