@@ -15,5 +15,7 @@ var messageBuilder_1 = require("./messageBuilder");
 exports.MessageBuilder = messageBuilder_1.MessageBuilder;
 var messageStatusBuilder_1 = require("./messageStatusBuilder");
 exports.MessageStatusBuilder = messageStatusBuilder_1.MessageStatusBuilder;
+var interfaceManager_1 = require("./interfaceManager");
+exports.InterfaceManager = interfaceManager_1.InterfaceManager;
 __export(require("./interfaces"));
 //# sourceMappingURL=index.js.map
