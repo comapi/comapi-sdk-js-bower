@@ -23,6 +23,7 @@ var profile_1 = require("./profile");
 var services_1 = require("./services");
 var device_1 = require("./device");
 var channels_1 = require("./channels");
+var indexedDBLogger_1 = require("./indexedDBLogger");
 var interfaceSymbols_1 = require("./interfaceSymbols");
 var container = new inversify_1.Container();
 exports.container = container;
@@ -58,4 +59,21 @@ function initInterfaces() {
 }
 exports.initInterfaces = initInterfaces;
 initInterfaces();
+function bindIndexedDBLogger() {
+    "use strict";
+    if (container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)) {
+        container.rebind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger).to(indexedDBLogger_1.IndexedDBLogger);
+    }
+    else {
+        container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger).to(indexedDBLogger_1.IndexedDBLogger);
+    }
+}
+exports.bindIndexedDBLogger = bindIndexedDBLogger;
+function unbindIndexedDBLogger() {
+    "use strict";
+    if (container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)) {
+        container.unbind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger);
+    }
+}
+exports.unbindIndexedDBLogger = unbindIndexedDBLogger;
 //# sourceMappingURL=inversify.config.js.map

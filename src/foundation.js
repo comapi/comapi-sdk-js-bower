@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var interfaces_1 = require("./interfaces");
-var indexedDBLogger_1 = require("./indexedDBLogger");
 var conversationBuilder_1 = require("./conversationBuilder");
 exports.ConversationBuilder = conversationBuilder_1.ConversationBuilder;
 var messageBuilder_1 = require("./messageBuilder");
@@ -51,12 +50,11 @@ var Foundation = (function () {
             comapiConfig.foundationRestUrls = new urlConfig_1.FoundationRestUrls();
         }
         if (comapiConfig.logPersistence &&
-            comapiConfig.logPersistence === interfaces_1.LogPersistences.IndexedDB &&
-            !inversify_config_1.container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)) {
-            inversify_config_1.container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger).to(indexedDBLogger_1.IndexedDBLogger);
+            comapiConfig.logPersistence === interfaces_1.LogPersistences.IndexedDB) {
+            inversify_config_1.bindIndexedDBLogger();
         }
         else if (inversify_config_1.container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)) {
-            inversify_config_1.container.unbind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger);
+            inversify_config_1.unbindIndexedDBLogger();
         }
         var eventManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager);
         var logger = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger);
