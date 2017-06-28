@@ -1,71 +1,38 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var inversify_1 = require("inversify");
 var interfaces_1 = require("./interfaces");
 var indexedDBLogger_1 = require("./indexedDBLogger");
-var messagePager_1 = require("./messagePager");
 var conversationBuilder_1 = require("./conversationBuilder");
 exports.ConversationBuilder = conversationBuilder_1.ConversationBuilder;
 var messageBuilder_1 = require("./messageBuilder");
 exports.MessageBuilder = messageBuilder_1.MessageBuilder;
 var messageStatusBuilder_1 = require("./messageStatusBuilder");
 exports.MessageStatusBuilder = messageStatusBuilder_1.MessageStatusBuilder;
-var indexedDBOrphanedEventManager_1 = require("./indexedDBOrphanedEventManager");
-var localStorageOrphanedEventManager_1 = require("./localStorageOrphanedEventManager");
 var comapiConfig_1 = require("./comapiConfig");
 exports.ComapiConfig = comapiConfig_1.ComapiConfig;
-var appMessaging_1 = require("./appMessaging");
-var profile_1 = require("./profile");
-var services_1 = require("./services");
-var device_1 = require("./device");
-var channels_1 = require("./channels");
 var urlConfig_1 = require("./urlConfig");
 var interfaceManager_1 = require("./interfaceManager");
 exports.InterfaceManager = interfaceManager_1.InterfaceManager;
 var interfaceSymbols_1 = require("./interfaceSymbols");
-exports.INTERFACE_SYMBOLS = interfaceSymbols_1.INTERFACE_SYMBOLS;
 var inversify_config_1 = require("./inversify.config");
-var Foundation = Foundation_1 = (function () {
-    function Foundation(_eventManager, _logger, _localStorageData, _networkManager, _deviceManager, _facebookManager, _conversationManager, _profileManager, _messageManager, _comapiConfig) {
+var Foundation = (function () {
+    function Foundation(_eventManager, _logger, _networkManager, services, device, channels) {
         this._eventManager = _eventManager;
         this._logger = _logger;
         this._networkManager = _networkManager;
-        var dbSupported = "indexedDB" in window;
-        var orphanedEventManager;
-        if (dbSupported) {
-            orphanedEventManager = new indexedDBOrphanedEventManager_1.IndexedDBOrphanedEventManager();
-        }
-        else {
-            orphanedEventManager = new localStorageOrphanedEventManager_1.LocalStorageOrphanedEventManager(_localStorageData);
-        }
-        var messagePager = new messagePager_1.MessagePager(_logger, _localStorageData, _messageManager, orphanedEventManager);
-        var appMessaging = new appMessaging_1.AppMessaging(this._networkManager, _conversationManager, _messageManager, messagePager);
-        var profile = new profile_1.Profile(this._networkManager, _localStorageData, _profileManager);
-        this._services = new services_1.Services(appMessaging, profile);
-        this._device = new device_1.Device(this._networkManager, _deviceManager);
-        this._channels = new channels_1.Channels(this._networkManager, _facebookManager);
+        this._services = services;
+        this._device = device;
+        this._channels = channels;
     }
     Foundation.initialiseShared = function (comapiConfig) {
-        return Foundation_1._initialise(comapiConfig, true);
+        return Foundation._initialise(comapiConfig, true);
     };
     Foundation.initialise = function (comapiConfig) {
-        return Foundation_1._initialise(comapiConfig, false);
+        return Foundation._initialise(comapiConfig, false);
     };
     Object.defineProperty(Foundation, "version", {
         get: function () {
-            return "1.0.2.117";
+            return "1.0.2.121";
         },
         enumerable: true,
         configurable: true
@@ -77,8 +44,8 @@ var Foundation = Foundation_1 = (function () {
         inversify_config_1.container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig).toDynamicValue(function (context) {
             return comapiConfig;
         });
-        if (doSingleton && Foundation_1._foundation) {
-            return Promise.resolve(Foundation_1._foundation);
+        if (doSingleton && Foundation._foundation) {
+            return Promise.resolve(Foundation._foundation);
         }
         if (comapiConfig.foundationRestUrls === undefined) {
             comapiConfig.foundationRestUrls = new urlConfig_1.FoundationRestUrls();
@@ -95,7 +62,7 @@ var Foundation = Foundation_1 = (function () {
                 .then(function () {
                 var foundation = foundationFactory(comapiConfig, indexedDBLogger_2);
                 if (doSingleton) {
-                    Foundation_1._foundation = foundation;
+                    Foundation._foundation = foundation;
                 }
                 return Promise.resolve(foundation);
             });
@@ -103,24 +70,26 @@ var Foundation = Foundation_1 = (function () {
         else {
             var foundation = foundationFactory(comapiConfig);
             if (doSingleton) {
-                Foundation_1._foundation = foundation;
+                Foundation._foundation = foundation;
             }
             return Promise.resolve(foundation);
         }
         function foundationFactory(config, indexedDBLogger) {
+            if (indexedDBLogger) {
+                inversify_config_1.container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger).toDynamicValue(function (context) {
+                    return indexedDBLogger;
+                });
+            }
             var eventManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager);
-            var localStorageData = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData);
             var logger = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger);
             if (config.logLevel) {
                 logger.logLevel = config.logLevel;
             }
             var networkManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager);
-            var deviceManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager);
-            var facebookManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager);
-            var conversationManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager);
-            var profileManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager);
-            var messageManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager);
-            var foundation = new Foundation_1(eventManager, logger, localStorageData, networkManager, deviceManager, facebookManager, conversationManager, profileManager, messageManager, config);
+            var services = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Services);
+            var device = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Device);
+            var channels = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels);
+            var foundation = new Foundation(eventManager, logger, networkManager, services, device, channels);
             return foundation;
         }
     };
@@ -179,20 +148,5 @@ var Foundation = Foundation_1 = (function () {
     };
     return Foundation;
 }());
-Foundation = Foundation_1 = __decorate([
-    inversify_1.injectable(),
-    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager)),
-    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
-    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
-    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
-    __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager)),
-    __param(5, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager)),
-    __param(6, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager)),
-    __param(7, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager)),
-    __param(8, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager)),
-    __param(9, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
-    __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object, Object, Object, Object, Object])
-], Foundation);
 exports.Foundation = Foundation;
-var Foundation_1;
 //# sourceMappingURL=foundation.js.map

@@ -1,11 +1,10 @@
-import { IConversationManager, IConversationDetails, IConversationDetails2, IConversationParticipant, ConversationScope, IMessageManager, IConversationMessageEvent, IConversationMessage, ISendMessageResult, IMessageStatus, IGetMessagesResponse, INetworkManager } from "./interfaces";
-import { MessagePager } from "./messagePager";
+import { IConversationManager, IConversationDetails, IConversationDetails2, IConversationParticipant, ConversationScope, IMessageManager, IConversationMessageEvent, IConversationMessage, ISendMessageResult, IMessageStatus, IGetMessagesResponse, INetworkManager, IMessagePager } from "./interfaces";
 export declare class AppMessaging {
     private _networkManager;
     private _conversationManager;
     private _messageManager;
     private _messagePager;
-    constructor(_networkManager: INetworkManager, _conversationManager: IConversationManager, _messageManager: IMessageManager, _messagePager: MessagePager);
+    constructor(_networkManager: INetworkManager, _conversationManager: IConversationManager, _messageManager: IMessageManager, _messagePager: IMessagePager);
     createConversation(conversationDetails: IConversationDetails): Promise<IConversationDetails2>;
     updateConversation(conversationDetails: IConversationDetails, eTag?: string): Promise<IConversationDetails2>;
     getConversation(conversationId: string): Promise<IConversationDetails2>;

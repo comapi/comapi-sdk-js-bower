@@ -1,4 +1,4 @@
-import { IEventManager, ILocalStorageData, ILogger, IRestClient, ISessionManager, IWebSocketManager, INetworkManager, IDeviceManager, IFacebookManager, IConversationManager, IProfileManager, IMessageManager } from "./interfaces";
+import { IEventManager, ILocalStorageData, ILogger, IRestClient, ISessionManager, IWebSocketManager, INetworkManager, IDeviceManager, IFacebookManager, IConversationManager, IProfileManager, IMessageManager, IMessagePager, IAppMessaging, IProfile, IDevice, IChannels } from "./interfaces";
 export declare class InterfaceManager {
     private static interfaces;
     private static getInterface(serviceIdentifier);
@@ -16,4 +16,9 @@ export declare class InterfaceManager {
     static IConversationManager: IConversationManager;
     static IProfileManager: IProfileManager;
     static IMessageManager: IMessageManager;
+    static IMessagePager: IMessagePager;
+    static IAppMessaging: IAppMessaging;
+    static IProfile: IProfile;
+    static IDevice: IDevice;
+    static IChannels: IChannels;
 }

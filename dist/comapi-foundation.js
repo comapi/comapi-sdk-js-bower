@@ -1375,73 +1375,40 @@ var COMAPI =
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-	    return c > 3 && r && Object.defineProperty(target, key, r), r;
-	};
-	var __metadata = (this && this.__metadata) || function (k, v) {
-	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-	};
-	var __param = (this && this.__param) || function (paramIndex, decorator) {
-	    return function (target, key) { decorator(target, key, paramIndex); }
-	};
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var inversify_1 = __webpack_require__(4);
-	var interfaces_1 = __webpack_require__(43);
-	var indexedDBLogger_1 = __webpack_require__(44);
-	var messagePager_1 = __webpack_require__(45);
-	var conversationBuilder_1 = __webpack_require__(47);
+	var interfaces_1 = __webpack_require__(4);
+	var indexedDBLogger_1 = __webpack_require__(5);
+	var conversationBuilder_1 = __webpack_require__(6);
 	exports.ConversationBuilder = conversationBuilder_1.ConversationBuilder;
-	var messageBuilder_1 = __webpack_require__(48);
+	var messageBuilder_1 = __webpack_require__(8);
 	exports.MessageBuilder = messageBuilder_1.MessageBuilder;
-	var messageStatusBuilder_1 = __webpack_require__(49);
+	var messageStatusBuilder_1 = __webpack_require__(9);
 	exports.MessageStatusBuilder = messageStatusBuilder_1.MessageStatusBuilder;
-	var indexedDBOrphanedEventManager_1 = __webpack_require__(50);
-	var localStorageOrphanedEventManager_1 = __webpack_require__(51);
-	var comapiConfig_1 = __webpack_require__(52);
+	var comapiConfig_1 = __webpack_require__(10);
 	exports.ComapiConfig = comapiConfig_1.ComapiConfig;
-	var appMessaging_1 = __webpack_require__(54);
-	var profile_1 = __webpack_require__(55);
-	var services_1 = __webpack_require__(56);
-	var device_1 = __webpack_require__(57);
-	var channels_1 = __webpack_require__(58);
-	var urlConfig_1 = __webpack_require__(53);
-	var interfaceManager_1 = __webpack_require__(59);
+	var urlConfig_1 = __webpack_require__(11);
+	var interfaceManager_1 = __webpack_require__(12);
 	exports.InterfaceManager = interfaceManager_1.InterfaceManager;
-	var interfaceSymbols_1 = __webpack_require__(64);
-	exports.INTERFACE_SYMBOLS = interfaceSymbols_1.INTERFACE_SYMBOLS;
-	var inversify_config_1 = __webpack_require__(60);
-	var Foundation = Foundation_1 = (function () {
-	    function Foundation(_eventManager, _logger, _localStorageData, _networkManager, _deviceManager, _facebookManager, _conversationManager, _profileManager, _messageManager, _comapiConfig) {
+	var interfaceSymbols_1 = __webpack_require__(56);
+	var inversify_config_1 = __webpack_require__(13);
+	var Foundation = (function () {
+	    function Foundation(_eventManager, _logger, _networkManager, services, device, channels) {
 	        this._eventManager = _eventManager;
 	        this._logger = _logger;
 	        this._networkManager = _networkManager;
-	        var dbSupported = "indexedDB" in window;
-	        var orphanedEventManager;
-	        if (dbSupported) {
-	            orphanedEventManager = new indexedDBOrphanedEventManager_1.IndexedDBOrphanedEventManager();
-	        }
-	        else {
-	            orphanedEventManager = new localStorageOrphanedEventManager_1.LocalStorageOrphanedEventManager(_localStorageData);
-	        }
-	        var messagePager = new messagePager_1.MessagePager(_logger, _localStorageData, _messageManager, orphanedEventManager);
-	        var appMessaging = new appMessaging_1.AppMessaging(this._networkManager, _conversationManager, _messageManager, messagePager);
-	        var profile = new profile_1.Profile(this._networkManager, _localStorageData, _profileManager);
-	        this._services = new services_1.Services(appMessaging, profile);
-	        this._device = new device_1.Device(this._networkManager, _deviceManager);
-	        this._channels = new channels_1.Channels(this._networkManager, _facebookManager);
+	        this._services = services;
+	        this._device = device;
+	        this._channels = channels;
 	    }
 	    Foundation.initialiseShared = function (comapiConfig) {
-	        return Foundation_1._initialise(comapiConfig, true);
+	        return Foundation._initialise(comapiConfig, true);
 	    };
 	    Foundation.initialise = function (comapiConfig) {
-	        return Foundation_1._initialise(comapiConfig, false);
+	        return Foundation._initialise(comapiConfig, false);
 	    };
 	    Object.defineProperty(Foundation, "version", {
 	        get: function () {
-	            return "1.0.2.116";
+	            return "1.0.2.121";
 	        },
 	        enumerable: true,
 	        configurable: true
@@ -1453,8 +1420,8 @@ var COMAPI =
 	        inversify_config_1.container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig).toDynamicValue(function (context) {
 	            return comapiConfig;
 	        });
-	        if (doSingleton && Foundation_1._foundation) {
-	            return Promise.resolve(Foundation_1._foundation);
+	        if (doSingleton && Foundation._foundation) {
+	            return Promise.resolve(Foundation._foundation);
 	        }
 	        if (comapiConfig.foundationRestUrls === undefined) {
 	            comapiConfig.foundationRestUrls = new urlConfig_1.FoundationRestUrls();
@@ -1471,7 +1438,7 @@ var COMAPI =
 	                .then(function () {
 	                var foundation = foundationFactory(comapiConfig, indexedDBLogger_2);
 	                if (doSingleton) {
-	                    Foundation_1._foundation = foundation;
+	                    Foundation._foundation = foundation;
 	                }
 	                return Promise.resolve(foundation);
 	            });
@@ -1479,24 +1446,26 @@ var COMAPI =
 	        else {
 	            var foundation = foundationFactory(comapiConfig);
 	            if (doSingleton) {
-	                Foundation_1._foundation = foundation;
+	                Foundation._foundation = foundation;
 	            }
 	            return Promise.resolve(foundation);
 	        }
 	        function foundationFactory(config, indexedDBLogger) {
+	            if (indexedDBLogger) {
+	                inversify_config_1.container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger).toDynamicValue(function (context) {
+	                    return indexedDBLogger;
+	                });
+	            }
 	            var eventManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager);
-	            var localStorageData = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData);
 	            var logger = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger);
 	            if (config.logLevel) {
 	                logger.logLevel = config.logLevel;
 	            }
 	            var networkManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager);
-	            var deviceManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager);
-	            var facebookManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager);
-	            var conversationManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager);
-	            var profileManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager);
-	            var messageManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager);
-	            var foundation = new Foundation_1(eventManager, logger, localStorageData, networkManager, deviceManager, facebookManager, conversationManager, profileManager, messageManager, config);
+	            var services = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Services);
+	            var device = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Device);
+	            var channels = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels);
+	            var foundation = new Foundation(eventManager, logger, networkManager, services, device, channels);
 	            return foundation;
 	        }
 	    };
@@ -1555,83 +1524,920 @@ var COMAPI =
 	    };
 	    return Foundation;
 	}());
-	Foundation = Foundation_1 = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager)),
-	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
-	    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
-	    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
-	    __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager)),
-	    __param(5, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager)),
-	    __param(6, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager)),
-	    __param(7, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager)),
-	    __param(8, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager)),
-	    __param(9, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
-	    __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object, Object, Object, Object, Object])
-	], Foundation);
 	exports.Foundation = Foundation;
-	var Foundation_1;
 	//# sourceMappingURL=foundation.js.map
 
 /***/ }),
 /* 4 */
+/***/ (function(module, exports) {
+
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var LogLevels;
+	(function (LogLevels) {
+	    LogLevels[LogLevels["None"] = 0] = "None";
+	    LogLevels[LogLevels["Error"] = 1] = "Error";
+	    LogLevels[LogLevels["Warn"] = 2] = "Warn";
+	    LogLevels[LogLevels["Debug"] = 3] = "Debug";
+	})(LogLevels = exports.LogLevels || (exports.LogLevels = {}));
+	;
+	var LogPersistences;
+	(function (LogPersistences) {
+	    LogPersistences[LogPersistences["None"] = 0] = "None";
+	    LogPersistences[LogPersistences["IndexedDB"] = 1] = "IndexedDB";
+	    LogPersistences[LogPersistences["LocalStorage"] = 2] = "LocalStorage";
+	})(LogPersistences = exports.LogPersistences || (exports.LogPersistences = {}));
+	;
+	;
+	;
+	;
+	var Environment;
+	(function (Environment) {
+	    Environment[Environment["development"] = 0] = "development";
+	    Environment[Environment["production"] = 1] = "production";
+	})(Environment = exports.Environment || (exports.Environment = {}));
+	;
+	;
+	;
+	var ConversationScope;
+	(function (ConversationScope) {
+	    ConversationScope[ConversationScope["public"] = 0] = "public";
+	    ConversationScope[ConversationScope["participant"] = 1] = "participant";
+	})(ConversationScope = exports.ConversationScope || (exports.ConversationScope = {}));
+	;
+	//# sourceMappingURL=interfaces.js.map
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
+
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var IndexedDBLogger = (function () {
+	    function IndexedDBLogger(name) {
+	        this.idbSupported = "indexedDB" in window;
+	        this._name = "Comapi";
+	        this._version = 1;
+	        this._store = "Logs";
+	        if (name) {
+	            this._name = name;
+	        }
+	    }
+	    IndexedDBLogger.prototype.openDatabase = function () {
+	        var _this = this;
+	        return new Promise(function (resolve, reject) {
+	            if (_this.idbSupported) {
+	                var self_1 = _this;
+	                var openRequest = indexedDB.open(_this._name, _this._version);
+	                openRequest.onupgradeneeded = function (e) {
+	                    console.log("Upgrading database...");
+	                    var thisDB = e.target.result;
+	                    if (!thisDB.objectStoreNames.contains(self_1._store)) {
+	                        var os = thisDB.createObjectStore(self_1._store, { autoIncrement: true });
+	                        os.createIndex("created", "created", { unique: false });
+	                    }
+	                };
+	                openRequest.onsuccess = function (e) {
+	                    self_1._database = e.target.result;
+	                    resolve(true);
+	                };
+	                openRequest.onerror = function (e) {
+	                    reject({ message: "IndexedDBLogger.open failed : " + e.target.error.name });
+	                };
+	            }
+	            else {
+	                reject({ message: "IndexedDBLogger not supported on this platform" });
+	            }
+	        });
+	    };
+	    IndexedDBLogger.prototype.purge = function (when) {
+	        var _this = this;
+	        return new Promise(function (resolve, reject) {
+	            if (_this._database) {
+	                var transaction = _this._database.transaction([_this._store], "readwrite");
+	                var objectStore_1 = transaction.objectStore(_this._store);
+	                var index = objectStore_1.index("created");
+	                var keyRangeValue = IDBKeyRange.upperBound(when.valueOf());
+	                index.openCursor(keyRangeValue).onsuccess = function (event) {
+	                    var cursor = event.target.result;
+	                    if (cursor) {
+	                        objectStore_1["delete"](cursor.primaryKey);
+	                        cursor["continue"]();
+	                    }
+	                    else {
+	                        resolve(true);
+	                    }
+	                };
+	            }
+	            else {
+	                reject({ message: "Database not open" });
+	            }
+	        });
+	    };
+	    IndexedDBLogger.prototype.deleteDatabase = function () {
+	        var _this = this;
+	        return new Promise(function (resolve, reject) {
+	            var req = indexedDB.deleteDatabase(_this._name);
+	            var self = _this;
+	            req.onsuccess = function () {
+	                console.log("Deleted database " + self._name + " successfully");
+	                resolve(true);
+	            };
+	            req.onerror = function (e) {
+	                reject({ message: "Couldn't delete database " + self._name + " : " + e.target.error.name });
+	            };
+	            req.onblocked = function () {
+	                console.warn("Couldn't delete database " + self._name + " due to the operation being blocked");
+	            };
+	        });
+	    };
+	    IndexedDBLogger.prototype.clearData = function () {
+	        var _this = this;
+	        return new Promise(function (resolve, reject) {
+	            if (_this._database) {
+	                var transaction_1 = _this._database.transaction([_this._store], "readwrite");
+	                transaction_1.onerror = function (event) {
+	                    console.error("Transaction not opened due to error: " + transaction_1.error);
+	                };
+	                var objectStore = transaction_1.objectStore(_this._store);
+	                var objectStoreRequest = objectStore.clear();
+	                objectStoreRequest.onsuccess = function (event) {
+	                    resolve(true);
+	                };
+	                objectStoreRequest.onerror = function (e) {
+	                    reject({ message: "Failed to clear object store: " + e.target.error.name });
+	                };
+	            }
+	            else {
+	                reject({ message: "Database not open" });
+	            }
+	        });
+	    };
+	    IndexedDBLogger.prototype.getData = function (count, getIndexes) {
+	        var _this = this;
+	        return new Promise(function (resolve, reject) {
+	            if (_this._database) {
+	                var transaction = _this._database.transaction([_this._store], "readonly");
+	                var objectStore = transaction.objectStore(_this._store);
+	                var cursorRequest = objectStore.openCursor();
+	                var numRetrieved_1 = 0;
+	                var data_1 = [];
+	                cursorRequest.onsuccess = function (event) {
+	                    var cursor = event.target.result;
+	                    numRetrieved_1++;
+	                    if (cursor) {
+	                        var record = cursor.value;
+	                        if (getIndexes === true) {
+	                            record.key = cursor.key;
+	                        }
+	                        data_1.push(cursor.value);
+	                        if (numRetrieved_1 && numRetrieved_1 >= count) {
+	                            resolve(data_1);
+	                        }
+	                        else {
+	                            cursor.continue();
+	                        }
+	                    }
+	                    else {
+	                        resolve(data_1);
+	                    }
+	                };
+	                cursorRequest.onerror = function (e) {
+	                    reject({ message: "Failed to openCursor: " + e.target.error.name });
+	                };
+	            }
+	            else {
+	                reject({ message: "Database not open" });
+	            }
+	        });
+	    };
+	    IndexedDBLogger.prototype.getCount = function () {
+	        var _this = this;
+	        return new Promise(function (resolve, reject) {
+	            if (_this._database) {
+	                var transaction = _this._database.transaction([_this._store], "readonly");
+	                var objectStore = transaction.objectStore(_this._store);
+	                var count_1 = objectStore.count();
+	                count_1.onerror = function (e) {
+	                    reject({ message: "Failed to get count: " + e.target.error.name });
+	                };
+	                count_1.onsuccess = function () {
+	                    resolve(count_1.result);
+	                };
+	            }
+	            else {
+	                reject({ message: "Database not open" });
+	            }
+	        });
+	    };
+	    IndexedDBLogger.prototype.closeDatabase = function () {
+	        if (this._database) {
+	            this._database.close();
+	        }
+	    };
+	    IndexedDBLogger.prototype.addRecord = function (entity) {
+	        var _this = this;
+	        return new Promise(function (resolve, reject) {
+	            if (_this._database) {
+	                var transaction = _this._database.transaction([_this._store], "readwrite");
+	                var store = transaction.objectStore(_this._store);
+	                var request = store.add(entity);
+	                request.onerror = function (e) {
+	                    console.error("Error", e.target.error.name);
+	                    reject({ message: "add failed: " + e.target.error.name });
+	                };
+	                request.onsuccess = function (e) {
+	                    resolve(e.target.result);
+	                };
+	            }
+	            else {
+	                reject({ message: "Database not open" });
+	            }
+	        });
+	    };
+	    return IndexedDBLogger;
+	}());
+	exports.IndexedDBLogger = IndexedDBLogger;
+	//# sourceMappingURL=indexedDBLogger.js.map
+
+/***/ }),
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var container_1 = __webpack_require__(5);
+	var utils_1 = __webpack_require__(7);
+	var ConversationBuilder = (function () {
+	    function ConversationBuilder() {
+	        this.description = undefined;
+	        this.roles = {
+	            "owner": {
+	                "canSend": true,
+	                "canAddParticipants": true,
+	                "canRemoveParticipants": true
+	            },
+	            "participant": {
+	                "canSend": true,
+	                "canAddParticipants": true,
+	                "canRemoveParticipants": true
+	            }
+	        };
+	        this.isPublic = false;
+	        this.participants = undefined;
+	        this.id = utils_1.Utils.uuid();
+	    }
+	    ConversationBuilder.prototype.withId = function (id) {
+	        this.id = id;
+	        return this;
+	    };
+	    ConversationBuilder.prototype.withName = function (name) {
+	        this.name = name;
+	        return this;
+	    };
+	    ConversationBuilder.prototype.withDescription = function (description) {
+	        this.description = description;
+	        return this;
+	    };
+	    ConversationBuilder.prototype.withUsers = function (users) {
+	        this.participants = [];
+	        for (var _i = 0, users_1 = users; _i < users_1.length; _i++) {
+	            var user = users_1[_i];
+	            this.participants.push({ id: user });
+	        }
+	        return this;
+	    };
+	    ConversationBuilder.prototype.withUser = function (user) {
+	        this.participants = [{ id: user }];
+	        return this;
+	    };
+	    ConversationBuilder.prototype.withParticipants = function (participants) {
+	        this.participants = participants;
+	        return this;
+	    };
+	    ConversationBuilder.prototype.withOwnerPrivelages = function (privelages) {
+	        this.roles.owner = privelages;
+	        return this;
+	    };
+	    ConversationBuilder.prototype.withParticipantPrivelages = function (privelages) {
+	        this.roles.participant = privelages;
+	        return this;
+	    };
+	    return ConversationBuilder;
+	}());
+	exports.ConversationBuilder = ConversationBuilder;
+	//# sourceMappingURL=conversationBuilder.js.map
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports) {
+
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var Utils = (function () {
+	    function Utils() {
+	        throw new Error("Cannot new this class");
+	    }
+	    Utils.clone = function (obj) {
+	        return JSON.parse(JSON.stringify(obj));
+	    };
+	    Utils.uuid = function () {
+	        var d = new Date().getTime();
+	        var uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+	            var r = (d + Math.random() * 16) % 16 | 0;
+	            d = Math.floor(d / 16);
+	            return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
+	        });
+	        return uuid;
+	    };
+	    Utils.getBrowserInfo = function (userAgent) {
+	        var ua = userAgent !== undefined ? userAgent : navigator.userAgent, tem, M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
+	        if (/trident/i.test(M[1])) {
+	            tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
+	            return {
+	                name: "IE",
+	                version: tem[1] || ""
+	            };
+	        }
+	        if (M[1] === "Chrome") {
+	            tem = ua.match(/\bOPR\/(\d+)/);
+	            if (tem !== null) {
+	                return {
+	                    name: "Opera",
+	                    version: tem[1]
+	                };
+	            }
+	        }
+	        M = M[2] ? [M[1], M[2]] : [navigator.appName, navigator.appVersion, "-?"];
+	        tem = ua.match(/version\/(\d+)/i);
+	        if (tem !== null) {
+	            M.splice(1, 1, tem[1]);
+	        }
+	        return {
+	            name: M[0],
+	            version: M[1]
+	        };
+	    };
+	    Utils.eachSeries = function (arr, iteratorFn) {
+	        return arr.reduce(function (p, item) {
+	            return p.then(function () {
+	                return iteratorFn(item);
+	            });
+	        }, Promise.resolve());
+	    };
+	    Utils.doUntil = function (operation, test, data) {
+	        return operation(data)
+	            .then(function (rslt) {
+	            return test(rslt) ? Utils.doUntil(operation, test, rslt) : rslt;
+	        });
+	    };
+	    Utils.format = function (content, tags) {
+	        return content.replace(/{{(.*?)}}/g, function (tag, key) {
+	            var replacement = false;
+	            if (typeof tags[key] === "string") {
+	                replacement = tags[key];
+	            }
+	            if (typeof replacement === "string") {
+	                return replacement;
+	            }
+	            else {
+	                return tag;
+	            }
+	        });
+	    };
+	    return Utils;
+	}());
+	exports.Utils = Utils;
+	;
+	//# sourceMappingURL=utils.js.map
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports) {
+
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var MessageBuilder = (function () {
+	    function MessageBuilder() {
+	        this.id = undefined;
+	        this.metadata = {};
+	        this.parts = [];
+	        this.alert = undefined;
+	        this.context = undefined;
+	        this.sentEventId = undefined;
+	        this.statusUpdates = undefined;
+	    }
+	    MessageBuilder.prototype.withText = function (text) {
+	        this.parts.push({
+	            data: text,
+	            size: text.length,
+	            type: "text/plain",
+	        });
+	        return this;
+	    };
+	    MessageBuilder.prototype.withData = function (type, data) {
+	        this.parts.push({
+	            data: data,
+	            size: data.length,
+	            type: type,
+	        });
+	        return this;
+	    };
+	    MessageBuilder.prototype.withPart = function (part) {
+	        this.parts.push(part);
+	        return this;
+	    };
+	    MessageBuilder.prototype.withPush = function (text) {
+	        this.alert = {
+	            "text": text,
+	            "platforms": {
+	                "apns": undefined,
+	                "fcm": undefined
+	            }
+	        };
+	        return this;
+	    };
+	    MessageBuilder.prototype.withApnsAlert = function (info) {
+	        this.alert.platforms.apns = info;
+	        return this;
+	    };
+	    MessageBuilder.prototype.withFcmAlert = function (info) {
+	        this.alert.platforms.fcm = info;
+	        return this;
+	    };
+	    MessageBuilder.prototype.withMetadata = function (metadata) {
+	        this.metadata = metadata;
+	        return this;
+	    };
+	    return MessageBuilder;
+	}());
+	exports.MessageBuilder = MessageBuilder;
+	//# sourceMappingURL=messageBuilder.js.map
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports) {
+
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var MessageStatusBuilder = (function () {
+	    function MessageStatusBuilder() {
+	    }
+	    MessageStatusBuilder.prototype.deliveredStatusUpdate = function (messageId) {
+	        return {
+	            messageIds: [messageId],
+	            status: "delivered",
+	            timestamp: new Date().toISOString()
+	        };
+	    };
+	    MessageStatusBuilder.prototype.deliveredStatusUpdates = function (messageIds) {
+	        return {
+	            messageIds: messageIds,
+	            status: "delivered",
+	            timestamp: new Date().toISOString()
+	        };
+	    };
+	    MessageStatusBuilder.prototype.readStatusUpdate = function (messageId) {
+	        return {
+	            messageIds: [messageId],
+	            status: "read",
+	            timestamp: new Date().toISOString()
+	        };
+	    };
+	    MessageStatusBuilder.prototype.readStatusUpdates = function (messageIds) {
+	        return {
+	            messageIds: messageIds,
+	            status: "read",
+	            timestamp: new Date().toISOString()
+	        };
+	    };
+	    return MessageStatusBuilder;
+	}());
+	exports.MessageStatusBuilder = MessageStatusBuilder;
+	//# sourceMappingURL=messageStatusBuilder.js.map
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var interfaces_1 = __webpack_require__(4);
+	var urlConfig_1 = __webpack_require__(11);
+	var ComapiConfig = (function () {
+	    function ComapiConfig() {
+	        this.logRetentionHours = 24;
+	        this.urlBase = "https://api.comapi.com";
+	        this.webSocketBase = "wss://api.comapi.com";
+	        this.logLevel = interfaces_1.LogLevels.Error;
+	        this.logPersistence = interfaces_1.LogPersistences.LocalStorage;
+	        this.isTypingTimeout = 10;
+	        this.isTypingOffTimeout = 10;
+	        this.foundationRestUrls = new urlConfig_1.FoundationRestUrls();
+	        this.apiSpaceId = undefined;
+	    }
+	    ComapiConfig.prototype.withApiSpace = function (id) {
+	        this.apiSpaceId = id;
+	        return this;
+	    };
+	    ComapiConfig.prototype.withLogRetentionTime = function (hours) {
+	        this.logRetentionHours = hours;
+	        return this;
+	    };
+	    ComapiConfig.prototype.withAuthChallenge = function (authChallenge) {
+	        this.authChallenge = authChallenge;
+	        return this;
+	    };
+	    ComapiConfig.prototype.withUrlBase = function (urlBase) {
+	        this.urlBase = urlBase;
+	        return this;
+	    };
+	    ComapiConfig.prototype.withWebSocketBase = function (webSocketBase) {
+	        this.webSocketBase = webSocketBase;
+	        return this;
+	    };
+	    ComapiConfig.prototype.withLogLevel = function (logLevel) {
+	        this.logLevel = logLevel;
+	        return this;
+	    };
+	    ComapiConfig.prototype.withLogPersistence = function (logPersistence) {
+	        this.logPersistence = logPersistence;
+	        return this;
+	    };
+	    ComapiConfig.prototype.withFoundationRestUrls = function (foundationRestUrls) {
+	        this.foundationRestUrls = foundationRestUrls;
+	        return this;
+	    };
+	    ComapiConfig.prototype.withEventMapping = function (eventMapping) {
+	        this.eventMapping = eventMapping;
+	        return this;
+	    };
+	    return ComapiConfig;
+	}());
+	exports.ComapiConfig = ComapiConfig;
+	//# sourceMappingURL=comapiConfig.js.map
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports) {
+
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var FoundationRestUrls = (function () {
+	    function FoundationRestUrls() {
+	        this.conversations = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations";
+	        this.conversation = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}";
+	        this.participants = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/participants";
+	        this.typing = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/typing";
+	        this.push = "{{urlBase}}/apispaces/{{apiSpaceId}}/sessions/{{sessionId}}/push";
+	        this.facebook = "{{urlBase}}/apispaces/{{apiSpaceId}}/channels/facebook/state";
+	        this.events = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/events";
+	        this.messages = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/messages";
+	        this.statusUpdates = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/messages/statusupdates";
+	        this.profiles = "{{urlBase}}/apispaces/{{apiSpaceId}}/profiles";
+	        this.profile = "{{urlBase}}/apispaces/{{apiSpaceId}}/profiles/{{profileId}}";
+	        this.sessions = "{{urlBase}}/apispaces/{{apiSpaceId}}/sessions";
+	        this.sessionStart = "{{urlBase}}/apispaces/{{apiSpaceId}}/sessions/start";
+	        this.session = "{{urlBase}}/apispaces/{{apiSpaceId}}/sessions/{{sessionId}}";
+	    }
+	    return FoundationRestUrls;
+	}());
+	exports.FoundationRestUrls = FoundationRestUrls;
+	//# sourceMappingURL=urlConfig.js.map
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var inversify_config_1 = __webpack_require__(13);
+	var interfaceSymbols_1 = __webpack_require__(56);
+	var InterfaceManager = (function () {
+	    function InterfaceManager() {
+	    }
+	    InterfaceManager.getInterface = function (serviceIdentifier) {
+	        return inversify_config_1.container.get(serviceIdentifier);
+	    };
+	    InterfaceManager.setInterface = function (serviceIdentifier, instance) {
+	        if (inversify_config_1.container.isBound(serviceIdentifier)) {
+	            inversify_config_1.container.unbind(serviceIdentifier);
+	        }
+	        InterfaceManager.interfaces[serviceIdentifier.toString()] = instance;
+	        inversify_config_1.container.bind(serviceIdentifier).toDynamicValue(function (context) {
+	            return InterfaceManager.interfaces[serviceIdentifier.toString()];
+	        });
+	    };
+	    Object.defineProperty(InterfaceManager, "IEventManager", {
+	        get: function () {
+	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager);
+	        },
+	        set: function (eventManager) {
+	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager, eventManager);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(InterfaceManager, "ILocalStorageData", {
+	        get: function () {
+	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData);
+	        },
+	        set: function (localStorageData) {
+	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData, localStorageData);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(InterfaceManager, "ILogger", {
+	        get: function () {
+	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger);
+	        },
+	        set: function (logger) {
+	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger, logger);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(InterfaceManager, "IRestClient", {
+	        get: function () {
+	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient);
+	        },
+	        set: function (restClient) {
+	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient, restClient);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(InterfaceManager, "ISessionManager", {
+	        get: function () {
+	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager);
+	        },
+	        set: function (sessionManager) {
+	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager, sessionManager);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(InterfaceManager, "IWebSocketManager", {
+	        get: function () {
+	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager);
+	        },
+	        set: function (webSocketManager) {
+	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager, webSocketManager);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(InterfaceManager, "INetworkManager", {
+	        get: function () {
+	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager);
+	        },
+	        set: function (networkManager) {
+	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager, networkManager);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(InterfaceManager, "AuthenticatedRestClient", {
+	        get: function () {
+	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient);
+	        },
+	        set: function (authenticatedRestClient) {
+	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient, authenticatedRestClient);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(InterfaceManager, "IDeviceManager", {
+	        get: function () {
+	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager);
+	        },
+	        set: function (deviceManager) {
+	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager, deviceManager);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(InterfaceManager, "IFacebookManager", {
+	        get: function () {
+	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager);
+	        },
+	        set: function (facebookManager) {
+	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager, facebookManager);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(InterfaceManager, "IConversationManager", {
+	        get: function () {
+	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager);
+	        },
+	        set: function (facebookManager) {
+	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager, facebookManager);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(InterfaceManager, "IProfileManager", {
+	        get: function () {
+	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager);
+	        },
+	        set: function (profileManager) {
+	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager, profileManager);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(InterfaceManager, "IMessageManager", {
+	        get: function () {
+	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager);
+	        },
+	        set: function (messageManager) {
+	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager, messageManager);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(InterfaceManager, "IMessagePager", {
+	        get: function () {
+	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager);
+	        },
+	        set: function (messagePager) {
+	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager, messagePager);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(InterfaceManager, "IAppMessaging", {
+	        get: function () {
+	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.AppMessaging);
+	        },
+	        set: function (appMessaging) {
+	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.AppMessaging, appMessaging);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(InterfaceManager, "IProfile", {
+	        get: function () {
+	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Profile);
+	        },
+	        set: function (profile) {
+	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Profile, profile);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(InterfaceManager, "IDevice", {
+	        get: function () {
+	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Device);
+	        },
+	        set: function (device) {
+	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Device, device);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(InterfaceManager, "IChannels", {
+	        get: function () {
+	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels);
+	        },
+	        set: function (channels) {
+	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels, channels);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    return InterfaceManager;
+	}());
+	InterfaceManager.interfaces = {};
+	exports.InterfaceManager = InterfaceManager;
+	//# sourceMappingURL=interfaceManager.js.map
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	__webpack_require__(1);
+	var inversify_1 = __webpack_require__(14);
+	var eventManager_1 = __webpack_require__(53);
+	var localStorageData_1 = __webpack_require__(54);
+	var logger_1 = __webpack_require__(55);
+	var restClient_1 = __webpack_require__(57);
+	var authenticatedRestClient_1 = __webpack_require__(58);
+	var sessionManager_1 = __webpack_require__(59);
+	var webSocketManager_1 = __webpack_require__(60);
+	var networkManager_1 = __webpack_require__(61);
+	var deviceManager_1 = __webpack_require__(62);
+	var facebookManager_1 = __webpack_require__(63);
+	var conversationManager_1 = __webpack_require__(64);
+	var profileManager_1 = __webpack_require__(65);
+	var messageManager_1 = __webpack_require__(66);
+	var indexedDBOrphanedEventManager_1 = __webpack_require__(67);
+	var localStorageOrphanedEventManager_1 = __webpack_require__(68);
+	var messagePager_1 = __webpack_require__(69);
+	var appMessaging_1 = __webpack_require__(70);
+	var profile_1 = __webpack_require__(71);
+	var services_1 = __webpack_require__(72);
+	var device_1 = __webpack_require__(73);
+	var channels_1 = __webpack_require__(74);
+	var interfaceSymbols_1 = __webpack_require__(56);
+	var container = new inversify_1.Container();
+	exports.container = container;
+	function initInterfaces() {
+	    "use strict";
+	    container.unbindAll();
+	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager).to(eventManager_1.EventManager).inSingletonScope();
+	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData).to(localStorageData_1.LocalStorageData);
+	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger).to(logger_1.Logger);
+	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient).to(restClient_1.RestClient);
+	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager).to(sessionManager_1.SessionManager).inSingletonScope();
+	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager).to(webSocketManager_1.WebSocketManager);
+	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager).to(networkManager_1.NetworkManager);
+	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient).to(authenticatedRestClient_1.AuthenticatedRestClient);
+	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager).to(deviceManager_1.DeviceManager);
+	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager).to(facebookManager_1.FacebookManager);
+	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager).to(conversationManager_1.ConversationManager);
+	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager).to(profileManager_1.ProfileManager);
+	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager).to(messagePager_1.MessagePager);
+	    var dbSupported = "indexedDB" in window;
+	    if (dbSupported) {
+	        container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(indexedDBOrphanedEventManager_1.IndexedDBOrphanedEventManager);
+	    }
+	    else {
+	        container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(localStorageOrphanedEventManager_1.LocalStorageOrphanedEventManager);
+	    }
+	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager).to(messageManager_1.MessageManager);
+	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.AppMessaging).to(appMessaging_1.AppMessaging);
+	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Profile).to(profile_1.Profile);
+	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Services).to(services_1.Services);
+	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Device).to(device_1.Device);
+	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels).to(channels_1.Channels);
+	}
+	exports.initInterfaces = initInterfaces;
+	initInterfaces();
+	//# sourceMappingURL=inversify.config.js.map
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var container_1 = __webpack_require__(15);
 	exports.Container = container_1.Container;
-	var container_module_1 = __webpack_require__(33);
+	var container_module_1 = __webpack_require__(43);
 	exports.ContainerModule = container_module_1.ContainerModule;
-	var injectable_1 = __webpack_require__(34);
+	var injectable_1 = __webpack_require__(44);
 	exports.injectable = injectable_1.injectable;
-	var tagged_1 = __webpack_require__(35);
+	var tagged_1 = __webpack_require__(45);
 	exports.tagged = tagged_1.tagged;
-	var named_1 = __webpack_require__(37);
+	var named_1 = __webpack_require__(47);
 	exports.named = named_1.named;
-	var inject_1 = __webpack_require__(38);
+	var inject_1 = __webpack_require__(48);
 	exports.inject = inject_1.inject;
-	var optional_1 = __webpack_require__(39);
+	var optional_1 = __webpack_require__(49);
 	exports.optional = optional_1.optional;
-	var unmanaged_1 = __webpack_require__(40);
+	var unmanaged_1 = __webpack_require__(50);
 	exports.unmanaged = unmanaged_1.unmanaged;
-	var multi_inject_1 = __webpack_require__(41);
+	var multi_inject_1 = __webpack_require__(51);
 	exports.multiInject = multi_inject_1.multiInject;
-	var target_name_1 = __webpack_require__(42);
+	var target_name_1 = __webpack_require__(52);
 	exports.targetName = target_name_1.targetName;
-	var metadata_reader_1 = __webpack_require__(32);
+	var metadata_reader_1 = __webpack_require__(42);
 	exports.MetadataReader = metadata_reader_1.MetadataReader;
-	var guid_1 = __webpack_require__(7);
+	var guid_1 = __webpack_require__(17);
 	exports.guid = guid_1.guid;
-	var decorator_utils_1 = __webpack_require__(36);
+	var decorator_utils_1 = __webpack_require__(46);
 	exports.decorate = decorator_utils_1.decorate;
-	var constraint_helpers_1 = __webpack_require__(30);
+	var constraint_helpers_1 = __webpack_require__(40);
 	exports.traverseAncerstors = constraint_helpers_1.traverseAncerstors;
 	exports.taggedConstraint = constraint_helpers_1.taggedConstraint;
 	exports.namedConstraint = constraint_helpers_1.namedConstraint;
 	exports.typeConstraint = constraint_helpers_1.typeConstraint;
-	var serialization_1 = __webpack_require__(21);
+	var serialization_1 = __webpack_require__(31);
 	exports.getServiceIdentifierAsString = serialization_1.getServiceIdentifierAsString;
 
 
 /***/ }),
-/* 5 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var binding_1 = __webpack_require__(6);
-	var lookup_1 = __webpack_require__(9);
-	var planner_1 = __webpack_require__(11);
-	var resolver_1 = __webpack_require__(22);
-	var binding_to_syntax_1 = __webpack_require__(24);
-	var serialization_1 = __webpack_require__(21);
-	var container_snapshot_1 = __webpack_require__(31);
-	var guid_1 = __webpack_require__(7);
-	var ERROR_MSGS = __webpack_require__(10);
-	var METADATA_KEY = __webpack_require__(17);
-	var literal_types_1 = __webpack_require__(8);
-	var metadata_reader_1 = __webpack_require__(32);
+	var binding_1 = __webpack_require__(16);
+	var lookup_1 = __webpack_require__(19);
+	var planner_1 = __webpack_require__(21);
+	var resolver_1 = __webpack_require__(32);
+	var binding_to_syntax_1 = __webpack_require__(34);
+	var serialization_1 = __webpack_require__(31);
+	var container_snapshot_1 = __webpack_require__(41);
+	var guid_1 = __webpack_require__(17);
+	var ERROR_MSGS = __webpack_require__(20);
+	var METADATA_KEY = __webpack_require__(27);
+	var literal_types_1 = __webpack_require__(18);
+	var metadata_reader_1 = __webpack_require__(42);
 	var Container = (function () {
 	    function Container(containerOptions) {
 	        if (containerOptions !== undefined) {
@@ -1857,13 +2663,13 @@ var COMAPI =
 
 
 /***/ }),
-/* 6 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var guid_1 = __webpack_require__(7);
-	var literal_types_1 = __webpack_require__(8);
+	var guid_1 = __webpack_require__(17);
+	var literal_types_1 = __webpack_require__(18);
 	var Binding = (function () {
 	    function Binding(serviceIdentifier, defaultScope) {
 	        this.guid = guid_1.guid();
@@ -1899,7 +2705,7 @@ var COMAPI =
 
 
 /***/ }),
-/* 7 */
+/* 17 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -1917,7 +2723,7 @@ var COMAPI =
 
 
 /***/ }),
-/* 8 */
+/* 18 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -1947,12 +2753,12 @@ var COMAPI =
 
 
 /***/ }),
-/* 9 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var ERROR_MSGS = __webpack_require__(10);
+	var ERROR_MSGS = __webpack_require__(20);
 	var Lookup = (function () {
 	    function Lookup() {
 	        this._map = new Map();
@@ -2032,7 +2838,7 @@ var COMAPI =
 
 
 /***/ }),
-/* 10 */
+/* 20 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -2065,22 +2871,22 @@ var COMAPI =
 
 
 /***/ }),
-/* 11 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var plan_1 = __webpack_require__(12);
-	var context_1 = __webpack_require__(13);
-	var request_1 = __webpack_require__(14);
-	var target_1 = __webpack_require__(15);
-	var binding_count_1 = __webpack_require__(19);
-	var reflection_utils_1 = __webpack_require__(20);
-	var metadata_1 = __webpack_require__(16);
-	var ERROR_MSGS = __webpack_require__(10);
-	var METADATA_KEY = __webpack_require__(17);
-	var literal_types_1 = __webpack_require__(8);
-	var serialization_1 = __webpack_require__(21);
+	var plan_1 = __webpack_require__(22);
+	var context_1 = __webpack_require__(23);
+	var request_1 = __webpack_require__(24);
+	var target_1 = __webpack_require__(25);
+	var binding_count_1 = __webpack_require__(29);
+	var reflection_utils_1 = __webpack_require__(30);
+	var metadata_1 = __webpack_require__(26);
+	var ERROR_MSGS = __webpack_require__(20);
+	var METADATA_KEY = __webpack_require__(27);
+	var literal_types_1 = __webpack_require__(18);
+	var serialization_1 = __webpack_require__(31);
 	function getBindingDictionary(cntnr) {
 	    return cntnr._bindingDictionary;
 	}
@@ -2207,7 +3013,7 @@ var COMAPI =
 
 
 /***/ }),
-/* 12 */
+/* 22 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -2223,12 +3029,12 @@ var COMAPI =
 
 
 /***/ }),
-/* 13 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var guid_1 = __webpack_require__(7);
+	var guid_1 = __webpack_require__(17);
 	var Context = (function () {
 	    function Context(container) {
 	        this.guid = guid_1.guid();
@@ -2243,12 +3049,12 @@ var COMAPI =
 
 
 /***/ }),
-/* 14 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var guid_1 = __webpack_require__(7);
+	var guid_1 = __webpack_require__(17);
 	var Request = (function () {
 	    function Request(serviceIdentifier, parentContext, parentRequest, bindings, target) {
 	        this.guid = guid_1.guid();
@@ -2270,15 +3076,15 @@ var COMAPI =
 
 
 /***/ }),
-/* 15 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var metadata_1 = __webpack_require__(16);
-	var queryable_string_1 = __webpack_require__(18);
-	var guid_1 = __webpack_require__(7);
-	var METADATA_KEY = __webpack_require__(17);
+	var metadata_1 = __webpack_require__(26);
+	var queryable_string_1 = __webpack_require__(28);
+	var guid_1 = __webpack_require__(17);
+	var METADATA_KEY = __webpack_require__(27);
 	var Target = (function () {
 	    function Target(type, name, serviceIdentifier, namedOrTagged) {
 	        this.guid = guid_1.guid();
@@ -2366,12 +3172,12 @@ var COMAPI =
 
 
 /***/ }),
-/* 16 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var METADATA_KEY = __webpack_require__(17);
+	var METADATA_KEY = __webpack_require__(27);
 	var Metadata = (function () {
 	    function Metadata(key, value) {
 	        this.key = key;
@@ -2391,7 +3197,7 @@ var COMAPI =
 
 
 /***/ }),
-/* 17 */
+/* 27 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -2409,7 +3215,7 @@ var COMAPI =
 
 
 /***/ }),
-/* 18 */
+/* 28 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -2442,7 +3248,7 @@ var COMAPI =
 
 
 /***/ }),
-/* 19 */
+/* 29 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -2456,16 +3262,16 @@ var COMAPI =
 
 
 /***/ }),
-/* 20 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var serialization_1 = __webpack_require__(21);
-	var target_1 = __webpack_require__(15);
-	var ERROR_MSGS = __webpack_require__(10);
-	var METADATA_KEY = __webpack_require__(17);
-	var literal_types_1 = __webpack_require__(8);
+	var serialization_1 = __webpack_require__(31);
+	var target_1 = __webpack_require__(25);
+	var ERROR_MSGS = __webpack_require__(20);
+	var METADATA_KEY = __webpack_require__(27);
+	var literal_types_1 = __webpack_require__(18);
 	function getDependencies(metadataReader, func) {
 	    var constructorName = serialization_1.getFunctionName(func);
 	    var targets = getTargets(metadataReader, constructorName, func, false);
@@ -2586,12 +3392,12 @@ var COMAPI =
 
 
 /***/ }),
-/* 21 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var ERROR_MSGS = __webpack_require__(10);
+	var ERROR_MSGS = __webpack_require__(20);
 	function getServiceIdentifierAsString(serviceIdentifier) {
 	    if (typeof serviceIdentifier === "function") {
 	        var _serviceIdentifier = serviceIdentifier;
@@ -2683,15 +3489,15 @@ var COMAPI =
 
 
 /***/ }),
-/* 22 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var literal_types_1 = __webpack_require__(8);
-	var serialization_1 = __webpack_require__(21);
-	var instantiation_1 = __webpack_require__(23);
-	var ERROR_MSGS = __webpack_require__(10);
+	var literal_types_1 = __webpack_require__(18);
+	var serialization_1 = __webpack_require__(31);
+	var instantiation_1 = __webpack_require__(33);
+	var ERROR_MSGS = __webpack_require__(20);
 	function _resolveRequest(request) {
 	    var bindings = request.bindings;
 	    var childRequests = request.childRequests;
@@ -2757,12 +3563,12 @@ var COMAPI =
 
 
 /***/ }),
-/* 23 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var literal_types_1 = __webpack_require__(8);
+	var literal_types_1 = __webpack_require__(18);
 	function _injectProperties(instance, childRequests, resolveRequest) {
 	    var propertyInjectionsRequests = childRequests.filter(function (childRequest) {
 	        return (childRequest.target !== null && childRequest.target.type === literal_types_1.TargetTypeEnum.ClassProperty);
@@ -2802,15 +3608,15 @@ var COMAPI =
 
 
 /***/ }),
-/* 24 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var binding_in_when_on_syntax_1 = __webpack_require__(25);
-	var binding_when_on_syntax_1 = __webpack_require__(27);
-	var literal_types_1 = __webpack_require__(8);
-	var ERROR_MSGS = __webpack_require__(10);
+	var binding_in_when_on_syntax_1 = __webpack_require__(35);
+	var binding_when_on_syntax_1 = __webpack_require__(37);
+	var literal_types_1 = __webpack_require__(18);
+	var ERROR_MSGS = __webpack_require__(20);
 	var BindingToSyntax = (function () {
 	    function BindingToSyntax(binding) {
 	        this._binding = binding;
@@ -2879,14 +3685,14 @@ var COMAPI =
 
 
 /***/ }),
-/* 25 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var binding_in_syntax_1 = __webpack_require__(26);
-	var binding_when_syntax_1 = __webpack_require__(28);
-	var binding_on_syntax_1 = __webpack_require__(29);
+	var binding_in_syntax_1 = __webpack_require__(36);
+	var binding_when_syntax_1 = __webpack_require__(38);
+	var binding_on_syntax_1 = __webpack_require__(39);
 	var BindingInWhenOnSyntax = (function () {
 	    function BindingInWhenOnSyntax(binding) {
 	        this._binding = binding;
@@ -2954,13 +3760,13 @@ var COMAPI =
 
 
 /***/ }),
-/* 26 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var literal_types_1 = __webpack_require__(8);
-	var binding_when_on_syntax_1 = __webpack_require__(27);
+	var literal_types_1 = __webpack_require__(18);
+	var binding_when_on_syntax_1 = __webpack_require__(37);
 	var BindingInSyntax = (function () {
 	    function BindingInSyntax(binding) {
 	        this._binding = binding;
@@ -2979,13 +3785,13 @@ var COMAPI =
 
 
 /***/ }),
-/* 27 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var binding_when_syntax_1 = __webpack_require__(28);
-	var binding_on_syntax_1 = __webpack_require__(29);
+	var binding_when_syntax_1 = __webpack_require__(38);
+	var binding_on_syntax_1 = __webpack_require__(39);
 	var BindingWhenOnSyntax = (function () {
 	    function BindingWhenOnSyntax(binding) {
 	        this._binding = binding;
@@ -3046,13 +3852,13 @@ var COMAPI =
 
 
 /***/ }),
-/* 28 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var binding_on_syntax_1 = __webpack_require__(29);
-	var constraint_helpers_1 = __webpack_require__(30);
+	var binding_on_syntax_1 = __webpack_require__(39);
+	var constraint_helpers_1 = __webpack_require__(40);
 	var BindingWhenSyntax = (function () {
 	    function BindingWhenSyntax(binding) {
 	        this._binding = binding;
@@ -3150,12 +3956,12 @@ var COMAPI =
 
 
 /***/ }),
-/* 29 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var binding_when_syntax_1 = __webpack_require__(28);
+	var binding_when_syntax_1 = __webpack_require__(38);
 	var BindingOnSyntax = (function () {
 	    function BindingOnSyntax(binding) {
 	        this._binding = binding;
@@ -3170,13 +3976,13 @@ var COMAPI =
 
 
 /***/ }),
-/* 30 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var metadata_1 = __webpack_require__(16);
-	var METADATA_KEY = __webpack_require__(17);
+	var metadata_1 = __webpack_require__(26);
+	var METADATA_KEY = __webpack_require__(27);
 	var traverseAncerstors = function (request, constraint) {
 	    var parent = request.parentRequest;
 	    if (parent !== null) {
@@ -3216,7 +4022,7 @@ var COMAPI =
 
 
 /***/ }),
-/* 31 */
+/* 41 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -3236,12 +4042,12 @@ var COMAPI =
 
 
 /***/ }),
-/* 32 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var METADATA_KEY = __webpack_require__(17);
+	var METADATA_KEY = __webpack_require__(27);
 	var MetadataReader = (function () {
 	    function MetadataReader() {
 	    }
@@ -3263,12 +4069,12 @@ var COMAPI =
 
 
 /***/ }),
-/* 33 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var guid_1 = __webpack_require__(7);
+	var guid_1 = __webpack_require__(17);
 	var ContainerModule = (function () {
 	    function ContainerModule(registry) {
 	        this.guid = guid_1.guid();
@@ -3280,13 +4086,13 @@ var COMAPI =
 
 
 /***/ }),
-/* 34 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var METADATA_KEY = __webpack_require__(17);
-	var ERRORS_MSGS = __webpack_require__(10);
+	var METADATA_KEY = __webpack_require__(27);
+	var ERRORS_MSGS = __webpack_require__(20);
 	function injectable() {
 	    return function (target) {
 	        if (Reflect.hasOwnMetadata(METADATA_KEY.PARAM_TYPES, target) === true) {
@@ -3301,13 +4107,13 @@ var COMAPI =
 
 
 /***/ }),
-/* 35 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var metadata_1 = __webpack_require__(16);
-	var decorator_utils_1 = __webpack_require__(36);
+	var metadata_1 = __webpack_require__(26);
+	var decorator_utils_1 = __webpack_require__(46);
 	function tagged(metadataKey, metadataValue) {
 	    return function (target, targetKey, index) {
 	        var metadata = new metadata_1.Metadata(metadataKey, metadataValue);
@@ -3323,13 +4129,13 @@ var COMAPI =
 
 
 /***/ }),
-/* 36 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var METADATA_KEY = __webpack_require__(17);
-	var ERROR_MSGS = __webpack_require__(10);
+	var METADATA_KEY = __webpack_require__(27);
+	var ERROR_MSGS = __webpack_require__(20);
 	function tagParameter(annotationTarget, propertyName, parameterIndex, metadata) {
 	    var metadataKey = METADATA_KEY.TAGGED;
 	    _tagParameterOrProperty(metadataKey, annotationTarget, propertyName, metadata, parameterIndex);
@@ -3384,14 +4190,14 @@ var COMAPI =
 
 
 /***/ }),
-/* 37 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var metadata_1 = __webpack_require__(16);
-	var decorator_utils_1 = __webpack_require__(36);
-	var METADATA_KEY = __webpack_require__(17);
+	var metadata_1 = __webpack_require__(26);
+	var decorator_utils_1 = __webpack_require__(46);
+	var METADATA_KEY = __webpack_require__(27);
 	function named(name) {
 	    return function (target, targetKey, index) {
 	        var metadata = new metadata_1.Metadata(METADATA_KEY.NAMED_TAG, name);
@@ -3407,14 +4213,14 @@ var COMAPI =
 
 
 /***/ }),
-/* 38 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var metadata_1 = __webpack_require__(16);
-	var decorator_utils_1 = __webpack_require__(36);
-	var METADATA_KEY = __webpack_require__(17);
+	var metadata_1 = __webpack_require__(26);
+	var decorator_utils_1 = __webpack_require__(46);
+	var METADATA_KEY = __webpack_require__(27);
 	function inject(serviceIdentifier) {
 	    return function (target, targetKey, index) {
 	        var metadata = new metadata_1.Metadata(METADATA_KEY.INJECT_TAG, serviceIdentifier);
@@ -3430,14 +4236,14 @@ var COMAPI =
 
 
 /***/ }),
-/* 39 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var metadata_1 = __webpack_require__(16);
-	var decorator_utils_1 = __webpack_require__(36);
-	var METADATA_KEY = __webpack_require__(17);
+	var metadata_1 = __webpack_require__(26);
+	var decorator_utils_1 = __webpack_require__(46);
+	var METADATA_KEY = __webpack_require__(27);
 	function optional() {
 	    return function (target, targetKey, index) {
 	        var metadata = new metadata_1.Metadata(METADATA_KEY.OPTIONAL_TAG, true);
@@ -3453,14 +4259,14 @@ var COMAPI =
 
 
 /***/ }),
-/* 40 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var metadata_1 = __webpack_require__(16);
-	var decorator_utils_1 = __webpack_require__(36);
-	var METADATA_KEY = __webpack_require__(17);
+	var metadata_1 = __webpack_require__(26);
+	var decorator_utils_1 = __webpack_require__(46);
+	var METADATA_KEY = __webpack_require__(27);
 	function unmanaged() {
 	    return function (target, targetKey, index) {
 	        var metadata = new metadata_1.Metadata(METADATA_KEY.UNMANAGED_TAG, true);
@@ -3471,14 +4277,14 @@ var COMAPI =
 
 
 /***/ }),
-/* 41 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var metadata_1 = __webpack_require__(16);
-	var decorator_utils_1 = __webpack_require__(36);
-	var METADATA_KEY = __webpack_require__(17);
+	var metadata_1 = __webpack_require__(26);
+	var decorator_utils_1 = __webpack_require__(46);
+	var METADATA_KEY = __webpack_require__(27);
 	function multiInject(serviceIdentifier) {
 	    return function (target, targetKey, index) {
 	        var metadata = new metadata_1.Metadata(METADATA_KEY.MULTI_INJECT_TAG, serviceIdentifier);
@@ -3494,14 +4300,14 @@ var COMAPI =
 
 
 /***/ }),
-/* 42 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var metadata_1 = __webpack_require__(16);
-	var decorator_utils_1 = __webpack_require__(36);
-	var METADATA_KEY = __webpack_require__(17);
+	var metadata_1 = __webpack_require__(26);
+	var decorator_utils_1 = __webpack_require__(46);
+	var METADATA_KEY = __webpack_require__(27);
 	function targetName(name) {
 	    return function (target, targetKey, index) {
 	        var metadata = new metadata_1.Metadata(METADATA_KEY.NAME_TAG, name);
@@ -3512,1604 +4318,7 @@ var COMAPI =
 
 
 /***/ }),
-/* 43 */
-/***/ (function(module, exports) {
-
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	var LogLevels;
-	(function (LogLevels) {
-	    LogLevels[LogLevels["None"] = 0] = "None";
-	    LogLevels[LogLevels["Error"] = 1] = "Error";
-	    LogLevels[LogLevels["Warn"] = 2] = "Warn";
-	    LogLevels[LogLevels["Debug"] = 3] = "Debug";
-	})(LogLevels = exports.LogLevels || (exports.LogLevels = {}));
-	;
-	var LogPersistences;
-	(function (LogPersistences) {
-	    LogPersistences[LogPersistences["None"] = 0] = "None";
-	    LogPersistences[LogPersistences["IndexedDB"] = 1] = "IndexedDB";
-	    LogPersistences[LogPersistences["LocalStorage"] = 2] = "LocalStorage";
-	})(LogPersistences = exports.LogPersistences || (exports.LogPersistences = {}));
-	;
-	;
-	;
-	;
-	var Environment;
-	(function (Environment) {
-	    Environment[Environment["development"] = 0] = "development";
-	    Environment[Environment["production"] = 1] = "production";
-	})(Environment = exports.Environment || (exports.Environment = {}));
-	;
-	;
-	;
-	var ConversationScope;
-	(function (ConversationScope) {
-	    ConversationScope[ConversationScope["public"] = 0] = "public";
-	    ConversationScope[ConversationScope["participant"] = 1] = "participant";
-	})(ConversationScope = exports.ConversationScope || (exports.ConversationScope = {}));
-	;
-	//# sourceMappingURL=interfaces.js.map
-
-/***/ }),
-/* 44 */
-/***/ (function(module, exports) {
-
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	var IndexedDBLogger = (function () {
-	    function IndexedDBLogger(name) {
-	        this.idbSupported = "indexedDB" in window;
-	        this._name = "Comapi";
-	        this._version = 1;
-	        this._store = "Logs";
-	        if (name) {
-	            this._name = name;
-	        }
-	    }
-	    IndexedDBLogger.prototype.openDatabase = function () {
-	        var _this = this;
-	        return new Promise(function (resolve, reject) {
-	            if (_this.idbSupported) {
-	                var self_1 = _this;
-	                var openRequest = indexedDB.open(_this._name, _this._version);
-	                openRequest.onupgradeneeded = function (e) {
-	                    console.log("Upgrading database...");
-	                    var thisDB = e.target.result;
-	                    if (!thisDB.objectStoreNames.contains(self_1._store)) {
-	                        var os = thisDB.createObjectStore(self_1._store, { autoIncrement: true });
-	                        os.createIndex("created", "created", { unique: false });
-	                    }
-	                };
-	                openRequest.onsuccess = function (e) {
-	                    self_1._database = e.target.result;
-	                    resolve(true);
-	                };
-	                openRequest.onerror = function (e) {
-	                    reject({ message: "IndexedDBLogger.open failed : " + e.target.error.name });
-	                };
-	            }
-	            else {
-	                reject({ message: "IndexedDBLogger not supported on this platform" });
-	            }
-	        });
-	    };
-	    IndexedDBLogger.prototype.purge = function (when) {
-	        var _this = this;
-	        return new Promise(function (resolve, reject) {
-	            if (_this._database) {
-	                var transaction = _this._database.transaction([_this._store], "readwrite");
-	                var objectStore_1 = transaction.objectStore(_this._store);
-	                var index = objectStore_1.index("created");
-	                var keyRangeValue = IDBKeyRange.upperBound(when.valueOf());
-	                index.openCursor(keyRangeValue).onsuccess = function (event) {
-	                    var cursor = event.target.result;
-	                    if (cursor) {
-	                        objectStore_1["delete"](cursor.primaryKey);
-	                        cursor["continue"]();
-	                    }
-	                    else {
-	                        resolve(true);
-	                    }
-	                };
-	            }
-	            else {
-	                reject({ message: "Database not open" });
-	            }
-	        });
-	    };
-	    IndexedDBLogger.prototype.deleteDatabase = function () {
-	        var _this = this;
-	        return new Promise(function (resolve, reject) {
-	            var req = indexedDB.deleteDatabase(_this._name);
-	            var self = _this;
-	            req.onsuccess = function () {
-	                console.log("Deleted database " + self._name + " successfully");
-	                resolve(true);
-	            };
-	            req.onerror = function (e) {
-	                reject({ message: "Couldn't delete database " + self._name + " : " + e.target.error.name });
-	            };
-	            req.onblocked = function () {
-	                console.warn("Couldn't delete database " + self._name + " due to the operation being blocked");
-	            };
-	        });
-	    };
-	    IndexedDBLogger.prototype.clearData = function () {
-	        var _this = this;
-	        return new Promise(function (resolve, reject) {
-	            if (_this._database) {
-	                var transaction_1 = _this._database.transaction([_this._store], "readwrite");
-	                transaction_1.onerror = function (event) {
-	                    console.error("Transaction not opened due to error: " + transaction_1.error);
-	                };
-	                var objectStore = transaction_1.objectStore(_this._store);
-	                var objectStoreRequest = objectStore.clear();
-	                objectStoreRequest.onsuccess = function (event) {
-	                    resolve(true);
-	                };
-	                objectStoreRequest.onerror = function (e) {
-	                    reject({ message: "Failed to clear object store: " + e.target.error.name });
-	                };
-	            }
-	            else {
-	                reject({ message: "Database not open" });
-	            }
-	        });
-	    };
-	    IndexedDBLogger.prototype.getData = function (count, getIndexes) {
-	        var _this = this;
-	        return new Promise(function (resolve, reject) {
-	            if (_this._database) {
-	                var transaction = _this._database.transaction([_this._store], "readonly");
-	                var objectStore = transaction.objectStore(_this._store);
-	                var cursorRequest = objectStore.openCursor();
-	                var numRetrieved_1 = 0;
-	                var data_1 = [];
-	                cursorRequest.onsuccess = function (event) {
-	                    var cursor = event.target.result;
-	                    numRetrieved_1++;
-	                    if (cursor) {
-	                        var record = cursor.value;
-	                        if (getIndexes === true) {
-	                            record.key = cursor.key;
-	                        }
-	                        data_1.push(cursor.value);
-	                        if (numRetrieved_1 && numRetrieved_1 >= count) {
-	                            resolve(data_1);
-	                        }
-	                        else {
-	                            cursor.continue();
-	                        }
-	                    }
-	                    else {
-	                        resolve(data_1);
-	                    }
-	                };
-	                cursorRequest.onerror = function (e) {
-	                    reject({ message: "Failed to openCursor: " + e.target.error.name });
-	                };
-	            }
-	            else {
-	                reject({ message: "Database not open" });
-	            }
-	        });
-	    };
-	    IndexedDBLogger.prototype.getCount = function () {
-	        var _this = this;
-	        return new Promise(function (resolve, reject) {
-	            if (_this._database) {
-	                var transaction = _this._database.transaction([_this._store], "readonly");
-	                var objectStore = transaction.objectStore(_this._store);
-	                var count_1 = objectStore.count();
-	                count_1.onerror = function (e) {
-	                    reject({ message: "Failed to get count: " + e.target.error.name });
-	                };
-	                count_1.onsuccess = function () {
-	                    resolve(count_1.result);
-	                };
-	            }
-	            else {
-	                reject({ message: "Database not open" });
-	            }
-	        });
-	    };
-	    IndexedDBLogger.prototype.closeDatabase = function () {
-	        if (this._database) {
-	            this._database.close();
-	        }
-	    };
-	    IndexedDBLogger.prototype.addRecord = function (entity) {
-	        var _this = this;
-	        return new Promise(function (resolve, reject) {
-	            if (_this._database) {
-	                var transaction = _this._database.transaction([_this._store], "readwrite");
-	                var store = transaction.objectStore(_this._store);
-	                var request = store.add(entity);
-	                request.onerror = function (e) {
-	                    console.error("Error", e.target.error.name);
-	                    reject({ message: "add failed: " + e.target.error.name });
-	                };
-	                request.onsuccess = function (e) {
-	                    resolve(e.target.result);
-	                };
-	            }
-	            else {
-	                reject({ message: "Database not open" });
-	            }
-	        });
-	    };
-	    return IndexedDBLogger;
-	}());
-	exports.IndexedDBLogger = IndexedDBLogger;
-	//# sourceMappingURL=indexedDBLogger.js.map
-
-/***/ }),
-/* 45 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	var utils_1 = __webpack_require__(46);
-	var MessagePager = (function () {
-	    function MessagePager(_logger, _localStorage, _messageManager, _orphanedEventManager) {
-	        this._logger = _logger;
-	        this._localStorage = _localStorage;
-	        this._messageManager = _messageManager;
-	        this._orphanedEventManager = _orphanedEventManager;
-	    }
-	    MessagePager.prototype.getMessages = function (conversationId, pageSize, continuationToken) {
-	        var _this = this;
-	        if (continuationToken <= 0) {
-	            return Promise.reject({ message: "All messages from conversation " + conversationId + " have been loaded" });
-	        }
-	        var _continuationToken = null;
-	        var _conversationMessagesResult;
-	        return this._orphanedEventManager.getContinuationToken(conversationId)
-	            .then(function (token) {
-	            _continuationToken = token;
-	            if (continuationToken !== undefined) {
-	                if (_continuationToken !== continuationToken) {
-	                    return Promise.reject({ message: "Invalid continuation token: " + continuationToken + " for " + conversationId + ", you nust start from the end" });
-	                }
-	                else {
-	                    return Promise.resolve(true);
-	                }
-	            }
-	            else {
-	                return _this._orphanedEventManager.clear(conversationId);
-	            }
-	        })
-	            .then(function () {
-	            return _this._messageManager.getConversationMessages(conversationId, pageSize, continuationToken);
-	        })
-	            .then(function (result) {
-	            _conversationMessagesResult = result;
-	            if (result.messages === undefined) {
-	                _this._logger.log("No messages in this channel yet");
-	                return Promise.resolve({ messages: [] });
-	            }
-	            else {
-	                return _this.getOrphanedEvents(conversationId, _conversationMessagesResult.orphanedEvents)
-	                    .then(function (orphanedEvents) {
-	                    return _this.applyOrphanedEvents(_conversationMessagesResult.messages, orphanedEvents);
-	                })
-	                    .then(function () {
-	                    _continuationToken = _conversationMessagesResult.earliestEventId - 1;
-	                    return _this._orphanedEventManager.setContinuationToken(conversationId, _continuationToken);
-	                })
-	                    .then(function () {
-	                    return Promise.resolve({
-	                        continuationToken: _continuationToken,
-	                        earliestEventId: _conversationMessagesResult.earliestEventId,
-	                        latestEventId: _conversationMessagesResult.latestEventId,
-	                        messages: _conversationMessagesResult.messages,
-	                    });
-	                });
-	            }
-	        });
-	    };
-	    MessagePager.prototype.getOrphanedEvents = function (conversationId, orphanedEvents) {
-	        var _this = this;
-	        var mapped = orphanedEvents.map(function (e) { return _this.mapOrphanedEvent(e); });
-	        return utils_1.Utils.eachSeries(mapped, function (event) {
-	            return _this._orphanedEventManager.addOrphanedEvent(event);
-	        })
-	            .then(function (done) {
-	            return _this._orphanedEventManager.getOrphanedEvents(conversationId);
-	        });
-	    };
-	    MessagePager.prototype.markMessagesAsDelivered = function (id, messages, userId) {
-	        var messageIds = [];
-	        for (var _i = 0, messages_1 = messages; _i < messages_1.length; _i++) {
-	            var message = messages_1[_i];
-	            if (message.context && message.context.from && message.context.from.id !== userId) {
-	                var alreadyDelivered = false;
-	                if (message.statusUpdates && message.statusUpdates[userId]) {
-	                    if (message.statusUpdates[userId].status === "delivered" ||
-	                        message.statusUpdates[userId].status === "read") {
-	                        alreadyDelivered = true;
-	                    }
-	                }
-	                if (!alreadyDelivered) {
-	                    messageIds.unshift(message.id);
-	                }
-	            }
-	        }
-	        if (messageIds.length > 0) {
-	            var statusUpdate = {
-	                messageIds: messageIds,
-	                status: "delivered",
-	                timestamp: new Date().toISOString()
-	            };
-	            return this._messageManager.sendMessageStatusUpdates(id, [statusUpdate]);
-	        }
-	        else {
-	            return Promise.resolve("OK");
-	        }
-	    };
-	    MessagePager.prototype.resetConversation = function (conversationId) {
-	        return this._orphanedEventManager.clear(conversationId);
-	    };
-	    MessagePager.prototype.applyOrphanedEvents = function (messages, orphanedEvents) {
-	        var _this = this;
-	        return utils_1.Utils.eachSeries(orphanedEvents, function (event) {
-	            if (_this.playEvent(event, messages)) {
-	                _this._logger.log("succesfuly played event " + event.conversationEventId);
-	                return _this._orphanedEventManager.removeOrphanedEvent(event);
-	            }
-	            else {
-	                _this._logger.warn("failed to play event " + event.conversationEventId, event);
-	                return Promise.resolve(false);
-	            }
-	        });
-	    };
-	    MessagePager.prototype.playEvent = function (event, messages) {
-	        var played = false;
-	        var found = messages.filter(function (message) { return message.id === event.payload.messageId; });
-	        var message;
-	        if (found.length === 1) {
-	            message = found[0];
-	            played = true;
-	        }
-	        else if (found.length >= 1) {
-	            this._logger.error("Found more than 1 message with same messageId: " + event.payload.messageId);
-	        }
-	        else {
-	            this._logger.log("Message " + event.payload.messageId + " not found ...");
-	        }
-	        switch (event.name) {
-	            case "conversationMessage.read":
-	                {
-	                    if (message) {
-	                        message.statusUpdates[event.payload.profileId] = {
-	                            "status": "read",
-	                            "on": event.payload.timestamp
-	                        };
-	                    }
-	                }
-	                break;
-	            case "conversationMessage.delivered":
-	                {
-	                    if (message) {
-	                        var updateForProfileId = message.statusUpdates[event.payload.profileId];
-	                        if (updateForProfileId && updateForProfileId.status === "read") {
-	                            this._logger.log("Message already marked as read, not marking as delivered");
-	                        }
-	                        else {
-	                            message.statusUpdates[event.payload.profileId] = {
-	                                "status": "delivered",
-	                                "on": event.payload.timestamp
-	                            };
-	                        }
-	                    }
-	                }
-	                break;
-	            default:
-	                this._logger.error("Unknown eventName " + event.name + " for messageId: " + event.payload.messageId);
-	                break;
-	        }
-	        return played;
-	    };
-	    MessagePager.prototype.mapOrphanedEvent = function (event) {
-	        var mapped = {};
-	        mapped.conversationEventId = event.id;
-	        mapped.name = "conversationMessage." + event.data.name;
-	        mapped.eventId = event.data.eventId;
-	        mapped.conversationId = event.data.payload.conversationId;
-	        mapped.payload = event.data.payload;
-	        return mapped;
-	    };
-	    return MessagePager;
-	}());
-	exports.MessagePager = MessagePager;
-	//# sourceMappingURL=messagePager.js.map
-
-/***/ }),
-/* 46 */
-/***/ (function(module, exports) {
-
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	var Utils = (function () {
-	    function Utils() {
-	        throw new Error("Cannot new this class");
-	    }
-	    Utils.clone = function (obj) {
-	        return JSON.parse(JSON.stringify(obj));
-	    };
-	    Utils.uuid = function () {
-	        var d = new Date().getTime();
-	        var uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-	            var r = (d + Math.random() * 16) % 16 | 0;
-	            d = Math.floor(d / 16);
-	            return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
-	        });
-	        return uuid;
-	    };
-	    Utils.getBrowserInfo = function (userAgent) {
-	        var ua = userAgent !== undefined ? userAgent : navigator.userAgent, tem, M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
-	        if (/trident/i.test(M[1])) {
-	            tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
-	            return {
-	                name: "IE",
-	                version: tem[1] || ""
-	            };
-	        }
-	        if (M[1] === "Chrome") {
-	            tem = ua.match(/\bOPR\/(\d+)/);
-	            if (tem !== null) {
-	                return {
-	                    name: "Opera",
-	                    version: tem[1]
-	                };
-	            }
-	        }
-	        M = M[2] ? [M[1], M[2]] : [navigator.appName, navigator.appVersion, "-?"];
-	        tem = ua.match(/version\/(\d+)/i);
-	        if (tem !== null) {
-	            M.splice(1, 1, tem[1]);
-	        }
-	        return {
-	            name: M[0],
-	            version: M[1]
-	        };
-	    };
-	    Utils.eachSeries = function (arr, iteratorFn) {
-	        return arr.reduce(function (p, item) {
-	            return p.then(function () {
-	                return iteratorFn(item);
-	            });
-	        }, Promise.resolve());
-	    };
-	    Utils.doUntil = function (operation, test, data) {
-	        return operation(data)
-	            .then(function (rslt) {
-	            return test(rslt) ? Utils.doUntil(operation, test, rslt) : rslt;
-	        });
-	    };
-	    Utils.format = function (content, tags) {
-	        return content.replace(/{{(.*?)}}/g, function (tag, key) {
-	            var replacement = false;
-	            if (typeof tags[key] === "string") {
-	                replacement = tags[key];
-	            }
-	            if (typeof replacement === "string") {
-	                return replacement;
-	            }
-	            else {
-	                return tag;
-	            }
-	        });
-	    };
-	    return Utils;
-	}());
-	exports.Utils = Utils;
-	;
-	//# sourceMappingURL=utils.js.map
-
-/***/ }),
-/* 47 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	var utils_1 = __webpack_require__(46);
-	var ConversationBuilder = (function () {
-	    function ConversationBuilder() {
-	        this.description = undefined;
-	        this.roles = {
-	            "owner": {
-	                "canSend": true,
-	                "canAddParticipants": true,
-	                "canRemoveParticipants": true
-	            },
-	            "participant": {
-	                "canSend": true,
-	                "canAddParticipants": true,
-	                "canRemoveParticipants": true
-	            }
-	        };
-	        this.isPublic = false;
-	        this.participants = undefined;
-	        this.id = utils_1.Utils.uuid();
-	    }
-	    ConversationBuilder.prototype.withId = function (id) {
-	        this.id = id;
-	        return this;
-	    };
-	    ConversationBuilder.prototype.withName = function (name) {
-	        this.name = name;
-	        return this;
-	    };
-	    ConversationBuilder.prototype.withDescription = function (description) {
-	        this.description = description;
-	        return this;
-	    };
-	    ConversationBuilder.prototype.withUsers = function (users) {
-	        this.participants = [];
-	        for (var _i = 0, users_1 = users; _i < users_1.length; _i++) {
-	            var user = users_1[_i];
-	            this.participants.push({ id: user });
-	        }
-	        return this;
-	    };
-	    ConversationBuilder.prototype.withUser = function (user) {
-	        this.participants = [{ id: user }];
-	        return this;
-	    };
-	    ConversationBuilder.prototype.withParticipants = function (participants) {
-	        this.participants = participants;
-	        return this;
-	    };
-	    ConversationBuilder.prototype.withOwnerPrivelages = function (privelages) {
-	        this.roles.owner = privelages;
-	        return this;
-	    };
-	    ConversationBuilder.prototype.withParticipantPrivelages = function (privelages) {
-	        this.roles.participant = privelages;
-	        return this;
-	    };
-	    return ConversationBuilder;
-	}());
-	exports.ConversationBuilder = ConversationBuilder;
-	//# sourceMappingURL=conversationBuilder.js.map
-
-/***/ }),
-/* 48 */
-/***/ (function(module, exports) {
-
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	var MessageBuilder = (function () {
-	    function MessageBuilder() {
-	        this.id = undefined;
-	        this.metadata = {};
-	        this.parts = [];
-	        this.alert = undefined;
-	        this.context = undefined;
-	        this.sentEventId = undefined;
-	        this.statusUpdates = undefined;
-	    }
-	    MessageBuilder.prototype.withText = function (text) {
-	        this.parts.push({
-	            data: text,
-	            size: text.length,
-	            type: "text/plain",
-	        });
-	        return this;
-	    };
-	    MessageBuilder.prototype.withData = function (type, data) {
-	        this.parts.push({
-	            data: data,
-	            size: data.length,
-	            type: type,
-	        });
-	        return this;
-	    };
-	    MessageBuilder.prototype.withPart = function (part) {
-	        this.parts.push(part);
-	        return this;
-	    };
-	    MessageBuilder.prototype.withPush = function (text) {
-	        this.alert = {
-	            "text": text,
-	            "platforms": {
-	                "apns": undefined,
-	                "fcm": undefined
-	            }
-	        };
-	        return this;
-	    };
-	    MessageBuilder.prototype.withApnsAlert = function (info) {
-	        this.alert.platforms.apns = info;
-	        return this;
-	    };
-	    MessageBuilder.prototype.withFcmAlert = function (info) {
-	        this.alert.platforms.fcm = info;
-	        return this;
-	    };
-	    MessageBuilder.prototype.withMetadata = function (metadata) {
-	        this.metadata = metadata;
-	        return this;
-	    };
-	    return MessageBuilder;
-	}());
-	exports.MessageBuilder = MessageBuilder;
-	//# sourceMappingURL=messageBuilder.js.map
-
-/***/ }),
-/* 49 */
-/***/ (function(module, exports) {
-
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	var MessageStatusBuilder = (function () {
-	    function MessageStatusBuilder() {
-	    }
-	    MessageStatusBuilder.prototype.deliveredStatusUpdate = function (messageId) {
-	        return {
-	            messageIds: [messageId],
-	            status: "delivered",
-	            timestamp: new Date().toISOString()
-	        };
-	    };
-	    MessageStatusBuilder.prototype.deliveredStatusUpdates = function (messageIds) {
-	        return {
-	            messageIds: messageIds,
-	            status: "delivered",
-	            timestamp: new Date().toISOString()
-	        };
-	    };
-	    MessageStatusBuilder.prototype.readStatusUpdate = function (messageId) {
-	        return {
-	            messageIds: [messageId],
-	            status: "read",
-	            timestamp: new Date().toISOString()
-	        };
-	    };
-	    MessageStatusBuilder.prototype.readStatusUpdates = function (messageIds) {
-	        return {
-	            messageIds: messageIds,
-	            status: "read",
-	            timestamp: new Date().toISOString()
-	        };
-	    };
-	    return MessageStatusBuilder;
-	}());
-	exports.MessageStatusBuilder = MessageStatusBuilder;
-	//# sourceMappingURL=messageStatusBuilder.js.map
-
-/***/ }),
-/* 50 */
-/***/ (function(module, exports) {
-
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	;
-	var IndexedDBOrphanedEventManager = (function () {
-	    function IndexedDBOrphanedEventManager() {
-	        this.idbSupported = "indexedDB" in window;
-	        this._name = "Comapi.OrphanedEvents";
-	        this._version = 1;
-	        this._continuationTokenStore = "ContinuationTokens";
-	        this._orphanedEventStore = "OrphanedEvents";
-	    }
-	    IndexedDBOrphanedEventManager.prototype.clearAll = function () {
-	        var _this = this;
-	        return this.ensureInitialised()
-	            .then(function (initialised) {
-	            return _this.clearObjectStore(_this._continuationTokenStore);
-	        })
-	            .then(function (cleared) {
-	            return _this.clearObjectStore(_this._orphanedEventStore);
-	        });
-	    };
-	    IndexedDBOrphanedEventManager.prototype.clear = function (conversationId) {
-	        var _this = this;
-	        return this.ensureInitialised()
-	            .then(function (initialised) {
-	            return _this.deleteTokenInfo(conversationId);
-	        })
-	            .then(function (deleted) {
-	            return _this.deleteEvents(conversationId);
-	        });
-	    };
-	    IndexedDBOrphanedEventManager.prototype.getContinuationToken = function (conversationId) {
-	        var _this = this;
-	        return this.ensureInitialised()
-	            .then(function (initialised) {
-	            return new Promise(function (resolve, reject) {
-	                var transaction = _this._database.transaction([_this._continuationTokenStore], "readonly");
-	                var objectStore = transaction.objectStore(_this._continuationTokenStore);
-	                var keyRange = IDBKeyRange.only(conversationId);
-	                var cursorRequest = objectStore.openCursor(keyRange);
-	                cursorRequest.onsuccess = function (event) {
-	                    var cursor = event.target.result;
-	                    if (cursor) {
-	                        var info = cursor.value;
-	                        resolve(info.continuationToken);
-	                    }
-	                    else {
-	                        resolve(null);
-	                    }
-	                };
-	                cursorRequest.onerror = function (e) {
-	                    reject({ message: "Failed to openCursor: " + e.target.error.name });
-	                };
-	            });
-	        });
-	    };
-	    IndexedDBOrphanedEventManager.prototype.setContinuationToken = function (conversationId, continuationToken) {
-	        var _this = this;
-	        return this.ensureInitialised()
-	            .then(function (initialised) {
-	            return new Promise(function (resolve, reject) {
-	                var transaction = _this._database.transaction([_this._continuationTokenStore], "readwrite");
-	                var store = transaction.objectStore(_this._continuationTokenStore);
-	                var request = store.put({
-	                    continuationToken: continuationToken,
-	                    conversationId: conversationId
-	                });
-	                request.onerror = function (event) {
-	                    reject({ message: "add failed: " + event.target.error.name });
-	                };
-	                request.onsuccess = function (event) {
-	                    resolve(true);
-	                };
-	            });
-	        });
-	    };
-	    IndexedDBOrphanedEventManager.prototype.addOrphanedEvent = function (event) {
-	        var _this = this;
-	        return this.ensureInitialised()
-	            .then(function (initialised) {
-	            return new Promise(function (resolve, reject) {
-	                var transaction = _this._database.transaction([_this._orphanedEventStore], "readwrite");
-	                var store = transaction.objectStore(_this._orphanedEventStore);
-	                var request = store.put(event);
-	                request.onerror = function (e) {
-	                    console.error("Error", e.target.error.name);
-	                    reject({ message: "add failed: " + e.target.error.name });
-	                };
-	                request.onsuccess = function (e) {
-	                    resolve(true);
-	                };
-	            });
-	        });
-	    };
-	    IndexedDBOrphanedEventManager.prototype.removeOrphanedEvent = function (event) {
-	        var _this = this;
-	        return this.ensureInitialised()
-	            .then(function (initialised) {
-	            return new Promise(function (resolve, reject) {
-	                var transaction = _this._database.transaction([_this._orphanedEventStore], "readwrite");
-	                var store = transaction.objectStore(_this._orphanedEventStore);
-	                var request = store.delete(event.eventId);
-	                request.onerror = function (e) {
-	                    reject({ message: "delete failed: " + e.target.error.name });
-	                };
-	                request.onsuccess = function (e) {
-	                    console.log("store.delete", e.target.result);
-	                    resolve(true);
-	                };
-	            });
-	        });
-	    };
-	    IndexedDBOrphanedEventManager.prototype.getOrphanedEvents = function (conversationId) {
-	        var _this = this;
-	        return this.ensureInitialised()
-	            .then(function (initialised) {
-	            return new Promise(function (resolve, reject) {
-	                var transaction = _this._database.transaction([_this._orphanedEventStore], "readonly");
-	                var objectStore = transaction.objectStore(_this._orphanedEventStore);
-	                var index = objectStore.index("conversationId");
-	                var keyRange = IDBKeyRange.only(conversationId);
-	                var events = [];
-	                var cursorRequest = index.openCursor(keyRange, "prev");
-	                cursorRequest.onsuccess = function (event) {
-	                    var cursor = event.target.result;
-	                    if (cursor) {
-	                        events.unshift(cursor.value);
-	                        cursor.continue();
-	                    }
-	                    else {
-	                        resolve(events.sort(function (e1, e2) {
-	                            return e1.conversationEventId - e2.conversationEventId;
-	                        }));
-	                    }
-	                };
-	                cursorRequest.onerror = function (event) {
-	                    reject({ message: "Failed to openCursor: " + event.target.error.name });
-	                };
-	            });
-	        });
-	    };
-	    IndexedDBOrphanedEventManager.prototype.ensureInitialised = function () {
-	        return this._database ? Promise.resolve(true) : this.initialise();
-	    };
-	    IndexedDBOrphanedEventManager.prototype.initialise = function () {
-	        var _this = this;
-	        return new Promise(function (resolve, reject) {
-	            if (_this.idbSupported) {
-	                var self_1 = _this;
-	                var openRequest = indexedDB.open(_this._name, _this._version);
-	                openRequest.onupgradeneeded = function (event) {
-	                    var thisDB = event.target.result;
-	                    if (!thisDB.objectStoreNames.contains(self_1._continuationTokenStore)) {
-	                        thisDB.createObjectStore(self_1._continuationTokenStore, { keyPath: "conversationId" });
-	                    }
-	                    if (!thisDB.objectStoreNames.contains(self_1._orphanedEventStore)) {
-	                        var os = thisDB.createObjectStore(self_1._orphanedEventStore, { keyPath: "eventId" });
-	                        os.createIndex("conversationId", "conversationId", { unique: false });
-	                    }
-	                };
-	                openRequest.onsuccess = function (event) {
-	                    _this._database = event.target.result;
-	                    resolve(true);
-	                };
-	                openRequest.onerror = function (event) {
-	                    reject({ message: "IndexedDBOrphanedEventManager.initialise failed : " + event.target.error.name });
-	                };
-	            }
-	            else {
-	                reject({ message: "IndexedDBOrphanedEventManager not supported on this platform" });
-	            }
-	        });
-	    };
-	    IndexedDBOrphanedEventManager.prototype.clearObjectStore = function (objectStoreName) {
-	        var _this = this;
-	        var _objectStoreName = objectStoreName;
-	        return new Promise(function (resolve, reject) {
-	            var transaction = _this._database.transaction([_objectStoreName], "readwrite");
-	            transaction.onerror = function (event) {
-	                console.error("Transaction not opened due to error: " + transaction.error);
-	            };
-	            var objectStore = transaction.objectStore(_objectStoreName);
-	            var objectStoreRequest = objectStore.clear();
-	            objectStoreRequest.onsuccess = function (event) {
-	                resolve(true);
-	            };
-	            objectStoreRequest.onerror = function (event) {
-	                reject({ message: "Failed to clear object store: " + event.target.error.name });
-	            };
-	        });
-	    };
-	    IndexedDBOrphanedEventManager.prototype.deleteTokenInfo = function (conversationId) {
-	        var _this = this;
-	        return new Promise(function (resolve, reject) {
-	            var transaction = _this._database.transaction([_this._continuationTokenStore], "readwrite");
-	            var store = transaction.objectStore(_this._continuationTokenStore);
-	            var request = store.delete(conversationId);
-	            request.onerror = function (event) {
-	                reject({ message: "delete failed: " + event.target.error.name });
-	            };
-	            request.onsuccess = function (event) {
-	                console.log("store.delete", event.target.result);
-	                resolve(true);
-	            };
-	        });
-	    };
-	    IndexedDBOrphanedEventManager.prototype.deleteEvents = function (conversationId) {
-	        var _this = this;
-	        return new Promise(function (resolve, reject) {
-	            var transaction = _this._database.transaction([_this._orphanedEventStore], "readwrite");
-	            var objectStore = transaction.objectStore(_this._orphanedEventStore);
-	            var index = objectStore.index("conversationId");
-	            var keyRange = IDBKeyRange.only(conversationId);
-	            var cursorRequest = index.openCursor(keyRange, "next");
-	            cursorRequest.onsuccess = function (event) {
-	                var cursor = event.target.result;
-	                if (cursor) {
-	                    objectStore.delete(cursor.primaryKey);
-	                    cursor.continue();
-	                }
-	                else {
-	                    resolve(true);
-	                }
-	            };
-	            cursorRequest.onerror = function (e) {
-	                reject({ message: "Failed to openCursor: " + e.target.error.name });
-	            };
-	        });
-	    };
-	    return IndexedDBOrphanedEventManager;
-	}());
-	exports.IndexedDBOrphanedEventManager = IndexedDBOrphanedEventManager;
-	//# sourceMappingURL=indexedDBOrphanedEventManager.js.map
-
-/***/ }),
-/* 51 */
-/***/ (function(module, exports) {
-
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	;
-	var LocalStorageOrphanedEventManager = (function () {
-	    function LocalStorageOrphanedEventManager(_localStorage) {
-	        this._localStorage = _localStorage;
-	        this._orphanedEevnts = {};
-	        this._orphanedEevnts = this._localStorage.getObject("orphanedEevnts") || {};
-	    }
-	    LocalStorageOrphanedEventManager.prototype.clearAll = function () {
-	        this._orphanedEevnts = {};
-	        this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
-	        return Promise.resolve(true);
-	    };
-	    LocalStorageOrphanedEventManager.prototype.clear = function (conversationId) {
-	        this._orphanedEevnts[conversationId] = {
-	            orphanedEvents: []
-	        };
-	        this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
-	        return Promise.resolve(true);
-	    };
-	    LocalStorageOrphanedEventManager.prototype.getContinuationToken = function (conversationId) {
-	        var container = this._orphanedEevnts[conversationId];
-	        return Promise.resolve(container ? container.continuationToken : null);
-	    };
-	    LocalStorageOrphanedEventManager.prototype.setContinuationToken = function (conversationId, continuationToken) {
-	        var _info = this._orphanedEevnts[conversationId];
-	        if (_info) {
-	            _info.continuationToken = continuationToken;
-	        }
-	        else {
-	            this._orphanedEevnts[conversationId] = {
-	                continuationToken: continuationToken,
-	                orphanedEvents: []
-	            };
-	        }
-	        return Promise.resolve(true);
-	    };
-	    LocalStorageOrphanedEventManager.prototype.addOrphanedEvent = function (event) {
-	        var info = this._orphanedEevnts[event.conversationId];
-	        if (info) {
-	            var found = info.orphanedEvents.filter(function (e) { return e.eventId === event.eventId; });
-	            if (found.length === 0) {
-	                info.orphanedEvents.unshift(event);
-	                info.orphanedEvents = info.orphanedEvents.sort(function (e1, e2) {
-	                    if (e1.conversationEventId > e2.conversationEventId) {
-	                        return 1;
-	                    }
-	                    else if (e1.conversationEventId < e2.conversationEventId) {
-	                        return -1;
-	                    }
-	                    else {
-	                        return 0;
-	                    }
-	                });
-	                this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
-	            }
-	        }
-	        else {
-	            return Promise.reject({ message: "No container for conversation " + event.conversationId });
-	        }
-	    };
-	    LocalStorageOrphanedEventManager.prototype.removeOrphanedEvent = function (event) {
-	        var info = this._orphanedEevnts[event.conversationId];
-	        if (info) {
-	            for (var i = info.orphanedEvents.length - 1; i >= 0; i--) {
-	                var e = info.orphanedEvents[i];
-	                if (e.eventId === event.eventId) {
-	                    info.orphanedEvents.splice(i, 1);
-	                    break;
-	                }
-	            }
-	            this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
-	            return Promise.resolve(true);
-	        }
-	        else {
-	            return Promise.reject({ message: "No container for conversation " + event.conversationId });
-	        }
-	    };
-	    LocalStorageOrphanedEventManager.prototype.getOrphanedEvents = function (conversationId) {
-	        var info = this._orphanedEevnts[conversationId];
-	        return Promise.resolve(info ? info.orphanedEvents : []);
-	    };
-	    return LocalStorageOrphanedEventManager;
-	}());
-	exports.LocalStorageOrphanedEventManager = LocalStorageOrphanedEventManager;
-	//# sourceMappingURL=localStorageOrphanedEventManager.js.map
-
-/***/ }),
-/* 52 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	var interfaces_1 = __webpack_require__(43);
-	var urlConfig_1 = __webpack_require__(53);
-	var ComapiConfig = (function () {
-	    function ComapiConfig() {
-	        this.logRetentionHours = 24;
-	        this.urlBase = "https://api.comapi.com";
-	        this.webSocketBase = "wss://api.comapi.com";
-	        this.logLevel = interfaces_1.LogLevels.Error;
-	        this.logPersistence = interfaces_1.LogPersistences.LocalStorage;
-	        this.isTypingTimeout = 10;
-	        this.isTypingOffTimeout = 10;
-	        this.foundationRestUrls = new urlConfig_1.FoundationRestUrls();
-	        this.apiSpaceId = undefined;
-	    }
-	    ComapiConfig.prototype.withApiSpace = function (id) {
-	        this.apiSpaceId = id;
-	        return this;
-	    };
-	    ComapiConfig.prototype.withLogRetentionTime = function (hours) {
-	        this.logRetentionHours = hours;
-	        return this;
-	    };
-	    ComapiConfig.prototype.withAuthChallenge = function (authChallenge) {
-	        this.authChallenge = authChallenge;
-	        return this;
-	    };
-	    ComapiConfig.prototype.withUrlBase = function (urlBase) {
-	        this.urlBase = urlBase;
-	        return this;
-	    };
-	    ComapiConfig.prototype.withWebSocketBase = function (webSocketBase) {
-	        this.webSocketBase = webSocketBase;
-	        return this;
-	    };
-	    ComapiConfig.prototype.withLogLevel = function (logLevel) {
-	        this.logLevel = logLevel;
-	        return this;
-	    };
-	    ComapiConfig.prototype.withLogPersistence = function (logPersistence) {
-	        this.logPersistence = logPersistence;
-	        return this;
-	    };
-	    ComapiConfig.prototype.withFoundationRestUrls = function (foundationRestUrls) {
-	        this.foundationRestUrls = foundationRestUrls;
-	        return this;
-	    };
-	    ComapiConfig.prototype.withEventMapping = function (eventMapping) {
-	        this.eventMapping = eventMapping;
-	        return this;
-	    };
-	    return ComapiConfig;
-	}());
-	exports.ComapiConfig = ComapiConfig;
-	//# sourceMappingURL=comapiConfig.js.map
-
-/***/ }),
 /* 53 */
-/***/ (function(module, exports) {
-
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	var FoundationRestUrls = (function () {
-	    function FoundationRestUrls() {
-	        this.conversations = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations";
-	        this.conversation = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}";
-	        this.participants = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/participants";
-	        this.typing = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/typing";
-	        this.push = "{{urlBase}}/apispaces/{{apiSpaceId}}/sessions/{{sessionId}}/push";
-	        this.facebook = "{{urlBase}}/apispaces/{{apiSpaceId}}/channels/facebook/state";
-	        this.events = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/events";
-	        this.messages = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/messages";
-	        this.statusUpdates = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/messages/statusupdates";
-	        this.profiles = "{{urlBase}}/apispaces/{{apiSpaceId}}/profiles";
-	        this.profile = "{{urlBase}}/apispaces/{{apiSpaceId}}/profiles/{{profileId}}";
-	        this.sessions = "{{urlBase}}/apispaces/{{apiSpaceId}}/sessions";
-	        this.sessionStart = "{{urlBase}}/apispaces/{{apiSpaceId}}/sessions/start";
-	        this.session = "{{urlBase}}/apispaces/{{apiSpaceId}}/sessions/{{sessionId}}";
-	    }
-	    return FoundationRestUrls;
-	}());
-	exports.FoundationRestUrls = FoundationRestUrls;
-	//# sourceMappingURL=urlConfig.js.map
-
-/***/ }),
-/* 54 */
-/***/ (function(module, exports) {
-
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	var AppMessaging = (function () {
-	    function AppMessaging(_networkManager, _conversationManager, _messageManager, _messagePager) {
-	        this._networkManager = _networkManager;
-	        this._conversationManager = _conversationManager;
-	        this._messageManager = _messageManager;
-	        this._messagePager = _messagePager;
-	    }
-	    AppMessaging.prototype.createConversation = function (conversationDetails) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._conversationManager.createConversation(conversationDetails);
-	        });
-	    };
-	    AppMessaging.prototype.updateConversation = function (conversationDetails, eTag) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._conversationManager.updateConversation(conversationDetails, eTag);
-	        });
-	    };
-	    AppMessaging.prototype.getConversation = function (conversationId) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._conversationManager.getConversation(conversationId);
-	        });
-	    };
-	    AppMessaging.prototype.deleteConversation = function (conversationId) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._conversationManager.deleteConversation(conversationId);
-	        })
-	            .then(function (deleted) {
-	            return _this._messagePager.resetConversation(conversationId);
-	        });
-	    };
-	    AppMessaging.prototype.addParticipantsToConversation = function (conversationId, participants) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._conversationManager.addParticipantsToConversation(conversationId, participants);
-	        });
-	    };
-	    AppMessaging.prototype.deleteParticipantsFromConversation = function (conversationId, participants) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._conversationManager.deleteParticipantsFromConversation(conversationId, participants);
-	        });
-	    };
-	    AppMessaging.prototype.getParticipantsInConversation = function (conversationId) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._conversationManager.getParticipantsInConversation(conversationId);
-	        });
-	    };
-	    AppMessaging.prototype.getConversations = function (scope, profileId) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._conversationManager.getConversations(scope, profileId);
-	        });
-	    };
-	    AppMessaging.prototype.getConversationEvents = function (conversationId, from, limit) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._messageManager.getConversationEvents(conversationId, from, limit);
-	        });
-	    };
-	    AppMessaging.prototype.sendMessageToConversation = function (conversationId, message) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._messageManager.sendMessageToConversation(conversationId, message);
-	        });
-	    };
-	    AppMessaging.prototype.sendMessageStatusUpdates = function (conversationId, statuses) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._messageManager.sendMessageStatusUpdates(conversationId, statuses);
-	        });
-	    };
-	    AppMessaging.prototype.getMessages = function (conversationId, pageSize, continuationToken) {
-	        var _this = this;
-	        var profileId;
-	        var _getMessagesResponse;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            profileId = sessionInfo.session.profileId;
-	            return _this._messagePager.getMessages(conversationId, pageSize, continuationToken);
-	        })
-	            .then(function (getMessagesResponse) {
-	            _getMessagesResponse = getMessagesResponse;
-	            return _this._messagePager.markMessagesAsDelivered(conversationId, getMessagesResponse.messages, profileId);
-	        })
-	            .then(function (markDeliveredresponse) {
-	            return Promise.resolve(_getMessagesResponse);
-	        });
-	    };
-	    AppMessaging.prototype.sendIsTyping = function (conversationId) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._conversationManager.sendIsTyping(conversationId);
-	        });
-	    };
-	    AppMessaging.prototype.sendIsTypingOff = function (conversationId) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._conversationManager.sendIsTypingOff(conversationId);
-	        });
-	    };
-	    return AppMessaging;
-	}());
-	exports.AppMessaging = AppMessaging;
-	//# sourceMappingURL=appMessaging.js.map
-
-/***/ }),
-/* 55 */
-/***/ (function(module, exports) {
-
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	var Profile = (function () {
-	    function Profile(_networkManager, _localStorage, _profileManager) {
-	        this._networkManager = _networkManager;
-	        this._localStorage = _localStorage;
-	        this._profileManager = _profileManager;
-	    }
-	    Profile.prototype.getProfile = function (profileId) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._profileManager.getProfile(profileId);
-	        });
-	    };
-	    Profile.prototype.queryProfiles = function (query) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._profileManager.queryProfiles(query);
-	        });
-	    };
-	    Profile.prototype.updateProfile = function (profileId, profile, eTag) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._profileManager.updateProfile(profileId, profile, eTag);
-	        });
-	    };
-	    Profile.prototype.patchProfile = function (profileId, profile, eTag) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._profileManager.patchProfile(profileId, profile, eTag);
-	        });
-	    };
-	    Profile.prototype.getMyProfile = function (useEtag) {
-	        var _this = this;
-	        if (useEtag === void 0) { useEtag = true; }
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._profileManager.getProfile(sessionInfo.session.profileId);
-	        })
-	            .then(function (result) {
-	            if (useEtag) {
-	                _this._localStorage.setString("MyProfileETag", result.headers.ETag);
-	            }
-	            return Promise.resolve(result.response);
-	        });
-	    };
-	    Profile.prototype.updateMyProfile = function (profile, useEtag) {
-	        var _this = this;
-	        if (useEtag === void 0) { useEtag = true; }
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._profileManager.updateProfile(sessionInfo.session.profileId, profile, useEtag ? _this._localStorage.getString("MyProfileETag") : undefined);
-	        })
-	            .then(function (result) {
-	            if (useEtag) {
-	                _this._localStorage.setString("MyProfileETag", result.headers.ETag);
-	            }
-	            return Promise.resolve(result.response);
-	        });
-	    };
-	    Profile.prototype.patchMyProfile = function (profile, useEtag) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._profileManager.patchProfile(sessionInfo.session.profileId, profile, useEtag ? _this._localStorage.getString("MyProfileETag") : undefined);
-	        })
-	            .then(function (result) {
-	            if (useEtag) {
-	                _this._localStorage.setString("MyProfileETag", result.headers.ETag);
-	            }
-	            return Promise.resolve(result.response);
-	        });
-	    };
-	    return Profile;
-	}());
-	exports.Profile = Profile;
-	//# sourceMappingURL=profile.js.map
-
-/***/ }),
-/* 56 */
-/***/ (function(module, exports) {
-
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	var Services = (function () {
-	    function Services(_appMessaging, _profile) {
-	        this._appMessaging = _appMessaging;
-	        this._profile = _profile;
-	    }
-	    Object.defineProperty(Services.prototype, "appMessaging", {
-	        get: function () {
-	            return this._appMessaging;
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(Services.prototype, "profile", {
-	        get: function () {
-	            return this._profile;
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    return Services;
-	}());
-	exports.Services = Services;
-	//# sourceMappingURL=services.js.map
-
-/***/ }),
-/* 57 */
-/***/ (function(module, exports) {
-
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	var Device = (function () {
-	    function Device(_networkManager, _deviceManager) {
-	        this._networkManager = _networkManager;
-	        this._deviceManager = _deviceManager;
-	    }
-	    Device.prototype.setFCMPushDetails = function (packageName, registrationId) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._deviceManager.setFCMPushDetails(sessionInfo.session.id, packageName, registrationId);
-	        });
-	    };
-	    Device.prototype.setAPNSPushDetails = function (bundleId, environment, token) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._deviceManager.setAPNSPushDetails(sessionInfo.session.id, bundleId, environment, token);
-	        });
-	    };
-	    Device.prototype.removePushDetails = function () {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._deviceManager.removePushDetails(sessionInfo.session.id);
-	        });
-	    };
-	    return Device;
-	}());
-	exports.Device = Device;
-	//# sourceMappingURL=device.js.map
-
-/***/ }),
-/* 58 */
-/***/ (function(module, exports) {
-
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	var Channels = (function () {
-	    function Channels(_networkManager, _facebookManager) {
-	        this._networkManager = _networkManager;
-	        this._facebookManager = _facebookManager;
-	    }
-	    Channels.prototype.createFbOptInState = function (data) {
-	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
-	            .then(function (sessionInfo) {
-	            return _this._facebookManager.createSendToMessengerState(data);
-	        });
-	    };
-	    return Channels;
-	}());
-	exports.Channels = Channels;
-	//# sourceMappingURL=channels.js.map
-
-/***/ }),
-/* 59 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	var inversify_config_1 = __webpack_require__(60);
-	var interfaceSymbols_1 = __webpack_require__(64);
-	var InterfaceManager = (function () {
-	    function InterfaceManager() {
-	    }
-	    InterfaceManager.getInterface = function (serviceIdentifier) {
-	        return inversify_config_1.container.get(serviceIdentifier);
-	    };
-	    InterfaceManager.setInterface = function (serviceIdentifier, instance) {
-	        if (inversify_config_1.container.isBound(serviceIdentifier)) {
-	            inversify_config_1.container.unbind(serviceIdentifier);
-	        }
-	        InterfaceManager.interfaces[serviceIdentifier.toString()] = instance;
-	        inversify_config_1.container.bind(serviceIdentifier).toDynamicValue(function (context) {
-	            return InterfaceManager.interfaces[serviceIdentifier.toString()];
-	        });
-	    };
-	    Object.defineProperty(InterfaceManager, "IEventManager", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager);
-	        },
-	        set: function (eventManager) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager, eventManager);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "ILocalStorageData", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData);
-	        },
-	        set: function (localStorageData) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData, localStorageData);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "ILogger", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger);
-	        },
-	        set: function (logger) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger, logger);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "IRestClient", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient);
-	        },
-	        set: function (restClient) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient, restClient);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "ISessionManager", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager);
-	        },
-	        set: function (sessionManager) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager, sessionManager);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "IWebSocketManager", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager);
-	        },
-	        set: function (webSocketManager) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager, webSocketManager);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "INetworkManager", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager);
-	        },
-	        set: function (networkManager) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager, networkManager);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "AuthenticatedRestClient", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient);
-	        },
-	        set: function (authenticatedRestClient) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient, authenticatedRestClient);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "IDeviceManager", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager);
-	        },
-	        set: function (deviceManager) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager, deviceManager);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "IFacebookManager", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager);
-	        },
-	        set: function (facebookManager) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager, facebookManager);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "IConversationManager", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager);
-	        },
-	        set: function (facebookManager) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager, facebookManager);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "IProfileManager", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager);
-	        },
-	        set: function (profileManager) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager, profileManager);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "IMessageManager", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager);
-	        },
-	        set: function (messageManager) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager, messageManager);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    return InterfaceManager;
-	}());
-	InterfaceManager.interfaces = {};
-	exports.InterfaceManager = InterfaceManager;
-	//# sourceMappingURL=interfaceManager.js.map
-
-/***/ }),
-/* 60 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
-	__webpack_require__(1);
-	var inversify_1 = __webpack_require__(4);
-	var eventManager_1 = __webpack_require__(61);
-	var localStorageData_1 = __webpack_require__(62);
-	var logger_1 = __webpack_require__(63);
-	var restClient_1 = __webpack_require__(65);
-	var authenticatedRestClient_1 = __webpack_require__(66);
-	var sessionManager_1 = __webpack_require__(67);
-	var webSocketManager_1 = __webpack_require__(68);
-	var networkManager_1 = __webpack_require__(69);
-	var deviceManager_1 = __webpack_require__(70);
-	var facebookManager_1 = __webpack_require__(71);
-	var conversationManager_1 = __webpack_require__(72);
-	var profileManager_1 = __webpack_require__(73);
-	var messageManager_1 = __webpack_require__(74);
-	var interfaceSymbols_1 = __webpack_require__(64);
-	var container = new inversify_1.Container();
-	exports.container = container;
-	function initInterfaces() {
-	    "use strict";
-	    container.unbindAll();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager).to(eventManager_1.EventManager).inSingletonScope();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData).to(localStorageData_1.LocalStorageData);
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger).to(logger_1.Logger);
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient).to(restClient_1.RestClient);
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager).to(sessionManager_1.SessionManager).inSingletonScope();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager).to(webSocketManager_1.WebSocketManager);
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager).to(networkManager_1.NetworkManager);
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient).to(authenticatedRestClient_1.AuthenticatedRestClient);
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager).to(deviceManager_1.DeviceManager);
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager).to(facebookManager_1.FacebookManager);
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager).to(conversationManager_1.ConversationManager);
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager).to(profileManager_1.ProfileManager);
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager).to(messageManager_1.MessageManager);
-	}
-	exports.initInterfaces = initInterfaces;
-	initInterfaces();
-	//# sourceMappingURL=inversify.config.js.map
-
-/***/ }),
-/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5123,7 +4332,7 @@ var COMAPI =
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var inversify_1 = __webpack_require__(4);
+	var inversify_1 = __webpack_require__(14);
 	var EventManager = (function () {
 	    function EventManager() {
 	        this.eventSubscribers = [];
@@ -5177,7 +4386,7 @@ var COMAPI =
 	//# sourceMappingURL=eventManager.js.map
 
 /***/ }),
-/* 62 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5191,7 +4400,7 @@ var COMAPI =
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var inversify_1 = __webpack_require__(4);
+	var inversify_1 = __webpack_require__(14);
 	var LocalStorageData = (function () {
 	    function LocalStorageData() {
 	        this._prefix = "comapi.";
@@ -5250,7 +4459,7 @@ var COMAPI =
 	//# sourceMappingURL=localStorageData.js.map
 
 /***/ }),
-/* 63 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5267,10 +4476,10 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var inversify_1 = __webpack_require__(4);
-	var interfaces_1 = __webpack_require__(43);
-	var indexedDBLogger_1 = __webpack_require__(44);
-	var interfaceSymbols_1 = __webpack_require__(64);
+	var inversify_1 = __webpack_require__(14);
+	var interfaces_1 = __webpack_require__(4);
+	var indexedDBLogger_1 = __webpack_require__(5);
+	var interfaceSymbols_1 = __webpack_require__(56);
 	var Logger = (function () {
 	    function Logger(_eventManager, _localStorageData, _indexedDB) {
 	        this._eventManager = _eventManager;
@@ -5419,33 +4628,40 @@ var COMAPI =
 	//# sourceMappingURL=logger.js.map
 
 /***/ }),
-/* 64 */
+/* 56 */
 /***/ (function(module, exports) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var INTERFACE_SYMBOLS = {
-	    AuthenticatedRestClient: Symbol("AuthenticatedRestClient"),
-	    ComapiConfig: Symbol("ComapiConfig"),
-	    ConversationManager: Symbol("ConversationManager"),
-	    DeviceManager: Symbol("DeviceManager"),
-	    EventManager: Symbol("EventManager"),
-	    FacebookManager: Symbol("FacebookManager"),
-	    IndexedDBLogger: Symbol("IndexedDBLogger"),
-	    LocalStorageData: Symbol("LocalStorageData"),
-	    Logger: Symbol("Logger"),
-	    MessageManager: Symbol("MessageManager"),
-	    NetworkManager: Symbol("NetworkManager"),
-	    ProfileManager: Symbol("ProfileManager"),
-	    RestClient: Symbol("RestClient"),
-	    SessionManager: Symbol("SessionManager"),
-	    WebSocketManager: Symbol("WebSocketManager"),
+	    AppMessaging: "AppMessaging",
+	    AuthenticatedRestClient: "AuthenticatedRestClient",
+	    Channels: "Channels",
+	    ComapiConfig: "ComapiConfig",
+	    ConversationManager: "ConversationManager",
+	    Device: "Device",
+	    DeviceManager: "DeviceManager",
+	    EventManager: "EventManager",
+	    FacebookManager: "FacebookManager",
+	    IndexedDBLogger: "IndexedDBLogger",
+	    LocalStorageData: "LocalStorageData",
+	    Logger: "Logger",
+	    MessageManager: "MessageManager",
+	    MessagePager: "MessagePager",
+	    NetworkManager: "NetworkManager",
+	    OrphanedEventManager: "OrphanedEventManager",
+	    Profile: "Profile",
+	    ProfileManager: "ProfileManager",
+	    RestClient: "RestClient",
+	    Services: "Services",
+	    SessionManager: "SessionManager",
+	    WebSocketManager: "WebSocketManager",
 	};
 	exports.INTERFACE_SYMBOLS = INTERFACE_SYMBOLS;
 	//# sourceMappingURL=interfaceSymbols.js.map
 
 /***/ }),
-/* 65 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5462,8 +4678,8 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var inversify_1 = __webpack_require__(4);
-	var interfaceSymbols_1 = __webpack_require__(64);
+	var inversify_1 = __webpack_require__(14);
+	var interfaceSymbols_1 = __webpack_require__(56);
 	var RestClient = (function () {
 	    function RestClient(logger) {
 	        this.logger = logger;
@@ -5616,7 +4832,7 @@ var COMAPI =
 	//# sourceMappingURL=restClient.js.map
 
 /***/ }),
-/* 66 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5633,8 +4849,8 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var inversify_1 = __webpack_require__(4);
-	var interfaceSymbols_1 = __webpack_require__(64);
+	var inversify_1 = __webpack_require__(14);
+	var interfaceSymbols_1 = __webpack_require__(56);
 	var AuthenticatedRestClient = (function () {
 	    function AuthenticatedRestClient(logger, restClient, networkManager) {
 	        this.logger = logger;
@@ -5713,7 +4929,7 @@ var COMAPI =
 	//# sourceMappingURL=authenticatedRestClient.js.map
 
 /***/ }),
-/* 67 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5730,9 +4946,9 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var inversify_1 = __webpack_require__(4);
-	var utils_1 = __webpack_require__(46);
-	var interfaceSymbols_1 = __webpack_require__(64);
+	var inversify_1 = __webpack_require__(14);
+	var utils_1 = __webpack_require__(7);
+	var interfaceSymbols_1 = __webpack_require__(56);
 	var SessionManager = (function () {
 	    function SessionManager(_logger, _restClient, _localStorageData, _comapiConfig) {
 	        this._logger = _logger;
@@ -5844,7 +5060,7 @@ var COMAPI =
 	            platform: "javascript",
 	            platformVersion: browserInfo.version,
 	            sdkType: "native",
-	            sdkVersion: "1.0.2.116"
+	            sdkVersion: "1.0.2.133"
 	        };
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -5916,7 +5132,7 @@ var COMAPI =
 	//# sourceMappingURL=sessionManager.js.map
 
 /***/ }),
-/* 68 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5933,8 +5149,8 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var inversify_1 = __webpack_require__(4);
-	var interfaceSymbols_1 = __webpack_require__(64);
+	var inversify_1 = __webpack_require__(14);
+	var interfaceSymbols_1 = __webpack_require__(56);
 	var WebSocketManager = (function () {
 	    function WebSocketManager(_logger, _localStorageData, _comapiConfig, _sessionManager, _eventManager) {
 	        this._logger = _logger;
@@ -6263,7 +5479,7 @@ var COMAPI =
 	//# sourceMappingURL=webSocketManager.js.map
 
 /***/ }),
-/* 69 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -6280,8 +5496,8 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var inversify_1 = __webpack_require__(4);
-	var interfaceSymbols_1 = __webpack_require__(64);
+	var inversify_1 = __webpack_require__(14);
+	var interfaceSymbols_1 = __webpack_require__(56);
 	var NetworkManager = (function () {
 	    function NetworkManager(_sessionManager, _webSocketManager) {
 	        this._sessionManager = _sessionManager;
@@ -6355,7 +5571,7 @@ var COMAPI =
 	//# sourceMappingURL=networkManager.js.map
 
 /***/ }),
-/* 70 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -6372,10 +5588,10 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var inversify_1 = __webpack_require__(4);
-	var interfaces_1 = __webpack_require__(43);
-	var utils_1 = __webpack_require__(46);
-	var interfaceSymbols_1 = __webpack_require__(64);
+	var inversify_1 = __webpack_require__(14);
+	var interfaces_1 = __webpack_require__(4);
+	var utils_1 = __webpack_require__(7);
+	var interfaceSymbols_1 = __webpack_require__(56);
 	var DeviceManager = (function () {
 	    function DeviceManager(_logger, _restClient, _localStorageData, _comapiConfig) {
 	        this._logger = _logger;
@@ -6435,7 +5651,7 @@ var COMAPI =
 	//# sourceMappingURL=deviceManager.js.map
 
 /***/ }),
-/* 71 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -6452,9 +5668,9 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var inversify_1 = __webpack_require__(4);
-	var utils_1 = __webpack_require__(46);
-	var interfaceSymbols_1 = __webpack_require__(64);
+	var inversify_1 = __webpack_require__(14);
+	var utils_1 = __webpack_require__(7);
+	var interfaceSymbols_1 = __webpack_require__(56);
 	var FacebookManager = (function () {
 	    function FacebookManager(_restClient, _comapiConfig) {
 	        this._restClient = _restClient;
@@ -6479,7 +5695,7 @@ var COMAPI =
 	//# sourceMappingURL=facebookManager.js.map
 
 /***/ }),
-/* 72 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -6496,10 +5712,10 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var inversify_1 = __webpack_require__(4);
-	var interfaces_1 = __webpack_require__(43);
-	var utils_1 = __webpack_require__(46);
-	var interfaceSymbols_1 = __webpack_require__(64);
+	var inversify_1 = __webpack_require__(14);
+	var interfaces_1 = __webpack_require__(4);
+	var utils_1 = __webpack_require__(7);
+	var interfaceSymbols_1 = __webpack_require__(56);
 	var ConversationManager = (function () {
 	    function ConversationManager(_logger, _restClient, _localStorageData, _comapiConfig, _sessionManager) {
 	        this._logger = _logger;
@@ -6679,7 +5895,7 @@ var COMAPI =
 	//# sourceMappingURL=conversationManager.js.map
 
 /***/ }),
-/* 73 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -6696,9 +5912,9 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var inversify_1 = __webpack_require__(4);
-	var utils_1 = __webpack_require__(46);
-	var interfaceSymbols_1 = __webpack_require__(64);
+	var inversify_1 = __webpack_require__(14);
+	var utils_1 = __webpack_require__(7);
+	var interfaceSymbols_1 = __webpack_require__(56);
 	var ProfileManager = (function () {
 	    function ProfileManager(_logger, _restClient, _localStorageData, _comapiConfig, _sessionManager) {
 	        this._logger = _logger;
@@ -6772,7 +5988,7 @@ var COMAPI =
 	//# sourceMappingURL=profileManager.js.map
 
 /***/ }),
-/* 74 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -6789,9 +6005,9 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var inversify_1 = __webpack_require__(4);
-	var utils_1 = __webpack_require__(46);
-	var interfaceSymbols_1 = __webpack_require__(64);
+	var inversify_1 = __webpack_require__(14);
+	var utils_1 = __webpack_require__(7);
+	var interfaceSymbols_1 = __webpack_require__(56);
 	var MessageManager = (function () {
 	    function MessageManager(_logger, _restClient, _localStorageData, _comapiConfig, _sessionManager, _conversationManager) {
 	        this._logger = _logger;
@@ -6884,6 +6100,976 @@ var COMAPI =
 	], MessageManager);
 	exports.MessageManager = MessageManager;
 	//# sourceMappingURL=messageManager.js.map
+
+/***/ }),
+/* 67 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var inversify_1 = __webpack_require__(14);
+	;
+	var IndexedDBOrphanedEventManager = (function () {
+	    function IndexedDBOrphanedEventManager() {
+	        this.idbSupported = "indexedDB" in window;
+	        this._name = "Comapi.OrphanedEvents";
+	        this._version = 1;
+	        this._continuationTokenStore = "ContinuationTokens";
+	        this._orphanedEventStore = "OrphanedEvents";
+	    }
+	    IndexedDBOrphanedEventManager.prototype.clearAll = function () {
+	        var _this = this;
+	        return this.ensureInitialised()
+	            .then(function (initialised) {
+	            return _this.clearObjectStore(_this._continuationTokenStore);
+	        })
+	            .then(function (cleared) {
+	            return _this.clearObjectStore(_this._orphanedEventStore);
+	        });
+	    };
+	    IndexedDBOrphanedEventManager.prototype.clear = function (conversationId) {
+	        var _this = this;
+	        return this.ensureInitialised()
+	            .then(function (initialised) {
+	            return _this.deleteTokenInfo(conversationId);
+	        })
+	            .then(function (deleted) {
+	            return _this.deleteEvents(conversationId);
+	        });
+	    };
+	    IndexedDBOrphanedEventManager.prototype.getContinuationToken = function (conversationId) {
+	        var _this = this;
+	        return this.ensureInitialised()
+	            .then(function (initialised) {
+	            return new Promise(function (resolve, reject) {
+	                var transaction = _this._database.transaction([_this._continuationTokenStore], "readonly");
+	                var objectStore = transaction.objectStore(_this._continuationTokenStore);
+	                var keyRange = IDBKeyRange.only(conversationId);
+	                var cursorRequest = objectStore.openCursor(keyRange);
+	                cursorRequest.onsuccess = function (event) {
+	                    var cursor = event.target.result;
+	                    if (cursor) {
+	                        var info = cursor.value;
+	                        resolve(info.continuationToken);
+	                    }
+	                    else {
+	                        resolve(null);
+	                    }
+	                };
+	                cursorRequest.onerror = function (e) {
+	                    reject({ message: "Failed to openCursor: " + e.target.error.name });
+	                };
+	            });
+	        });
+	    };
+	    IndexedDBOrphanedEventManager.prototype.setContinuationToken = function (conversationId, continuationToken) {
+	        var _this = this;
+	        return this.ensureInitialised()
+	            .then(function (initialised) {
+	            return new Promise(function (resolve, reject) {
+	                var transaction = _this._database.transaction([_this._continuationTokenStore], "readwrite");
+	                var store = transaction.objectStore(_this._continuationTokenStore);
+	                var request = store.put({
+	                    continuationToken: continuationToken,
+	                    conversationId: conversationId
+	                });
+	                request.onerror = function (event) {
+	                    reject({ message: "add failed: " + event.target.error.name });
+	                };
+	                request.onsuccess = function (event) {
+	                    resolve(true);
+	                };
+	            });
+	        });
+	    };
+	    IndexedDBOrphanedEventManager.prototype.addOrphanedEvent = function (event) {
+	        var _this = this;
+	        return this.ensureInitialised()
+	            .then(function (initialised) {
+	            return new Promise(function (resolve, reject) {
+	                var transaction = _this._database.transaction([_this._orphanedEventStore], "readwrite");
+	                var store = transaction.objectStore(_this._orphanedEventStore);
+	                var request = store.put(event);
+	                request.onerror = function (e) {
+	                    console.error("Error", e.target.error.name);
+	                    reject({ message: "add failed: " + e.target.error.name });
+	                };
+	                request.onsuccess = function (e) {
+	                    resolve(true);
+	                };
+	            });
+	        });
+	    };
+	    IndexedDBOrphanedEventManager.prototype.removeOrphanedEvent = function (event) {
+	        var _this = this;
+	        return this.ensureInitialised()
+	            .then(function (initialised) {
+	            return new Promise(function (resolve, reject) {
+	                var transaction = _this._database.transaction([_this._orphanedEventStore], "readwrite");
+	                var store = transaction.objectStore(_this._orphanedEventStore);
+	                var request = store.delete(event.eventId);
+	                request.onerror = function (e) {
+	                    reject({ message: "delete failed: " + e.target.error.name });
+	                };
+	                request.onsuccess = function (e) {
+	                    console.log("store.delete", e.target.result);
+	                    resolve(true);
+	                };
+	            });
+	        });
+	    };
+	    IndexedDBOrphanedEventManager.prototype.getOrphanedEvents = function (conversationId) {
+	        var _this = this;
+	        return this.ensureInitialised()
+	            .then(function (initialised) {
+	            return new Promise(function (resolve, reject) {
+	                var transaction = _this._database.transaction([_this._orphanedEventStore], "readonly");
+	                var objectStore = transaction.objectStore(_this._orphanedEventStore);
+	                var index = objectStore.index("conversationId");
+	                var keyRange = IDBKeyRange.only(conversationId);
+	                var events = [];
+	                var cursorRequest = index.openCursor(keyRange, "prev");
+	                cursorRequest.onsuccess = function (event) {
+	                    var cursor = event.target.result;
+	                    if (cursor) {
+	                        events.unshift(cursor.value);
+	                        cursor.continue();
+	                    }
+	                    else {
+	                        resolve(events.sort(function (e1, e2) {
+	                            return e1.conversationEventId - e2.conversationEventId;
+	                        }));
+	                    }
+	                };
+	                cursorRequest.onerror = function (event) {
+	                    reject({ message: "Failed to openCursor: " + event.target.error.name });
+	                };
+	            });
+	        });
+	    };
+	    IndexedDBOrphanedEventManager.prototype.ensureInitialised = function () {
+	        return this._database ? Promise.resolve(true) : this.initialise();
+	    };
+	    IndexedDBOrphanedEventManager.prototype.initialise = function () {
+	        var _this = this;
+	        return new Promise(function (resolve, reject) {
+	            if (_this.idbSupported) {
+	                var self_1 = _this;
+	                var openRequest = indexedDB.open(_this._name, _this._version);
+	                openRequest.onupgradeneeded = function (event) {
+	                    var thisDB = event.target.result;
+	                    if (!thisDB.objectStoreNames.contains(self_1._continuationTokenStore)) {
+	                        thisDB.createObjectStore(self_1._continuationTokenStore, { keyPath: "conversationId" });
+	                    }
+	                    if (!thisDB.objectStoreNames.contains(self_1._orphanedEventStore)) {
+	                        var os = thisDB.createObjectStore(self_1._orphanedEventStore, { keyPath: "eventId" });
+	                        os.createIndex("conversationId", "conversationId", { unique: false });
+	                    }
+	                };
+	                openRequest.onsuccess = function (event) {
+	                    _this._database = event.target.result;
+	                    resolve(true);
+	                };
+	                openRequest.onerror = function (event) {
+	                    reject({ message: "IndexedDBOrphanedEventManager.initialise failed : " + event.target.error.name });
+	                };
+	            }
+	            else {
+	                reject({ message: "IndexedDBOrphanedEventManager not supported on this platform" });
+	            }
+	        });
+	    };
+	    IndexedDBOrphanedEventManager.prototype.clearObjectStore = function (objectStoreName) {
+	        var _this = this;
+	        var _objectStoreName = objectStoreName;
+	        return new Promise(function (resolve, reject) {
+	            var transaction = _this._database.transaction([_objectStoreName], "readwrite");
+	            transaction.onerror = function (event) {
+	                console.error("Transaction not opened due to error: " + transaction.error);
+	            };
+	            var objectStore = transaction.objectStore(_objectStoreName);
+	            var objectStoreRequest = objectStore.clear();
+	            objectStoreRequest.onsuccess = function (event) {
+	                resolve(true);
+	            };
+	            objectStoreRequest.onerror = function (event) {
+	                reject({ message: "Failed to clear object store: " + event.target.error.name });
+	            };
+	        });
+	    };
+	    IndexedDBOrphanedEventManager.prototype.deleteTokenInfo = function (conversationId) {
+	        var _this = this;
+	        return new Promise(function (resolve, reject) {
+	            var transaction = _this._database.transaction([_this._continuationTokenStore], "readwrite");
+	            var store = transaction.objectStore(_this._continuationTokenStore);
+	            var request = store.delete(conversationId);
+	            request.onerror = function (event) {
+	                reject({ message: "delete failed: " + event.target.error.name });
+	            };
+	            request.onsuccess = function (event) {
+	                console.log("store.delete", event.target.result);
+	                resolve(true);
+	            };
+	        });
+	    };
+	    IndexedDBOrphanedEventManager.prototype.deleteEvents = function (conversationId) {
+	        var _this = this;
+	        return new Promise(function (resolve, reject) {
+	            var transaction = _this._database.transaction([_this._orphanedEventStore], "readwrite");
+	            var objectStore = transaction.objectStore(_this._orphanedEventStore);
+	            var index = objectStore.index("conversationId");
+	            var keyRange = IDBKeyRange.only(conversationId);
+	            var cursorRequest = index.openCursor(keyRange, "next");
+	            cursorRequest.onsuccess = function (event) {
+	                var cursor = event.target.result;
+	                if (cursor) {
+	                    objectStore.delete(cursor.primaryKey);
+	                    cursor.continue();
+	                }
+	                else {
+	                    resolve(true);
+	                }
+	            };
+	            cursorRequest.onerror = function (e) {
+	                reject({ message: "Failed to openCursor: " + e.target.error.name });
+	            };
+	        });
+	    };
+	    return IndexedDBOrphanedEventManager;
+	}());
+	IndexedDBOrphanedEventManager = __decorate([
+	    inversify_1.injectable()
+	], IndexedDBOrphanedEventManager);
+	exports.IndexedDBOrphanedEventManager = IndexedDBOrphanedEventManager;
+	//# sourceMappingURL=indexedDBOrphanedEventManager.js.map
+
+/***/ }),
+/* 68 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
+	var __param = (this && this.__param) || function (paramIndex, decorator) {
+	    return function (target, key) { decorator(target, key, paramIndex); }
+	};
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var inversify_1 = __webpack_require__(14);
+	var interfaceSymbols_1 = __webpack_require__(56);
+	;
+	var LocalStorageOrphanedEventManager = (function () {
+	    function LocalStorageOrphanedEventManager(_localStorage) {
+	        this._localStorage = _localStorage;
+	        this._orphanedEevnts = {};
+	        this._orphanedEevnts = this._localStorage.getObject("orphanedEevnts") || {};
+	    }
+	    LocalStorageOrphanedEventManager.prototype.clearAll = function () {
+	        this._orphanedEevnts = {};
+	        this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
+	        return Promise.resolve(true);
+	    };
+	    LocalStorageOrphanedEventManager.prototype.clear = function (conversationId) {
+	        this._orphanedEevnts[conversationId] = {
+	            orphanedEvents: []
+	        };
+	        this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
+	        return Promise.resolve(true);
+	    };
+	    LocalStorageOrphanedEventManager.prototype.getContinuationToken = function (conversationId) {
+	        var container = this._orphanedEevnts[conversationId];
+	        return Promise.resolve(container ? container.continuationToken : null);
+	    };
+	    LocalStorageOrphanedEventManager.prototype.setContinuationToken = function (conversationId, continuationToken) {
+	        var _info = this._orphanedEevnts[conversationId];
+	        if (_info) {
+	            _info.continuationToken = continuationToken;
+	        }
+	        else {
+	            this._orphanedEevnts[conversationId] = {
+	                continuationToken: continuationToken,
+	                orphanedEvents: []
+	            };
+	        }
+	        return Promise.resolve(true);
+	    };
+	    LocalStorageOrphanedEventManager.prototype.addOrphanedEvent = function (event) {
+	        var info = this._orphanedEevnts[event.conversationId];
+	        if (info) {
+	            var found = info.orphanedEvents.filter(function (e) { return e.eventId === event.eventId; });
+	            if (found.length === 0) {
+	                info.orphanedEvents.unshift(event);
+	                info.orphanedEvents = info.orphanedEvents.sort(function (e1, e2) {
+	                    if (e1.conversationEventId > e2.conversationEventId) {
+	                        return 1;
+	                    }
+	                    else if (e1.conversationEventId < e2.conversationEventId) {
+	                        return -1;
+	                    }
+	                    else {
+	                        return 0;
+	                    }
+	                });
+	                this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
+	            }
+	        }
+	        else {
+	            return Promise.reject({ message: "No container for conversation " + event.conversationId });
+	        }
+	    };
+	    LocalStorageOrphanedEventManager.prototype.removeOrphanedEvent = function (event) {
+	        var info = this._orphanedEevnts[event.conversationId];
+	        if (info) {
+	            for (var i = info.orphanedEvents.length - 1; i >= 0; i--) {
+	                var e = info.orphanedEvents[i];
+	                if (e.eventId === event.eventId) {
+	                    info.orphanedEvents.splice(i, 1);
+	                    break;
+	                }
+	            }
+	            this._localStorage.setObject("orphanedEevnts", this._orphanedEevnts);
+	            return Promise.resolve(true);
+	        }
+	        else {
+	            return Promise.reject({ message: "No container for conversation " + event.conversationId });
+	        }
+	    };
+	    LocalStorageOrphanedEventManager.prototype.getOrphanedEvents = function (conversationId) {
+	        var info = this._orphanedEevnts[conversationId];
+	        return Promise.resolve(info ? info.orphanedEvents : []);
+	    };
+	    return LocalStorageOrphanedEventManager;
+	}());
+	LocalStorageOrphanedEventManager = __decorate([
+	    inversify_1.injectable(),
+	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+	    __metadata("design:paramtypes", [Object])
+	], LocalStorageOrphanedEventManager);
+	exports.LocalStorageOrphanedEventManager = LocalStorageOrphanedEventManager;
+	//# sourceMappingURL=localStorageOrphanedEventManager.js.map
+
+/***/ }),
+/* 69 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
+	var __param = (this && this.__param) || function (paramIndex, decorator) {
+	    return function (target, key) { decorator(target, key, paramIndex); }
+	};
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var inversify_1 = __webpack_require__(14);
+	var utils_1 = __webpack_require__(7);
+	var interfaceSymbols_1 = __webpack_require__(56);
+	var MessagePager = (function () {
+	    function MessagePager(_logger, _localStorage, _messageManager, _orphanedEventManager) {
+	        this._logger = _logger;
+	        this._localStorage = _localStorage;
+	        this._messageManager = _messageManager;
+	        this._orphanedEventManager = _orphanedEventManager;
+	    }
+	    MessagePager.prototype.getMessages = function (conversationId, pageSize, continuationToken) {
+	        var _this = this;
+	        if (continuationToken <= 0) {
+	            return Promise.reject({ message: "All messages from conversation " + conversationId + " have been loaded" });
+	        }
+	        var _continuationToken = null;
+	        var _conversationMessagesResult;
+	        return this._orphanedEventManager.getContinuationToken(conversationId)
+	            .then(function (token) {
+	            _continuationToken = token;
+	            if (continuationToken !== undefined) {
+	                if (_continuationToken !== continuationToken) {
+	                    return Promise.reject({ message: "Invalid continuation token: " + continuationToken + " for " + conversationId + ", you nust start from the end" });
+	                }
+	                else {
+	                    return Promise.resolve(true);
+	                }
+	            }
+	            else {
+	                return _this._orphanedEventManager.clear(conversationId);
+	            }
+	        })
+	            .then(function () {
+	            return _this._messageManager.getConversationMessages(conversationId, pageSize, continuationToken);
+	        })
+	            .then(function (result) {
+	            _conversationMessagesResult = result;
+	            if (result.messages === undefined) {
+	                _this._logger.log("No messages in this channel yet");
+	                return Promise.resolve({ messages: [] });
+	            }
+	            else {
+	                return _this.getOrphanedEvents(conversationId, _conversationMessagesResult.orphanedEvents)
+	                    .then(function (orphanedEvents) {
+	                    return _this.applyOrphanedEvents(_conversationMessagesResult.messages, orphanedEvents);
+	                })
+	                    .then(function () {
+	                    _continuationToken = _conversationMessagesResult.earliestEventId - 1;
+	                    return _this._orphanedEventManager.setContinuationToken(conversationId, _continuationToken);
+	                })
+	                    .then(function () {
+	                    return Promise.resolve({
+	                        continuationToken: _continuationToken,
+	                        earliestEventId: _conversationMessagesResult.earliestEventId,
+	                        latestEventId: _conversationMessagesResult.latestEventId,
+	                        messages: _conversationMessagesResult.messages,
+	                    });
+	                });
+	            }
+	        });
+	    };
+	    MessagePager.prototype.getOrphanedEvents = function (conversationId, orphanedEvents) {
+	        var _this = this;
+	        var mapped = orphanedEvents.map(function (e) { return _this.mapOrphanedEvent(e); });
+	        return utils_1.Utils.eachSeries(mapped, function (event) {
+	            return _this._orphanedEventManager.addOrphanedEvent(event);
+	        })
+	            .then(function (done) {
+	            return _this._orphanedEventManager.getOrphanedEvents(conversationId);
+	        });
+	    };
+	    MessagePager.prototype.markMessagesAsDelivered = function (id, messages, userId) {
+	        var messageIds = [];
+	        for (var _i = 0, messages_1 = messages; _i < messages_1.length; _i++) {
+	            var message = messages_1[_i];
+	            if (message.context && message.context.from && message.context.from.id !== userId) {
+	                var alreadyDelivered = false;
+	                if (message.statusUpdates && message.statusUpdates[userId]) {
+	                    if (message.statusUpdates[userId].status === "delivered" ||
+	                        message.statusUpdates[userId].status === "read") {
+	                        alreadyDelivered = true;
+	                    }
+	                }
+	                if (!alreadyDelivered) {
+	                    messageIds.unshift(message.id);
+	                }
+	            }
+	        }
+	        if (messageIds.length > 0) {
+	            var statusUpdate = {
+	                messageIds: messageIds,
+	                status: "delivered",
+	                timestamp: new Date().toISOString()
+	            };
+	            return this._messageManager.sendMessageStatusUpdates(id, [statusUpdate]);
+	        }
+	        else {
+	            return Promise.resolve("OK");
+	        }
+	    };
+	    MessagePager.prototype.resetConversation = function (conversationId) {
+	        return this._orphanedEventManager.clear(conversationId);
+	    };
+	    MessagePager.prototype.applyOrphanedEvents = function (messages, orphanedEvents) {
+	        var _this = this;
+	        return utils_1.Utils.eachSeries(orphanedEvents, function (event) {
+	            if (_this.playEvent(event, messages)) {
+	                _this._logger.log("succesfuly played event " + event.conversationEventId);
+	                return _this._orphanedEventManager.removeOrphanedEvent(event);
+	            }
+	            else {
+	                _this._logger.warn("failed to play event " + event.conversationEventId, event);
+	                return Promise.resolve(false);
+	            }
+	        });
+	    };
+	    MessagePager.prototype.playEvent = function (event, messages) {
+	        var played = false;
+	        var found = messages.filter(function (message) { return message.id === event.payload.messageId; });
+	        var message;
+	        if (found.length === 1) {
+	            message = found[0];
+	            played = true;
+	        }
+	        else if (found.length >= 1) {
+	            this._logger.error("Found more than 1 message with same messageId: " + event.payload.messageId);
+	        }
+	        else {
+	            this._logger.log("Message " + event.payload.messageId + " not found ...");
+	        }
+	        switch (event.name) {
+	            case "conversationMessage.read":
+	                {
+	                    if (message) {
+	                        message.statusUpdates[event.payload.profileId] = {
+	                            "status": "read",
+	                            "on": event.payload.timestamp
+	                        };
+	                    }
+	                }
+	                break;
+	            case "conversationMessage.delivered":
+	                {
+	                    if (message) {
+	                        var updateForProfileId = message.statusUpdates[event.payload.profileId];
+	                        if (updateForProfileId && updateForProfileId.status === "read") {
+	                            this._logger.log("Message already marked as read, not marking as delivered");
+	                        }
+	                        else {
+	                            message.statusUpdates[event.payload.profileId] = {
+	                                "status": "delivered",
+	                                "on": event.payload.timestamp
+	                            };
+	                        }
+	                    }
+	                }
+	                break;
+	            default:
+	                this._logger.error("Unknown eventName " + event.name + " for messageId: " + event.payload.messageId);
+	                break;
+	        }
+	        return played;
+	    };
+	    MessagePager.prototype.mapOrphanedEvent = function (event) {
+	        var mapped = {};
+	        mapped.conversationEventId = event.id;
+	        mapped.name = "conversationMessage." + event.data.name;
+	        mapped.eventId = event.data.eventId;
+	        mapped.conversationId = event.data.payload.conversationId;
+	        mapped.payload = event.data.payload;
+	        return mapped;
+	    };
+	    return MessagePager;
+	}());
+	MessagePager = __decorate([
+	    inversify_1.injectable(),
+	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+	    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager)),
+	    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager)),
+	    __metadata("design:paramtypes", [Object, Object, Object, Object])
+	], MessagePager);
+	exports.MessagePager = MessagePager;
+	//# sourceMappingURL=messagePager.js.map
+
+/***/ }),
+/* 70 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
+	var __param = (this && this.__param) || function (paramIndex, decorator) {
+	    return function (target, key) { decorator(target, key, paramIndex); }
+	};
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var inversify_1 = __webpack_require__(14);
+	var interfaceSymbols_1 = __webpack_require__(56);
+	var AppMessaging = (function () {
+	    function AppMessaging(_networkManager, _conversationManager, _messageManager, _messagePager) {
+	        this._networkManager = _networkManager;
+	        this._conversationManager = _conversationManager;
+	        this._messageManager = _messageManager;
+	        this._messagePager = _messagePager;
+	    }
+	    AppMessaging.prototype.createConversation = function (conversationDetails) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._conversationManager.createConversation(conversationDetails);
+	        });
+	    };
+	    AppMessaging.prototype.updateConversation = function (conversationDetails, eTag) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._conversationManager.updateConversation(conversationDetails, eTag);
+	        });
+	    };
+	    AppMessaging.prototype.getConversation = function (conversationId) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._conversationManager.getConversation(conversationId);
+	        });
+	    };
+	    AppMessaging.prototype.deleteConversation = function (conversationId) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._conversationManager.deleteConversation(conversationId);
+	        })
+	            .then(function (deleted) {
+	            return _this._messagePager.resetConversation(conversationId);
+	        });
+	    };
+	    AppMessaging.prototype.addParticipantsToConversation = function (conversationId, participants) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._conversationManager.addParticipantsToConversation(conversationId, participants);
+	        });
+	    };
+	    AppMessaging.prototype.deleteParticipantsFromConversation = function (conversationId, participants) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._conversationManager.deleteParticipantsFromConversation(conversationId, participants);
+	        });
+	    };
+	    AppMessaging.prototype.getParticipantsInConversation = function (conversationId) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._conversationManager.getParticipantsInConversation(conversationId);
+	        });
+	    };
+	    AppMessaging.prototype.getConversations = function (scope, profileId) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._conversationManager.getConversations(scope, profileId);
+	        });
+	    };
+	    AppMessaging.prototype.getConversationEvents = function (conversationId, from, limit) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._messageManager.getConversationEvents(conversationId, from, limit);
+	        });
+	    };
+	    AppMessaging.prototype.sendMessageToConversation = function (conversationId, message) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._messageManager.sendMessageToConversation(conversationId, message);
+	        });
+	    };
+	    AppMessaging.prototype.sendMessageStatusUpdates = function (conversationId, statuses) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._messageManager.sendMessageStatusUpdates(conversationId, statuses);
+	        });
+	    };
+	    AppMessaging.prototype.getMessages = function (conversationId, pageSize, continuationToken) {
+	        var _this = this;
+	        var profileId;
+	        var _getMessagesResponse;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            profileId = sessionInfo.session.profileId;
+	            return _this._messagePager.getMessages(conversationId, pageSize, continuationToken);
+	        })
+	            .then(function (getMessagesResponse) {
+	            _getMessagesResponse = getMessagesResponse;
+	            return _this._messagePager.markMessagesAsDelivered(conversationId, getMessagesResponse.messages, profileId);
+	        })
+	            .then(function (markDeliveredresponse) {
+	            return Promise.resolve(_getMessagesResponse);
+	        });
+	    };
+	    AppMessaging.prototype.sendIsTyping = function (conversationId) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._conversationManager.sendIsTyping(conversationId);
+	        });
+	    };
+	    AppMessaging.prototype.sendIsTypingOff = function (conversationId) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._conversationManager.sendIsTypingOff(conversationId);
+	        });
+	    };
+	    return AppMessaging;
+	}());
+	AppMessaging = __decorate([
+	    inversify_1.injectable(),
+	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
+	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager)),
+	    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager)),
+	    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager)),
+	    __metadata("design:paramtypes", [Object, Object, Object, Object])
+	], AppMessaging);
+	exports.AppMessaging = AppMessaging;
+	//# sourceMappingURL=appMessaging.js.map
+
+/***/ }),
+/* 71 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
+	var __param = (this && this.__param) || function (paramIndex, decorator) {
+	    return function (target, key) { decorator(target, key, paramIndex); }
+	};
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var inversify_1 = __webpack_require__(14);
+	var interfaceSymbols_1 = __webpack_require__(56);
+	var Profile = (function () {
+	    function Profile(_networkManager, _localStorage, _profileManager) {
+	        this._networkManager = _networkManager;
+	        this._localStorage = _localStorage;
+	        this._profileManager = _profileManager;
+	    }
+	    Profile.prototype.getProfile = function (profileId) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._profileManager.getProfile(profileId);
+	        });
+	    };
+	    Profile.prototype.queryProfiles = function (query) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._profileManager.queryProfiles(query);
+	        });
+	    };
+	    Profile.prototype.updateProfile = function (profileId, profile, eTag) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._profileManager.updateProfile(profileId, profile, eTag);
+	        });
+	    };
+	    Profile.prototype.patchProfile = function (profileId, profile, eTag) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._profileManager.patchProfile(profileId, profile, eTag);
+	        });
+	    };
+	    Profile.prototype.getMyProfile = function (useEtag) {
+	        var _this = this;
+	        if (useEtag === void 0) { useEtag = true; }
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._profileManager.getProfile(sessionInfo.session.profileId);
+	        })
+	            .then(function (result) {
+	            if (useEtag) {
+	                _this._localStorage.setString("MyProfileETag", result.headers.ETag);
+	            }
+	            return Promise.resolve(result.response);
+	        });
+	    };
+	    Profile.prototype.updateMyProfile = function (profile, useEtag) {
+	        var _this = this;
+	        if (useEtag === void 0) { useEtag = true; }
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._profileManager.updateProfile(sessionInfo.session.profileId, profile, useEtag ? _this._localStorage.getString("MyProfileETag") : undefined);
+	        })
+	            .then(function (result) {
+	            if (useEtag) {
+	                _this._localStorage.setString("MyProfileETag", result.headers.ETag);
+	            }
+	            return Promise.resolve(result.response);
+	        });
+	    };
+	    Profile.prototype.patchMyProfile = function (profile, useEtag) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._profileManager.patchProfile(sessionInfo.session.profileId, profile, useEtag ? _this._localStorage.getString("MyProfileETag") : undefined);
+	        })
+	            .then(function (result) {
+	            if (useEtag) {
+	                _this._localStorage.setString("MyProfileETag", result.headers.ETag);
+	            }
+	            return Promise.resolve(result.response);
+	        });
+	    };
+	    return Profile;
+	}());
+	Profile = __decorate([
+	    inversify_1.injectable(),
+	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
+	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+	    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager)),
+	    __metadata("design:paramtypes", [Object, Object, Object])
+	], Profile);
+	exports.Profile = Profile;
+	//# sourceMappingURL=profile.js.map
+
+/***/ }),
+/* 72 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
+	var __param = (this && this.__param) || function (paramIndex, decorator) {
+	    return function (target, key) { decorator(target, key, paramIndex); }
+	};
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var inversify_1 = __webpack_require__(14);
+	var interfaceSymbols_1 = __webpack_require__(56);
+	var Services = (function () {
+	    function Services(_appMessaging, _profile) {
+	        this._appMessaging = _appMessaging;
+	        this._profile = _profile;
+	    }
+	    Object.defineProperty(Services.prototype, "appMessaging", {
+	        get: function () {
+	            return this._appMessaging;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(Services.prototype, "profile", {
+	        get: function () {
+	            return this._profile;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    return Services;
+	}());
+	Services = __decorate([
+	    inversify_1.injectable(),
+	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AppMessaging)),
+	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Profile)),
+	    __metadata("design:paramtypes", [Object, Object])
+	], Services);
+	exports.Services = Services;
+	//# sourceMappingURL=services.js.map
+
+/***/ }),
+/* 73 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
+	var __param = (this && this.__param) || function (paramIndex, decorator) {
+	    return function (target, key) { decorator(target, key, paramIndex); }
+	};
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var inversify_1 = __webpack_require__(14);
+	var interfaceSymbols_1 = __webpack_require__(56);
+	var Device = (function () {
+	    function Device(_networkManager, _deviceManager) {
+	        this._networkManager = _networkManager;
+	        this._deviceManager = _deviceManager;
+	    }
+	    Device.prototype.setFCMPushDetails = function (packageName, registrationId) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._deviceManager.setFCMPushDetails(sessionInfo.session.id, packageName, registrationId);
+	        });
+	    };
+	    Device.prototype.setAPNSPushDetails = function (bundleId, environment, token) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._deviceManager.setAPNSPushDetails(sessionInfo.session.id, bundleId, environment, token);
+	        });
+	    };
+	    Device.prototype.removePushDetails = function () {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._deviceManager.removePushDetails(sessionInfo.session.id);
+	        });
+	    };
+	    return Device;
+	}());
+	Device = __decorate([
+	    inversify_1.injectable(),
+	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
+	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager)),
+	    __metadata("design:paramtypes", [Object, Object])
+	], Device);
+	exports.Device = Device;
+	//# sourceMappingURL=device.js.map
+
+/***/ }),
+/* 74 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
+	var __param = (this && this.__param) || function (paramIndex, decorator) {
+	    return function (target, key) { decorator(target, key, paramIndex); }
+	};
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var inversify_1 = __webpack_require__(14);
+	var interfaceSymbols_1 = __webpack_require__(56);
+	var Channels = (function () {
+	    function Channels(_networkManager, _facebookManager) {
+	        this._networkManager = _networkManager;
+	        this._facebookManager = _facebookManager;
+	    }
+	    Channels.prototype.createFbOptInState = function (data) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._facebookManager.createSendToMessengerState(data);
+	        });
+	    };
+	    return Channels;
+	}());
+	Channels = __decorate([
+	    inversify_1.injectable(),
+	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
+	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager)),
+	    __metadata("design:paramtypes", [Object, Object])
+	], Channels);
+	exports.Channels = Channels;
+	//# sourceMappingURL=channels.js.map
 
 /***/ })
 /******/ ]);

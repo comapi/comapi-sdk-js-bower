@@ -1,5 +1,5 @@
-import { ILogger, ILocalStorageData, IConversationMessage, IMessageManager, IGetMessagesResponse, IOrphanedEventManager, IConversationMessageEvent } from "./interfaces";
-export declare class MessagePager {
+import { ILogger, ILocalStorageData, IConversationMessage, IMessageManager, IGetMessagesResponse, IOrphanedEventManager, IConversationMessageEvent, IMessagePager } from "./interfaces";
+export declare class MessagePager implements IMessagePager {
     private _logger;
     private _localStorage;
     private _messageManager;

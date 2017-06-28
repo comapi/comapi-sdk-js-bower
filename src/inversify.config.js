@@ -15,6 +15,14 @@ var facebookManager_1 = require("./facebookManager");
 var conversationManager_1 = require("./conversationManager");
 var profileManager_1 = require("./profileManager");
 var messageManager_1 = require("./messageManager");
+var indexedDBOrphanedEventManager_1 = require("./indexedDBOrphanedEventManager");
+var localStorageOrphanedEventManager_1 = require("./localStorageOrphanedEventManager");
+var messagePager_1 = require("./messagePager");
+var appMessaging_1 = require("./appMessaging");
+var profile_1 = require("./profile");
+var services_1 = require("./services");
+var device_1 = require("./device");
+var channels_1 = require("./channels");
 var interfaceSymbols_1 = require("./interfaceSymbols");
 var container = new inversify_1.Container();
 exports.container = container;
@@ -33,7 +41,20 @@ function initInterfaces() {
     container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager).to(facebookManager_1.FacebookManager);
     container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager).to(conversationManager_1.ConversationManager);
     container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager).to(profileManager_1.ProfileManager);
+    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager).to(messagePager_1.MessagePager);
+    var dbSupported = "indexedDB" in window;
+    if (dbSupported) {
+        container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(indexedDBOrphanedEventManager_1.IndexedDBOrphanedEventManager);
+    }
+    else {
+        container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(localStorageOrphanedEventManager_1.LocalStorageOrphanedEventManager);
+    }
     container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager).to(messageManager_1.MessageManager);
+    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.AppMessaging).to(appMessaging_1.AppMessaging);
+    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Profile).to(profile_1.Profile);
+    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Services).to(services_1.Services);
+    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Device).to(device_1.Device);
+    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels).to(channels_1.Channels);
 }
 exports.initInterfaces = initInterfaces;
 initInterfaces();

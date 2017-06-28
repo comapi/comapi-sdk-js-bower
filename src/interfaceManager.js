@@ -147,6 +147,56 @@ var InterfaceManager = (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(InterfaceManager, "IMessagePager", {
+        get: function () {
+            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager);
+        },
+        set: function (messagePager) {
+            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager, messagePager);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(InterfaceManager, "IAppMessaging", {
+        get: function () {
+            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.AppMessaging);
+        },
+        set: function (appMessaging) {
+            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.AppMessaging, appMessaging);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(InterfaceManager, "IProfile", {
+        get: function () {
+            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Profile);
+        },
+        set: function (profile) {
+            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Profile, profile);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(InterfaceManager, "IDevice", {
+        get: function () {
+            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Device);
+        },
+        set: function (device) {
+            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Device, device);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(InterfaceManager, "IChannels", {
+        get: function () {
+            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels);
+        },
+        set: function (channels) {
+            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels, channels);
+        },
+        enumerable: true,
+        configurable: true
+    });
     return InterfaceManager;
 }());
 InterfaceManager.interfaces = {};

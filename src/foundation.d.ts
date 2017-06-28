@@ -1,11 +1,10 @@
-import { IEventManager, ILogger, ILocalStorageData, ISession, IDeviceManager, IFacebookManager, IConversationManager, IProfileManager, IMessageManager, IComapiConfig, IServices, IDevice, IChannels, IFoundation, INetworkManager } from "./interfaces";
+import { IEventManager, ILogger, ISession, IComapiConfig, IServices, IDevice, IChannels, IFoundation, INetworkManager } from "./interfaces";
 import { ConversationBuilder } from "./conversationBuilder";
 import { MessageBuilder } from "./messageBuilder";
 import { MessageStatusBuilder } from "./messageStatusBuilder";
 import { ComapiConfig } from "./comapiConfig";
 import { InterfaceManager } from "./interfaceManager";
-import { INTERFACE_SYMBOLS } from "./interfaceSymbols";
-export { ComapiConfig, MessageStatusBuilder, ConversationBuilder, MessageBuilder, InterfaceManager, INTERFACE_SYMBOLS };
+export { ComapiConfig, MessageStatusBuilder, ConversationBuilder, MessageBuilder, InterfaceManager };
 export declare class Foundation implements IFoundation {
     private _eventManager;
     private _logger;
@@ -18,7 +17,7 @@ export declare class Foundation implements IFoundation {
     static initialise(comapiConfig: IComapiConfig): Promise<Foundation>;
     static readonly version: string;
     private static _initialise(comapiConfig, doSingleton);
-    constructor(_eventManager: IEventManager, _logger: ILogger, _localStorageData: ILocalStorageData, _networkManager: INetworkManager, _deviceManager: IDeviceManager, _facebookManager: IFacebookManager, _conversationManager: IConversationManager, _profileManager: IProfileManager, _messageManager: IMessageManager, _comapiConfig: IComapiConfig);
+    constructor(_eventManager: IEventManager, _logger: ILogger, _networkManager: INetworkManager, services: IServices, device: IDevice, channels: IChannels);
     startSession(): Promise<ISession>;
     endSession(): Promise<boolean>;
     readonly services: IServices;
