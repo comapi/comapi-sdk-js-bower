@@ -79,7 +79,10 @@ var WebSocketManager = (function () {
                         _this.webSocket = undefined;
                         _this._logger.log("WebSocket Connection closed.");
                         if (_this.didConnect === false) {
-                            reject({ message: "Failed to connect webSocket" });
+                            reject({
+                                code: event.code,
+                                message: "Failed to connect webSocket",
+                            });
                         }
                         if (!_this.manuallyClosed && _this.didConnect) {
                             _this._logger.log("socket not manually closed, reconnecting ...");

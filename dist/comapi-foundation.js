@@ -5060,7 +5060,7 @@ var COMAPI =
 	            platform: "javascript",
 	            platformVersion: browserInfo.version,
 	            sdkType: "native",
-	            sdkVersion: "1.0.2.134"
+	            sdkVersion: "1.0.2.135"
 	        };
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -5216,7 +5216,10 @@ var COMAPI =
 	                        _this.webSocket = undefined;
 	                        _this._logger.log("WebSocket Connection closed.");
 	                        if (_this.didConnect === false) {
-	                            reject({ message: "Failed to connect webSocket" });
+	                            reject({
+	                                code: event.code,
+	                                message: "Failed to connect webSocket",
+	                            });
 	                        }
 	                        if (!_this.manuallyClosed && _this.didConnect) {
 	                            _this._logger.log("socket not manually closed, reconnecting ...");
