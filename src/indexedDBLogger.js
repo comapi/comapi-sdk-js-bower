@@ -183,9 +183,8 @@ var IndexedDBLogger = (function () {
     };
     IndexedDBLogger.prototype.ensureInitialised = function () {
         var _this = this;
-        return this._database ?
-            Promise.resolve(true) :
-            this.initialise()
+        if (!this._initialised) {
+            this._initialised = this.initialise()
                 .then(function (result) {
                 if (_this._comapiConfig) {
                     var retentionHours = _this._comapiConfig.logRetentionHours === undefined ? 24 : _this._comapiConfig.logRetentionHours;
@@ -196,6 +195,8 @@ var IndexedDBLogger = (function () {
                     return result;
                 }
             });
+        }
+        return this._initialised;
     };
     IndexedDBLogger.prototype.initialise = function () {
         var _this = this;

@@ -1,6 +1,9 @@
-import { IEventManager, ILocalStorageData, ILogger, IRestClient, ISessionManager, IWebSocketManager, INetworkManager, IDeviceManager, IFacebookManager, IConversationManager, IProfileManager, IMessageManager, IMessagePager, IAppMessaging, IProfile, IDevice, IChannels } from "./interfaces";
+import { IComapiConfig, IEventManager, ILocalStorageData, ILogger, IRestClient, ISessionManager, IWebSocketManager, INetworkManager, IDeviceManager, IFacebookManager, IConversationManager, IProfileManager, IMessageManager, IMessagePager, IAppMessaging, IProfile, IDevice, IChannels } from "./interfaces";
 export declare class InterfaceManager {
     private static interfaces;
+    static bindIndexedDBLogger(): void;
+    static unbindIndexedDBLogger(): void;
+    static bindComapiConfig(omapiConfig: IComapiConfig): void;
     private static getInterface(serviceIdentifier);
     private static setInterface(serviceIdentifier, instance);
     static IEventManager: IEventManager;

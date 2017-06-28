@@ -37,12 +37,7 @@ var Foundation = (function () {
         configurable: true
     });
     Foundation._initialise = function (comapiConfig, doSingleton) {
-        if (inversify_config_1.container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)) {
-            inversify_config_1.container.unbind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig);
-        }
-        inversify_config_1.container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig).toDynamicValue(function (context) {
-            return comapiConfig;
-        });
+        interfaceManager_1.InterfaceManager.bindComapiConfig(comapiConfig);
         if (doSingleton && Foundation._foundation) {
             return Promise.resolve(Foundation._foundation);
         }
@@ -51,10 +46,10 @@ var Foundation = (function () {
         }
         if (comapiConfig.logPersistence &&
             comapiConfig.logPersistence === interfaces_1.LogPersistences.IndexedDB) {
-            inversify_config_1.bindIndexedDBLogger();
+            interfaceManager_1.InterfaceManager.bindIndexedDBLogger();
         }
         else if (inversify_config_1.container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)) {
-            inversify_config_1.unbindIndexedDBLogger();
+            interfaceManager_1.InterfaceManager.unbindIndexedDBLogger();
         }
         var eventManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager);
         var logger = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger);

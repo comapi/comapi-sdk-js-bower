@@ -1,6 +1,7 @@
 import { IComapiConfig, ILogEvent } from "./interfaces";
 export declare class IndexedDBLogger {
     private _comapiConfig;
+    private _initialised;
     private idbSupported;
     private _database;
     private _name;

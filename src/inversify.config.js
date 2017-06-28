@@ -76,4 +76,14 @@ function unbindIndexedDBLogger() {
     }
 }
 exports.unbindIndexedDBLogger = unbindIndexedDBLogger;
+function bindComapiConfig(comapiConfig) {
+    "use strict";
+    if (container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)) {
+        container.unbind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig);
+    }
+    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig).toDynamicValue(function (context) {
+        return comapiConfig;
+    });
+}
+exports.bindComapiConfig = bindComapiConfig;
 //# sourceMappingURL=inversify.config.js.map

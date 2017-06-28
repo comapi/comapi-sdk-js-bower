@@ -147,7 +147,10 @@ var IndexedDBOrphanedEventManager = (function () {
         });
     };
     IndexedDBOrphanedEventManager.prototype.ensureInitialised = function () {
-        return this._database ? Promise.resolve(true) : this.initialise();
+        if (!this._initialised) {
+            this._initialised = this.initialise();
+        }
+        return this._initialised;
     };
     IndexedDBOrphanedEventManager.prototype.initialise = function () {
         var _this = this;

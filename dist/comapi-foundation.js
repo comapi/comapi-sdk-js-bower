@@ -1413,12 +1413,7 @@ var COMAPI =
 	        configurable: true
 	    });
 	    Foundation._initialise = function (comapiConfig, doSingleton) {
-	        if (inversify_config_1.container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)) {
-	            inversify_config_1.container.unbind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig);
-	        }
-	        inversify_config_1.container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig).toDynamicValue(function (context) {
-	            return comapiConfig;
-	        });
+	        interfaceManager_1.InterfaceManager.bindComapiConfig(comapiConfig);
 	        if (doSingleton && Foundation._foundation) {
 	            return Promise.resolve(Foundation._foundation);
 	        }
@@ -1427,10 +1422,10 @@ var COMAPI =
 	        }
 	        if (comapiConfig.logPersistence &&
 	            comapiConfig.logPersistence === interfaces_1.LogPersistences.IndexedDB) {
-	            inversify_config_1.bindIndexedDBLogger();
+	            interfaceManager_1.InterfaceManager.bindIndexedDBLogger();
 	        }
 	        else if (inversify_config_1.container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)) {
-	            inversify_config_1.unbindIndexedDBLogger();
+	            interfaceManager_1.InterfaceManager.unbindIndexedDBLogger();
 	        }
 	        var eventManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager);
 	        var logger = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger);
@@ -1900,6 +1895,15 @@ var COMAPI =
 	var InterfaceManager = (function () {
 	    function InterfaceManager() {
 	    }
+	    InterfaceManager.bindIndexedDBLogger = function () {
+	        inversify_config_1.bindIndexedDBLogger();
+	    };
+	    InterfaceManager.unbindIndexedDBLogger = function () {
+	        inversify_config_1.unbindIndexedDBLogger();
+	    };
+	    InterfaceManager.bindComapiConfig = function (omapiConfig) {
+	        inversify_config_1.bindComapiConfig(omapiConfig);
+	    };
 	    InterfaceManager.getInterface = function (serviceIdentifier) {
 	        return inversify_config_1.container.get(serviceIdentifier);
 	    };
@@ -2180,6 +2184,16 @@ var COMAPI =
 	    }
 	}
 	exports.unbindIndexedDBLogger = unbindIndexedDBLogger;
+	function bindComapiConfig(comapiConfig) {
+	    "use strict";
+	    if (container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)) {
+	        container.unbind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig);
+	    }
+	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig).toDynamicValue(function (context) {
+	        return comapiConfig;
+	    });
+	}
+	exports.bindComapiConfig = bindComapiConfig;
 	//# sourceMappingURL=inversify.config.js.map
 
 /***/ }),
@@ -4619,9 +4633,8 @@ var COMAPI =
 	    };
 	    IndexedDBLogger.prototype.ensureInitialised = function () {
 	        var _this = this;
-	        return this._database ?
-	            Promise.resolve(true) :
-	            this.initialise()
+	        if (!this._initialised) {
+	            this._initialised = this.initialise()
 	                .then(function (result) {
 	                if (_this._comapiConfig) {
 	                    var retentionHours = _this._comapiConfig.logRetentionHours === undefined ? 24 : _this._comapiConfig.logRetentionHours;
@@ -4632,6 +4645,8 @@ var COMAPI =
 	                    return result;
 	                }
 	            });
+	        }
+	        return this._initialised;
 	    };
 	    IndexedDBLogger.prototype.initialise = function () {
 	        var _this = this;
@@ -5156,7 +5171,7 @@ var COMAPI =
 	            platform: "javascript",
 	            platformVersion: browserInfo.version,
 	            sdkType: "native",
-	            sdkVersion: "1.0.2.144"
+	            sdkVersion: "1.0.2.147"
 	        };
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -6353,7 +6368,10 @@ var COMAPI =
 	        });
 	    };
 	    IndexedDBOrphanedEventManager.prototype.ensureInitialised = function () {
-	        return this._database ? Promise.resolve(true) : this.initialise();
+	        if (!this._initialised) {
+	            this._initialised = this.initialise();
+	        }
+	        return this._initialised;
 	    };
 	    IndexedDBOrphanedEventManager.prototype.initialise = function () {
 	        var _this = this;

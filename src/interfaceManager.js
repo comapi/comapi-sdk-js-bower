@@ -5,6 +5,15 @@ var interfaceSymbols_1 = require("./interfaceSymbols");
 var InterfaceManager = (function () {
     function InterfaceManager() {
     }
+    InterfaceManager.bindIndexedDBLogger = function () {
+        inversify_config_1.bindIndexedDBLogger();
+    };
+    InterfaceManager.unbindIndexedDBLogger = function () {
+        inversify_config_1.unbindIndexedDBLogger();
+    };
+    InterfaceManager.bindComapiConfig = function (omapiConfig) {
+        inversify_config_1.bindComapiConfig(omapiConfig);
+    };
     InterfaceManager.getInterface = function (serviceIdentifier) {
         return inversify_config_1.container.get(serviceIdentifier);
     };

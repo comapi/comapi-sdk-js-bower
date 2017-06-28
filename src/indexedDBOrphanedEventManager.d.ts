@@ -1,5 +1,6 @@
 import { IOrphanedEventManager, IConversationMessageEvent } from "./interfaces";
 export declare class IndexedDBOrphanedEventManager implements IOrphanedEventManager {
+    private _initialised;
     private idbSupported;
     private _database;
     private _name;
