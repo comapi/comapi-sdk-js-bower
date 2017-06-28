@@ -19,5 +19,9 @@
     "bugs": {
         "url": "https://github.com/comapi/comapi-sdk-js/issues"
     },
+    "dependencies": {
+        "inversify": "^4.1.1",
+        "reflect-metadata": "^0.1.10"
+    },
     "homepage": "http://www.comapi.com"
 }
