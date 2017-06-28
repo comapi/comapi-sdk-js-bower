@@ -51,47 +51,27 @@ var Foundation = (function () {
             comapiConfig.foundationRestUrls = new urlConfig_1.FoundationRestUrls();
         }
         if (comapiConfig.logPersistence &&
-            comapiConfig.logPersistence === interfaces_1.LogPersistences.IndexedDB) {
-            var indexedDBLogger_2 = new indexedDBLogger_1.IndexedDBLogger();
-            return indexedDBLogger_2.openDatabase()
-                .then(function () {
-                var retentionHours = comapiConfig.logRetentionHours === undefined ? 24 : comapiConfig.logRetentionHours;
-                var purgeDate = new Date((new Date()).valueOf() - 1000 * 60 * 60 * retentionHours);
-                return indexedDBLogger_2.purge(purgeDate);
-            })
-                .then(function () {
-                var foundation = foundationFactory(comapiConfig, indexedDBLogger_2);
-                if (doSingleton) {
-                    Foundation._foundation = foundation;
-                }
-                return Promise.resolve(foundation);
-            });
+            comapiConfig.logPersistence === interfaces_1.LogPersistences.IndexedDB &&
+            !inversify_config_1.container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)) {
+            inversify_config_1.container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger).to(indexedDBLogger_1.IndexedDBLogger);
         }
-        else {
-            var foundation = foundationFactory(comapiConfig);
-            if (doSingleton) {
-                Foundation._foundation = foundation;
-            }
-            return Promise.resolve(foundation);
+        else if (inversify_config_1.container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)) {
+            inversify_config_1.container.unbind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger);
         }
-        function foundationFactory(config, indexedDBLogger) {
-            if (indexedDBLogger) {
-                inversify_config_1.container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger).toDynamicValue(function (context) {
-                    return indexedDBLogger;
-                });
-            }
-            var eventManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager);
-            var logger = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger);
-            if (config.logLevel) {
-                logger.logLevel = config.logLevel;
-            }
-            var networkManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager);
-            var services = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Services);
-            var device = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Device);
-            var channels = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels);
-            var foundation = new Foundation(eventManager, logger, networkManager, services, device, channels);
-            return foundation;
+        var eventManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager);
+        var logger = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger);
+        if (comapiConfig.logLevel) {
+            logger.logLevel = comapiConfig.logLevel;
         }
+        var networkManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager);
+        var services = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Services);
+        var device = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Device);
+        var channels = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels);
+        var foundation = new Foundation(eventManager, logger, networkManager, services, device, channels);
+        if (doSingleton) {
+            Foundation._foundation = foundation;
+        }
+        return Promise.resolve(foundation);
     };
     Foundation.prototype.startSession = function () {
         return this._networkManager.startSession()

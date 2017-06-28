@@ -1,12 +1,14 @@
-import { ILogEvent } from "./interfaces";
+import { IComapiConfig, ILogEvent } from "./interfaces";
 export declare class IndexedDBLogger {
+    private _comapiConfig;
     private idbSupported;
     private _database;
     private _name;
     private _version;
     private _store;
-    constructor(name?: string);
-    openDatabase(): Promise<boolean>;
+    private _mutex;
+    constructor(_comapiConfig?: IComapiConfig);
+    name: string;
     purge(when: Date): Promise<boolean>;
     deleteDatabase(): Promise<boolean>;
     clearData(): Promise<boolean>;
@@ -14,4 +16,6 @@ export declare class IndexedDBLogger {
     getCount(): Promise<number>;
     closeDatabase(): void;
     addRecord(entity: ILogEvent): Promise<number>;
+    private ensureInitialised();
+    private initialise();
 }
