@@ -5060,7 +5060,7 @@ var COMAPI =
 	            platform: "javascript",
 	            platformVersion: browserInfo.version,
 	            sdkType: "native",
-	            sdkVersion: "1.0.2.133"
+	            sdkVersion: "1.0.2.134"
 	        };
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -5196,7 +5196,7 @@ var COMAPI =
 	                        }
 	                    };
 	                    _this.webSocket.onerror = function (event) {
-	                        _this._logger.log("websocket onerror - readystate: " + _this.readystates[_this.webSocket.readyState]);
+	                        _this._logger.log("websocket onerror - readystate: " + _this.readystates[_this.webSocket.readyState], event);
 	                    };
 	                    _this.webSocket.onmessage = function (event) {
 	                        var message;
@@ -5211,12 +5211,12 @@ var COMAPI =
 	                            _this.publishWebsocketEvent(message);
 	                        }
 	                    };
-	                    _this.webSocket.onclose = function () {
+	                    _this.webSocket.onclose = function (event) {
 	                        _this.connected = false;
 	                        _this.webSocket = undefined;
 	                        _this._logger.log("WebSocket Connection closed.");
 	                        if (_this.didConnect === false) {
-	                            reject();
+	                            reject({ message: "Failed to connect webSocket" });
 	                        }
 	                        if (!_this.manuallyClosed && _this.didConnect) {
 	                            _this._logger.log("socket not manually closed, reconnecting ...");
@@ -5235,7 +5235,7 @@ var COMAPI =
 	                    resolve(true);
 	                }
 	                else {
-	                    reject();
+	                    reject({ message: "Failed to connect webSocket" });
 	                }
 	            }
 	        });

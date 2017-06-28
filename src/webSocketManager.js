@@ -59,7 +59,7 @@ var WebSocketManager = (function () {
                         }
                     };
                     _this.webSocket.onerror = function (event) {
-                        _this._logger.log("websocket onerror - readystate: " + _this.readystates[_this.webSocket.readyState]);
+                        _this._logger.log("websocket onerror - readystate: " + _this.readystates[_this.webSocket.readyState], event);
                     };
                     _this.webSocket.onmessage = function (event) {
                         var message;
@@ -74,12 +74,12 @@ var WebSocketManager = (function () {
                             _this.publishWebsocketEvent(message);
                         }
                     };
-                    _this.webSocket.onclose = function () {
+                    _this.webSocket.onclose = function (event) {
                         _this.connected = false;
                         _this.webSocket = undefined;
                         _this._logger.log("WebSocket Connection closed.");
                         if (_this.didConnect === false) {
-                            reject();
+                            reject({ message: "Failed to connect webSocket" });
                         }
                         if (!_this.manuallyClosed && _this.didConnect) {
                             _this._logger.log("socket not manually closed, reconnecting ...");
@@ -98,7 +98,7 @@ var WebSocketManager = (function () {
                     resolve(true);
                 }
                 else {
-                    reject();
+                    reject({ message: "Failed to connect webSocket" });
                 }
             }
         });
