@@ -24,6 +24,7 @@ var services_1 = require("./services");
 var device_1 = require("./device");
 var channels_1 = require("./channels");
 var indexedDBLogger_1 = require("./indexedDBLogger");
+var eventMapper_1 = require("./eventMapper");
 var interfaceSymbols_1 = require("./interfaceSymbols");
 var container = new inversify_1.Container();
 exports.container = container;
@@ -35,6 +36,7 @@ function initInterfaces() {
     container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger).to(logger_1.Logger);
     container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient).to(restClient_1.RestClient);
     container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager).to(sessionManager_1.SessionManager).inSingletonScope();
+    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.EventMapper).to(eventMapper_1.EventMapper);
     container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager).to(webSocketManager_1.WebSocketManager);
     container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager).to(networkManager_1.NetworkManager);
     container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient).to(authenticatedRestClient_1.AuthenticatedRestClient);

@@ -15,12 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var inversify_1 = require("inversify");
 var interfaceSymbols_1 = require("./interfaceSymbols");
 var WebSocketManager = (function () {
-    function WebSocketManager(_logger, _localStorageData, _comapiConfig, _sessionManager, _eventManager) {
+    function WebSocketManager(_logger, _localStorageData, _comapiConfig, _sessionManager, _eventManager, _eventMapper) {
         this._logger = _logger;
         this._localStorageData = _localStorageData;
         this._comapiConfig = _comapiConfig;
         this._sessionManager = _sessionManager;
         this._eventManager = _eventManager;
+        this._eventMapper = _eventMapper;
         this.readystates = [
             "Connecting",
             "Open",
@@ -182,146 +183,60 @@ var WebSocketManager = (function () {
         switch (mappedName) {
             case "conversation.delete":
                 {
-                    var conversationDeletedEventData = {
-                        conversationId: event.conversationId,
-                        createdBy: event.context.createdBy,
-                        timestamp: event.publishedOn,
-                    };
-                    this._eventManager.publishLocalEvent("conversationDeleted", conversationDeletedEventData);
+                    this._eventManager.publishLocalEvent("conversationDeleted", this._eventMapper.conversationDeleted(event));
                 }
                 break;
             case "conversation.undelete":
                 {
-                    var conversationUndeletedEventData = {
-                        conversationId: event.conversationId,
-                        createdBy: event.context.createdBy,
-                        timestamp: event.publishedOn,
-                    };
-                    this._eventManager.publishLocalEvent("conversationUndeleted", conversationUndeletedEventData);
+                    this._eventManager.publishLocalEvent("conversationUndeleted", this._eventMapper.conversationUndeleted(event));
                 }
                 break;
             case "conversation.update":
                 {
-                    var conversationUpdatedEventData = {
-                        conversationId: event.conversationId,
-                        createdBy: event.context.createdBy,
-                        description: event.payload.description,
-                        eTag: event.etag,
-                        isPublic: event.payload.isPublic,
-                        name: event.payload.name,
-                        roles: event.payload.roles,
-                        timestamp: event.publishedOn,
-                    };
-                    this._eventManager.publishLocalEvent("conversationUpdated", conversationUpdatedEventData);
+                    this._eventManager.publishLocalEvent("conversationUpdated", this._eventMapper.conversationUpdated(event));
                 }
                 break;
             case "conversation.participantAdded":
                 {
-                    var participantAddedEventData = {
-                        conversationId: event.conversationId,
-                        createdBy: event.context.createdBy,
-                        profileId: event.payload.profileId,
-                        role: event.payload.role,
-                        timestamp: event.publishedOn,
-                    };
-                    this._eventManager.publishLocalEvent("participantAdded", participantAddedEventData);
+                    this._eventManager.publishLocalEvent("participantAdded", this._eventMapper.participantAdded(event));
                 }
                 break;
             case "conversation.participantRemoved":
                 {
-                    var participantRemovedEventData = {
-                        conversationId: event.conversationId,
-                        createdBy: event.context.createdBy,
-                        profileId: event.payload.profileId,
-                        timestamp: event.publishedOn,
-                    };
-                    this._eventManager.publishLocalEvent("participantRemoved", participantRemovedEventData);
+                    this._eventManager.publishLocalEvent("participantRemoved", this._eventMapper.participantRemoved(event));
                 }
                 break;
             case "conversation.participantTyping":
                 {
-                    var participantTypingEventData = {
-                        conversationId: event.payload.conversationId,
-                        createdBy: event.context.createdBy,
-                        profileId: event.payload.profileId,
-                        timestamp: event.publishedOn,
-                    };
-                    this._eventManager.publishLocalEvent("participantTyping", participantTypingEventData);
+                    this._eventManager.publishLocalEvent("participantTyping", this._eventMapper.participantTyping(event));
                 }
                 break;
             case "conversation.participantTypingOff":
                 {
-                    var participantTypingOffEventData = {
-                        conversationId: event.payload.conversationId,
-                        createdBy: event.context.createdBy,
-                        profileId: event.payload.profileId,
-                        timestamp: event.publishedOn,
-                    };
-                    this._eventManager.publishLocalEvent("participantTypingOff", participantTypingOffEventData);
+                    this._eventManager.publishLocalEvent("participantTypingOff", this._eventMapper.participantTypingOff(event));
                 }
                 break;
             case "conversationMessage.sent":
                 {
-                    var _event = {
-                        conversationEventId: event.conversationEventId,
-                        conversationId: event.payload.context.conversationId,
-                        eventId: event.eventId,
-                        name: "conversationMessage.sent",
-                        payload: {
-                            alert: event.payload.alert,
-                            context: event.payload.context,
-                            messageId: event.payload.messageId,
-                            metadata: event.payload.metadata,
-                            parts: event.payload.parts,
-                        }
-                    };
-                    this._eventManager.publishLocalEvent("conversationMessageEvent", _event);
+                    this._eventManager.publishLocalEvent("conversationMessageEvent", this._eventMapper.conversationMessageSent(event));
                 }
                 break;
             case "conversationMessage.read":
                 {
-                    var _event = {
-                        conversationEventId: event.conversationEventId,
-                        conversationId: event.payload.conversationId,
-                        eventId: event.eventId,
-                        name: "conversationMessage.read",
-                        payload: {
-                            conversationId: event.payload.conversationId,
-                            messageId: event.payload.messageId,
-                            profileId: event.payload.profileId,
-                            timestamp: event.payload.timestamp
-                        }
-                    };
-                    this._eventManager.publishLocalEvent("conversationMessageEvent", _event);
+                    this._eventManager.publishLocalEvent("conversationMessageEvent", this._eventMapper.conversationMessageRead(event));
                 }
                 break;
             case "conversationMessage.delivered":
                 {
-                    var _event = {
-                        conversationEventId: event.conversationEventId,
-                        conversationId: event.payload.conversationId,
-                        eventId: event.eventId,
-                        name: "conversationMessage.delivered",
-                        payload: {
-                            conversationId: event.payload.conversationId,
-                            messageId: event.payload.messageId,
-                            profileId: event.payload.profileId,
-                            timestamp: event.payload.timestamp
-                        }
-                    };
-                    this._eventManager.publishLocalEvent("conversationMessageEvent", _event);
+                    this._eventManager.publishLocalEvent("conversationMessageEvent", this._eventMapper.conversationMessageDelivered(event));
                 }
                 break;
             case "profile.update":
                 {
-                    var _event = {
-                        eTag: event.eTag,
-                        profile: event.payload
-                    };
                     if (event.eTag) {
                         this._localStorageData.setString("MyProfileETag", event.eTag);
                     }
-                    this._eventManager.publishLocalEvent("profileUpdated", _event);
+                    this._eventManager.publishLocalEvent("profileUpdated", this._eventMapper.profileUpdated(event));
                 }
                 break;
             default:
@@ -339,7 +254,8 @@ WebSocketManager = __decorate([
     __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
     __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
     __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager)),
-    __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
+    __param(5, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.EventMapper)),
+    __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object])
 ], WebSocketManager);
 exports.WebSocketManager = WebSocketManager;
 //# sourceMappingURL=webSocketManager.js.map

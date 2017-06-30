@@ -76,6 +76,16 @@ var InterfaceManager = (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(InterfaceManager, "IEventMapper", {
+        get: function () {
+            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.EventMapper);
+        },
+        set: function (eventMapper) {
+            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.EventMapper, eventMapper);
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(InterfaceManager, "IWebSocketManager", {
         get: function () {
             return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager);

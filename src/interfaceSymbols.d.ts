@@ -7,6 +7,7 @@ declare let INTERFACE_SYMBOLS: {
     Device: string;
     DeviceManager: string;
     EventManager: string;
+    EventMapper: string;
     FacebookManager: string;
     IndexedDBLogger: string;
     LocalStorageData: string;

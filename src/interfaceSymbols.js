@@ -9,6 +9,7 @@ var INTERFACE_SYMBOLS = {
     Device: "Device",
     DeviceManager: "DeviceManager",
     EventManager: "EventManager",
+    EventMapper: "EventMapper",
     FacebookManager: "FacebookManager",
     IndexedDBLogger: "IndexedDBLogger",
     LocalStorageData: "LocalStorageData",

@@ -1,4 +1,4 @@
-import { IComapiConfig, IEventManager, ILocalStorageData, ILogger, IRestClient, ISessionManager, IWebSocketManager, INetworkManager, IDeviceManager, IFacebookManager, IConversationManager, IProfileManager, IMessageManager, IMessagePager, IAppMessaging, IProfile, IDevice, IChannels } from "./interfaces";
+import { IComapiConfig, IEventManager, ILocalStorageData, ILogger, IRestClient, ISessionManager, IEventMapper, IWebSocketManager, INetworkManager, IDeviceManager, IFacebookManager, IConversationManager, IProfileManager, IMessageManager, IMessagePager, IAppMessaging, IProfile, IDevice, IChannels } from "./interfaces";
 export declare class InterfaceManager {
     private static interfaces;
     static bindIndexedDBLogger(): void;
@@ -11,6 +11,7 @@ export declare class InterfaceManager {
     static ILogger: ILogger;
     static IRestClient: IRestClient;
     static ISessionManager: ISessionManager;
+    static IEventMapper: IEventMapper;
     static IWebSocketManager: IWebSocketManager;
     static INetworkManager: INetworkManager;
     static AuthenticatedRestClient: IRestClient;
