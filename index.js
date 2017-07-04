@@ -13,7 +13,9 @@ var messageBuilder_1 = require("./src/messageBuilder");
 exports.MessageBuilder = messageBuilder_1.MessageBuilder;
 var messageStatusBuilder_1 = require("./src/messageStatusBuilder");
 exports.MessageStatusBuilder = messageStatusBuilder_1.MessageStatusBuilder;
-var interfaceManager_1 = require("./src/interfaceManager");
-exports.InterfaceManager = interfaceManager_1.InterfaceManager;
+var inversify_config_1 = require("./src/inversify.config");
+exports.InterfaceContainer = inversify_config_1.InterfaceContainer;
+var interfaceSymbols_1 = require("./src/interfaceSymbols");
+exports.INTERFACE_SYMBOLS = interfaceSymbols_1.INTERFACE_SYMBOLS;
 
 __export(require("./src/interfaces"));

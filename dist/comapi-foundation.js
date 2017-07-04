@@ -1386,9 +1386,7 @@ var COMAPI =
 	var comapiConfig_1 = __webpack_require__(9);
 	exports.ComapiConfig = comapiConfig_1.ComapiConfig;
 	var urlConfig_1 = __webpack_require__(10);
-	var interfaceManager_1 = __webpack_require__(11);
-	exports.InterfaceManager = interfaceManager_1.InterfaceManager;
-	var interfaceSymbols_1 = __webpack_require__(56);
+	var interfaceSymbols_1 = __webpack_require__(11);
 	var inversify_config_1 = __webpack_require__(12);
 	var Foundation = (function () {
 	    function Foundation(_eventManager, _logger, _networkManager, services, device, channels) {
@@ -1413,29 +1411,34 @@ var COMAPI =
 	        configurable: true
 	    });
 	    Foundation._initialise = function (comapiConfig, doSingleton) {
-	        interfaceManager_1.InterfaceManager.bindComapiConfig(comapiConfig);
 	        if (doSingleton && Foundation._foundation) {
 	            return Promise.resolve(Foundation._foundation);
 	        }
 	        if (comapiConfig.foundationRestUrls === undefined) {
 	            comapiConfig.foundationRestUrls = new urlConfig_1.FoundationRestUrls();
 	        }
+	        var container = comapiConfig.interfaceContainer ? comapiConfig.interfaceContainer : new inversify_config_1.InterfaceContainer();
+	        if (comapiConfig.interfaceContainer) {
+	            container = comapiConfig.interfaceContainer;
+	        }
+	        else {
+	            container = new inversify_config_1.InterfaceContainer();
+	            container.initialise();
+	            container.bindComapiConfig(comapiConfig);
+	        }
 	        if (comapiConfig.logPersistence &&
 	            comapiConfig.logPersistence === interfaces_1.LogPersistences.IndexedDB) {
-	            interfaceManager_1.InterfaceManager.bindIndexedDBLogger();
+	            container.bindIndexedDBLogger();
 	        }
-	        else if (inversify_config_1.container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)) {
-	            interfaceManager_1.InterfaceManager.unbindIndexedDBLogger();
-	        }
-	        var eventManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager);
-	        var logger = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger);
+	        var eventManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager);
+	        var logger = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger);
 	        if (comapiConfig.logLevel) {
 	            logger.logLevel = comapiConfig.logLevel;
 	        }
-	        var networkManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager);
-	        var services = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Services);
-	        var device = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Device);
-	        var channels = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels);
+	        var networkManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager);
+	        var services = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Services);
+	        var device = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Device);
+	        var channels = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels);
 	        var foundation = new Foundation(eventManager, logger, networkManager, services, device, channels);
 	        if (doSingleton) {
 	            Foundation._foundation = foundation;
@@ -1886,231 +1889,37 @@ var COMAPI =
 
 /***/ }),
 /* 11 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var inversify_config_1 = __webpack_require__(12);
-	var interfaceSymbols_1 = __webpack_require__(56);
-	var InterfaceManager = (function () {
-	    function InterfaceManager() {
-	    }
-	    InterfaceManager.bindIndexedDBLogger = function () {
-	        inversify_config_1.bindIndexedDBLogger();
-	    };
-	    InterfaceManager.unbindIndexedDBLogger = function () {
-	        inversify_config_1.unbindIndexedDBLogger();
-	    };
-	    InterfaceManager.bindComapiConfig = function (omapiConfig) {
-	        inversify_config_1.bindComapiConfig(omapiConfig);
-	    };
-	    InterfaceManager.getInterface = function (serviceIdentifier) {
-	        return inversify_config_1.container.get(serviceIdentifier);
-	    };
-	    InterfaceManager.setInterface = function (serviceIdentifier, instance) {
-	        if (inversify_config_1.container.isBound(serviceIdentifier)) {
-	            inversify_config_1.container.unbind(serviceIdentifier);
-	        }
-	        InterfaceManager.interfaces[serviceIdentifier.toString()] = instance;
-	        inversify_config_1.container.bind(serviceIdentifier).toDynamicValue(function (context) {
-	            return InterfaceManager.interfaces[serviceIdentifier.toString()];
-	        });
-	    };
-	    Object.defineProperty(InterfaceManager, "IEventManager", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager);
-	        },
-	        set: function (eventManager) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager, eventManager);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "ILocalStorageData", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData);
-	        },
-	        set: function (localStorageData) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData, localStorageData);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "ILogger", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger);
-	        },
-	        set: function (logger) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger, logger);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "IRestClient", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient);
-	        },
-	        set: function (restClient) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient, restClient);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "ISessionManager", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager);
-	        },
-	        set: function (sessionManager) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager, sessionManager);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "IEventMapper", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.EventMapper);
-	        },
-	        set: function (eventMapper) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.EventMapper, eventMapper);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "IWebSocketManager", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager);
-	        },
-	        set: function (webSocketManager) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager, webSocketManager);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "INetworkManager", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager);
-	        },
-	        set: function (networkManager) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager, networkManager);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "AuthenticatedRestClient", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient);
-	        },
-	        set: function (authenticatedRestClient) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient, authenticatedRestClient);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "IDeviceManager", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager);
-	        },
-	        set: function (deviceManager) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager, deviceManager);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "IFacebookManager", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager);
-	        },
-	        set: function (facebookManager) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager, facebookManager);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "IConversationManager", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager);
-	        },
-	        set: function (facebookManager) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager, facebookManager);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "IProfileManager", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager);
-	        },
-	        set: function (profileManager) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager, profileManager);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "IMessageManager", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager);
-	        },
-	        set: function (messageManager) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager, messageManager);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "IMessagePager", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager);
-	        },
-	        set: function (messagePager) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager, messagePager);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "IAppMessaging", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.AppMessaging);
-	        },
-	        set: function (appMessaging) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.AppMessaging, appMessaging);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "IProfile", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Profile);
-	        },
-	        set: function (profile) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Profile, profile);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "IDevice", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Device);
-	        },
-	        set: function (device) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Device, device);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(InterfaceManager, "IChannels", {
-	        get: function () {
-	            return InterfaceManager.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels);
-	        },
-	        set: function (channels) {
-	            InterfaceManager.setInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels, channels);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    return InterfaceManager;
-	}());
-	InterfaceManager.interfaces = {};
-	exports.InterfaceManager = InterfaceManager;
-	//# sourceMappingURL=interfaceManager.js.map
+	var INTERFACE_SYMBOLS = {
+	    AppMessaging: "AppMessaging",
+	    AuthenticatedRestClient: "AuthenticatedRestClient",
+	    Channels: "Channels",
+	    ComapiConfig: "ComapiConfig",
+	    ConversationManager: "ConversationManager",
+	    Device: "Device",
+	    DeviceManager: "DeviceManager",
+	    EventManager: "EventManager",
+	    EventMapper: "EventMapper",
+	    FacebookManager: "FacebookManager",
+	    IndexedDBLogger: "IndexedDBLogger",
+	    LocalStorageData: "LocalStorageData",
+	    Logger: "Logger",
+	    MessageManager: "MessageManager",
+	    MessagePager: "MessagePager",
+	    NetworkManager: "NetworkManager",
+	    OrphanedEventManager: "OrphanedEventManager",
+	    Profile: "Profile",
+	    ProfileManager: "ProfileManager",
+	    RestClient: "RestClient",
+	    Services: "Services",
+	    SessionManager: "SessionManager",
+	    WebSocketManager: "WebSocketManager",
+	};
+	exports.INTERFACE_SYMBOLS = INTERFACE_SYMBOLS;
+	//# sourceMappingURL=interfaceSymbols.js.map
 
 /***/ }),
 /* 12 */
@@ -2123,92 +1932,104 @@ var COMAPI =
 	var eventManager_1 = __webpack_require__(52);
 	var localStorageData_1 = __webpack_require__(53);
 	var logger_1 = __webpack_require__(54);
-	var restClient_1 = __webpack_require__(58);
-	var authenticatedRestClient_1 = __webpack_require__(59);
-	var sessionManager_1 = __webpack_require__(60);
-	var webSocketManager_1 = __webpack_require__(61);
-	var networkManager_1 = __webpack_require__(62);
-	var deviceManager_1 = __webpack_require__(63);
-	var facebookManager_1 = __webpack_require__(64);
-	var conversationManager_1 = __webpack_require__(65);
-	var profileManager_1 = __webpack_require__(66);
-	var messageManager_1 = __webpack_require__(67);
-	var indexedDBOrphanedEventManager_1 = __webpack_require__(68);
-	var localStorageOrphanedEventManager_1 = __webpack_require__(69);
-	var messagePager_1 = __webpack_require__(70);
-	var appMessaging_1 = __webpack_require__(71);
-	var profile_1 = __webpack_require__(72);
-	var services_1 = __webpack_require__(73);
-	var device_1 = __webpack_require__(74);
-	var channels_1 = __webpack_require__(75);
+	var restClient_1 = __webpack_require__(57);
+	var authenticatedRestClient_1 = __webpack_require__(58);
+	var sessionManager_1 = __webpack_require__(59);
+	var webSocketManager_1 = __webpack_require__(60);
+	var networkManager_1 = __webpack_require__(61);
+	var deviceManager_1 = __webpack_require__(62);
+	var facebookManager_1 = __webpack_require__(63);
+	var conversationManager_1 = __webpack_require__(64);
+	var profileManager_1 = __webpack_require__(65);
+	var messageManager_1 = __webpack_require__(66);
+	var indexedDBOrphanedEventManager_1 = __webpack_require__(67);
+	var localStorageOrphanedEventManager_1 = __webpack_require__(68);
+	var messagePager_1 = __webpack_require__(69);
+	var appMessaging_1 = __webpack_require__(70);
+	var profile_1 = __webpack_require__(71);
+	var services_1 = __webpack_require__(72);
+	var device_1 = __webpack_require__(73);
+	var channels_1 = __webpack_require__(74);
 	var indexedDBLogger_1 = __webpack_require__(55);
-	var eventMapper_1 = __webpack_require__(76);
-	var interfaceSymbols_1 = __webpack_require__(56);
-	var container = new inversify_1.Container();
-	exports.container = container;
-	function initInterfaces() {
-	    "use strict";
-	    container.unbindAll();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager).to(eventManager_1.EventManager).inSingletonScope();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData).to(localStorageData_1.LocalStorageData).inSingletonScope();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger).to(logger_1.Logger).inSingletonScope();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient).to(restClient_1.RestClient).inSingletonScope();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager).to(sessionManager_1.SessionManager).inSingletonScope();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.EventMapper).to(eventMapper_1.EventMapper).inSingletonScope();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager).to(webSocketManager_1.WebSocketManager).inSingletonScope();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager).to(networkManager_1.NetworkManager).inSingletonScope();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient).to(authenticatedRestClient_1.AuthenticatedRestClient).inSingletonScope();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager).to(deviceManager_1.DeviceManager).inSingletonScope();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager).to(facebookManager_1.FacebookManager).inSingletonScope();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager).to(conversationManager_1.ConversationManager).inSingletonScope();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager).to(profileManager_1.ProfileManager).inSingletonScope();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager).to(messagePager_1.MessagePager).inSingletonScope();
-	    var dbSupported = "indexedDB" in window;
-	    if (dbSupported) {
-	        container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(indexedDBOrphanedEventManager_1.IndexedDBOrphanedEventManager).inSingletonScope();
+	var eventMapper_1 = __webpack_require__(75);
+	var interfaceSymbols_1 = __webpack_require__(11);
+	var InterfaceContainer = (function () {
+	    function InterfaceContainer() {
+	        this._overriddenInterfaces = {};
+	        this._container = new inversify_1.Container();
 	    }
-	    else {
-	        container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(localStorageOrphanedEventManager_1.LocalStorageOrphanedEventManager).inSingletonScope();
-	    }
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager).to(messageManager_1.MessageManager).inSingletonScope();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.AppMessaging).to(appMessaging_1.AppMessaging).inSingletonScope();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Profile).to(profile_1.Profile).inSingletonScope();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Services).to(services_1.Services).inSingletonScope();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Device).to(device_1.Device).inSingletonScope();
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels).to(channels_1.Channels).inSingletonScope();
-	}
-	exports.initInterfaces = initInterfaces;
-	initInterfaces();
-	function bindIndexedDBLogger() {
-	    "use strict";
-	    if (container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)) {
-	        container.rebind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger).to(indexedDBLogger_1.IndexedDBLogger).inSingletonScope();
-	    }
-	    else {
-	        container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger).to(indexedDBLogger_1.IndexedDBLogger).inSingletonScope();
-	    }
-	}
-	exports.bindIndexedDBLogger = bindIndexedDBLogger;
-	function unbindIndexedDBLogger() {
-	    "use strict";
-	    if (container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)) {
-	        container.unbind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger);
-	    }
-	}
-	exports.unbindIndexedDBLogger = unbindIndexedDBLogger;
-	function bindComapiConfig(comapiConfig) {
-	    "use strict";
-	    var _comapiConfig = comapiConfig;
-	    if (container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)) {
-	        initInterfaces();
-	    }
-	    else {
-	    }
-	    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig).toDynamicValue(function (context) {
-	        return _comapiConfig;
-	    });
-	}
-	exports.bindComapiConfig = bindComapiConfig;
+	    InterfaceContainer.prototype.initialise = function () {
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager).to(eventManager_1.EventManager).inSingletonScope();
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData).to(localStorageData_1.LocalStorageData).inSingletonScope();
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger).to(logger_1.Logger).inSingletonScope();
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient).to(restClient_1.RestClient).inSingletonScope();
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager).to(sessionManager_1.SessionManager).inSingletonScope();
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.EventMapper).to(eventMapper_1.EventMapper).inSingletonScope();
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager).to(webSocketManager_1.WebSocketManager).inSingletonScope();
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager).to(networkManager_1.NetworkManager).inSingletonScope();
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient).to(authenticatedRestClient_1.AuthenticatedRestClient).inSingletonScope();
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager).to(deviceManager_1.DeviceManager).inSingletonScope();
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager).to(facebookManager_1.FacebookManager).inSingletonScope();
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager).to(conversationManager_1.ConversationManager).inSingletonScope();
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager).to(profileManager_1.ProfileManager).inSingletonScope();
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager).to(messagePager_1.MessagePager).inSingletonScope();
+	        var dbSupported = "indexedDB" in window;
+	        if (dbSupported) {
+	            this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(indexedDBOrphanedEventManager_1.IndexedDBOrphanedEventManager).inSingletonScope();
+	        }
+	        else {
+	            this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(localStorageOrphanedEventManager_1.LocalStorageOrphanedEventManager).inSingletonScope();
+	        }
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager).to(messageManager_1.MessageManager).inSingletonScope();
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.AppMessaging).to(appMessaging_1.AppMessaging).inSingletonScope();
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Profile).to(profile_1.Profile).inSingletonScope();
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Services).to(services_1.Services).inSingletonScope();
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Device).to(device_1.Device).inSingletonScope();
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels).to(channels_1.Channels).inSingletonScope();
+	    };
+	    InterfaceContainer.prototype.uninitialise = function () {
+	        this._container.unbindAll();
+	    };
+	    InterfaceContainer.prototype.bindIndexedDBLogger = function () {
+	        if (this._container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)) {
+	            this._container.rebind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger).to(indexedDBLogger_1.IndexedDBLogger).inSingletonScope();
+	        }
+	        else {
+	            this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger).to(indexedDBLogger_1.IndexedDBLogger).inSingletonScope();
+	        }
+	    };
+	    InterfaceContainer.prototype.unbindIndexedDBLogger = function () {
+	        if (this._container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)) {
+	            this._container.unbind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger);
+	        }
+	    };
+	    InterfaceContainer.prototype.bindComapiConfig = function (comapiConfig) {
+	        var _comapiConfig = comapiConfig;
+	        if (this._container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)) {
+	            this._container.unbind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig);
+	        }
+	        else {
+	        }
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig).toDynamicValue(function (context) {
+	            return _comapiConfig;
+	        });
+	    };
+	    InterfaceContainer.prototype.getInterface = function (serviceIdentifier) {
+	        return this._container.get(serviceIdentifier);
+	    };
+	    InterfaceContainer.prototype.setInterface = function (serviceIdentifier, instance) {
+	        var _this = this;
+	        if (this._container.isBound(serviceIdentifier)) {
+	            this._container.unbind(serviceIdentifier);
+	        }
+	        this._overriddenInterfaces[serviceIdentifier.toString()] = instance;
+	        this._container.bind(serviceIdentifier).toDynamicValue(function (context) {
+	            return _this._overriddenInterfaces[serviceIdentifier.toString()];
+	        });
+	    };
+	    return InterfaceContainer;
+	}());
+	exports.InterfaceContainer = InterfaceContainer;
 	//# sourceMappingURL=inversify.config.js.map
 
 /***/ }),
@@ -4311,7 +4132,7 @@ var COMAPI =
 	var inversify_1 = __webpack_require__(13);
 	var interfaces_1 = __webpack_require__(4);
 	var indexedDBLogger_1 = __webpack_require__(55);
-	var interfaceSymbols_1 = __webpack_require__(56);
+	var interfaceSymbols_1 = __webpack_require__(11);
 	var Logger = (function () {
 	    function Logger(_eventManager, _localStorageData, _indexedDB) {
 	        this._eventManager = _eventManager;
@@ -4478,8 +4299,8 @@ var COMAPI =
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
-	var interfaceSymbols_1 = __webpack_require__(56);
-	var mutex_1 = __webpack_require__(57);
+	var interfaceSymbols_1 = __webpack_require__(11);
+	var mutex_1 = __webpack_require__(56);
 	var IndexedDBLogger = (function () {
 	    function IndexedDBLogger(_comapiConfig) {
 	        this._comapiConfig = _comapiConfig;
@@ -4706,40 +4527,6 @@ var COMAPI =
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var INTERFACE_SYMBOLS = {
-	    AppMessaging: "AppMessaging",
-	    AuthenticatedRestClient: "AuthenticatedRestClient",
-	    Channels: "Channels",
-	    ComapiConfig: "ComapiConfig",
-	    ConversationManager: "ConversationManager",
-	    Device: "Device",
-	    DeviceManager: "DeviceManager",
-	    EventManager: "EventManager",
-	    EventMapper: "EventMapper",
-	    FacebookManager: "FacebookManager",
-	    IndexedDBLogger: "IndexedDBLogger",
-	    LocalStorageData: "LocalStorageData",
-	    Logger: "Logger",
-	    MessageManager: "MessageManager",
-	    MessagePager: "MessagePager",
-	    NetworkManager: "NetworkManager",
-	    OrphanedEventManager: "OrphanedEventManager",
-	    Profile: "Profile",
-	    ProfileManager: "ProfileManager",
-	    RestClient: "RestClient",
-	    Services: "Services",
-	    SessionManager: "SessionManager",
-	    WebSocketManager: "WebSocketManager",
-	};
-	exports.INTERFACE_SYMBOLS = INTERFACE_SYMBOLS;
-	//# sourceMappingURL=interfaceSymbols.js.map
-
-/***/ }),
-/* 57 */
-/***/ (function(module, exports) {
-
-	"use strict";
-	Object.defineProperty(exports, "__esModule", { value: true });
 	var Mutex = (function () {
 	    function Mutex() {
 	        this._queue = [];
@@ -4788,7 +4575,7 @@ var COMAPI =
 	//# sourceMappingURL=mutex.js.map
 
 /***/ }),
-/* 58 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4806,7 +4593,7 @@ var COMAPI =
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
-	var interfaceSymbols_1 = __webpack_require__(56);
+	var interfaceSymbols_1 = __webpack_require__(11);
 	var RestClient = (function () {
 	    function RestClient(logger) {
 	        this.logger = logger;
@@ -4959,7 +4746,7 @@ var COMAPI =
 	//# sourceMappingURL=restClient.js.map
 
 /***/ }),
-/* 59 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4977,7 +4764,7 @@ var COMAPI =
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
-	var interfaceSymbols_1 = __webpack_require__(56);
+	var interfaceSymbols_1 = __webpack_require__(11);
 	var AuthenticatedRestClient = (function () {
 	    function AuthenticatedRestClient(logger, restClient, networkManager) {
 	        this.logger = logger;
@@ -5056,7 +4843,7 @@ var COMAPI =
 	//# sourceMappingURL=authenticatedRestClient.js.map
 
 /***/ }),
-/* 60 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5075,7 +4862,7 @@ var COMAPI =
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
 	var utils_1 = __webpack_require__(6);
-	var interfaceSymbols_1 = __webpack_require__(56);
+	var interfaceSymbols_1 = __webpack_require__(11);
 	var SessionManager = (function () {
 	    function SessionManager(_logger, _restClient, _localStorageData, _comapiConfig) {
 	        this._logger = _logger;
@@ -5187,7 +4974,7 @@ var COMAPI =
 	            platform: "javascript",
 	            platformVersion: browserInfo.version,
 	            sdkType: "native",
-	            sdkVersion: "1.0.2.155"
+	            sdkVersion: "1.0.2.161"
 	        };
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -5259,7 +5046,7 @@ var COMAPI =
 	//# sourceMappingURL=sessionManager.js.map
 
 /***/ }),
-/* 61 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5277,7 +5064,7 @@ var COMAPI =
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
-	var interfaceSymbols_1 = __webpack_require__(56);
+	var interfaceSymbols_1 = __webpack_require__(11);
 	var WebSocketManager = (function () {
 	    function WebSocketManager(_logger, _localStorageData, _comapiConfig, _sessionManager, _eventManager, _eventMapper) {
 	        this._logger = _logger;
@@ -5525,7 +5312,7 @@ var COMAPI =
 	//# sourceMappingURL=webSocketManager.js.map
 
 /***/ }),
-/* 62 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5543,8 +5330,8 @@ var COMAPI =
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
-	var interfaceSymbols_1 = __webpack_require__(56);
-	var mutex_1 = __webpack_require__(57);
+	var interfaceSymbols_1 = __webpack_require__(11);
+	var mutex_1 = __webpack_require__(56);
 	var NetworkManager = (function () {
 	    function NetworkManager(_sessionManager, _webSocketManager) {
 	        this._sessionManager = _sessionManager;
@@ -5621,7 +5408,7 @@ var COMAPI =
 	//# sourceMappingURL=networkManager.js.map
 
 /***/ }),
-/* 63 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5641,7 +5428,7 @@ var COMAPI =
 	var inversify_1 = __webpack_require__(13);
 	var interfaces_1 = __webpack_require__(4);
 	var utils_1 = __webpack_require__(6);
-	var interfaceSymbols_1 = __webpack_require__(56);
+	var interfaceSymbols_1 = __webpack_require__(11);
 	var DeviceManager = (function () {
 	    function DeviceManager(_logger, _restClient, _localStorageData, _comapiConfig) {
 	        this._logger = _logger;
@@ -5701,7 +5488,7 @@ var COMAPI =
 	//# sourceMappingURL=deviceManager.js.map
 
 /***/ }),
-/* 64 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5720,7 +5507,7 @@ var COMAPI =
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
 	var utils_1 = __webpack_require__(6);
-	var interfaceSymbols_1 = __webpack_require__(56);
+	var interfaceSymbols_1 = __webpack_require__(11);
 	var FacebookManager = (function () {
 	    function FacebookManager(_restClient, _comapiConfig) {
 	        this._restClient = _restClient;
@@ -5745,7 +5532,7 @@ var COMAPI =
 	//# sourceMappingURL=facebookManager.js.map
 
 /***/ }),
-/* 65 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5765,7 +5552,7 @@ var COMAPI =
 	var inversify_1 = __webpack_require__(13);
 	var interfaces_1 = __webpack_require__(4);
 	var utils_1 = __webpack_require__(6);
-	var interfaceSymbols_1 = __webpack_require__(56);
+	var interfaceSymbols_1 = __webpack_require__(11);
 	var ConversationManager = (function () {
 	    function ConversationManager(_logger, _restClient, _localStorageData, _comapiConfig, _sessionManager) {
 	        this._logger = _logger;
@@ -5945,7 +5732,7 @@ var COMAPI =
 	//# sourceMappingURL=conversationManager.js.map
 
 /***/ }),
-/* 66 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5964,7 +5751,7 @@ var COMAPI =
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
 	var utils_1 = __webpack_require__(6);
-	var interfaceSymbols_1 = __webpack_require__(56);
+	var interfaceSymbols_1 = __webpack_require__(11);
 	var ProfileManager = (function () {
 	    function ProfileManager(_logger, _restClient, _localStorageData, _comapiConfig, _sessionManager) {
 	        this._logger = _logger;
@@ -6038,7 +5825,7 @@ var COMAPI =
 	//# sourceMappingURL=profileManager.js.map
 
 /***/ }),
-/* 67 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -6057,7 +5844,7 @@ var COMAPI =
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
 	var utils_1 = __webpack_require__(6);
-	var interfaceSymbols_1 = __webpack_require__(56);
+	var interfaceSymbols_1 = __webpack_require__(11);
 	var MessageManager = (function () {
 	    function MessageManager(_logger, _restClient, _localStorageData, _comapiConfig, _sessionManager) {
 	        this._logger = _logger;
@@ -6150,7 +5937,7 @@ var COMAPI =
 	//# sourceMappingURL=messageManager.js.map
 
 /***/ }),
-/* 68 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -6401,7 +6188,7 @@ var COMAPI =
 	//# sourceMappingURL=indexedDBOrphanedEventManager.js.map
 
 /***/ }),
-/* 69 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -6419,7 +6206,7 @@ var COMAPI =
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
-	var interfaceSymbols_1 = __webpack_require__(56);
+	var interfaceSymbols_1 = __webpack_require__(11);
 	;
 	var LocalStorageOrphanedEventManager = (function () {
 	    function LocalStorageOrphanedEventManager(_localStorage) {
@@ -6512,7 +6299,7 @@ var COMAPI =
 	//# sourceMappingURL=localStorageOrphanedEventManager.js.map
 
 /***/ }),
-/* 70 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -6531,7 +6318,7 @@ var COMAPI =
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
 	var utils_1 = __webpack_require__(6);
-	var interfaceSymbols_1 = __webpack_require__(56);
+	var interfaceSymbols_1 = __webpack_require__(11);
 	var MessagePager = (function () {
 	    function MessagePager(_logger, _localStorage, _messageManager, _orphanedEventManager) {
 	        this._logger = _logger;
@@ -6715,7 +6502,7 @@ var COMAPI =
 	//# sourceMappingURL=messagePager.js.map
 
 /***/ }),
-/* 71 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -6733,7 +6520,7 @@ var COMAPI =
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
-	var interfaceSymbols_1 = __webpack_require__(56);
+	var interfaceSymbols_1 = __webpack_require__(11);
 	var AppMessaging = (function () {
 	    function AppMessaging(_networkManager, _conversationManager, _messageManager, _messagePager) {
 	        this._networkManager = _networkManager;
@@ -6866,7 +6653,7 @@ var COMAPI =
 	//# sourceMappingURL=appMessaging.js.map
 
 /***/ }),
-/* 72 */
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -6884,7 +6671,7 @@ var COMAPI =
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
-	var interfaceSymbols_1 = __webpack_require__(56);
+	var interfaceSymbols_1 = __webpack_require__(11);
 	var Profile = (function () {
 	    function Profile(_networkManager, _localStorage, _profileManager) {
 	        this._networkManager = _networkManager;
@@ -6973,7 +6760,7 @@ var COMAPI =
 	//# sourceMappingURL=profile.js.map
 
 /***/ }),
-/* 73 */
+/* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -6991,7 +6778,7 @@ var COMAPI =
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
-	var interfaceSymbols_1 = __webpack_require__(56);
+	var interfaceSymbols_1 = __webpack_require__(11);
 	var Services = (function () {
 	    function Services(_appMessaging, _profile) {
 	        this._appMessaging = _appMessaging;
@@ -7023,7 +6810,7 @@ var COMAPI =
 	//# sourceMappingURL=services.js.map
 
 /***/ }),
-/* 74 */
+/* 73 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -7041,7 +6828,7 @@ var COMAPI =
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
-	var interfaceSymbols_1 = __webpack_require__(56);
+	var interfaceSymbols_1 = __webpack_require__(11);
 	var Device = (function () {
 	    function Device(_networkManager, _deviceManager) {
 	        this._networkManager = _networkManager;
@@ -7080,7 +6867,7 @@ var COMAPI =
 	//# sourceMappingURL=device.js.map
 
 /***/ }),
-/* 75 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -7098,7 +6885,7 @@ var COMAPI =
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
-	var interfaceSymbols_1 = __webpack_require__(56);
+	var interfaceSymbols_1 = __webpack_require__(11);
 	var Channels = (function () {
 	    function Channels(_networkManager, _facebookManager) {
 	        this._networkManager = _networkManager;
@@ -7123,7 +6910,7 @@ var COMAPI =
 	//# sourceMappingURL=channels.js.map
 
 /***/ }),
-/* 76 */
+/* 75 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";

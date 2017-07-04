@@ -10,8 +10,6 @@ exports.MessageStatusBuilder = messageStatusBuilder_1.MessageStatusBuilder;
 var comapiConfig_1 = require("./comapiConfig");
 exports.ComapiConfig = comapiConfig_1.ComapiConfig;
 var urlConfig_1 = require("./urlConfig");
-var interfaceManager_1 = require("./interfaceManager");
-exports.InterfaceManager = interfaceManager_1.InterfaceManager;
 var interfaceSymbols_1 = require("./interfaceSymbols");
 var inversify_config_1 = require("./inversify.config");
 var Foundation = (function () {
@@ -37,29 +35,34 @@ var Foundation = (function () {
         configurable: true
     });
     Foundation._initialise = function (comapiConfig, doSingleton) {
-        interfaceManager_1.InterfaceManager.bindComapiConfig(comapiConfig);
         if (doSingleton && Foundation._foundation) {
             return Promise.resolve(Foundation._foundation);
         }
         if (comapiConfig.foundationRestUrls === undefined) {
             comapiConfig.foundationRestUrls = new urlConfig_1.FoundationRestUrls();
         }
+        var container = comapiConfig.interfaceContainer ? comapiConfig.interfaceContainer : new inversify_config_1.InterfaceContainer();
+        if (comapiConfig.interfaceContainer) {
+            container = comapiConfig.interfaceContainer;
+        }
+        else {
+            container = new inversify_config_1.InterfaceContainer();
+            container.initialise();
+            container.bindComapiConfig(comapiConfig);
+        }
         if (comapiConfig.logPersistence &&
             comapiConfig.logPersistence === interfaces_1.LogPersistences.IndexedDB) {
-            interfaceManager_1.InterfaceManager.bindIndexedDBLogger();
+            container.bindIndexedDBLogger();
         }
-        else if (inversify_config_1.container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)) {
-            interfaceManager_1.InterfaceManager.unbindIndexedDBLogger();
-        }
-        var eventManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager);
-        var logger = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger);
+        var eventManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager);
+        var logger = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger);
         if (comapiConfig.logLevel) {
             logger.logLevel = comapiConfig.logLevel;
         }
-        var networkManager = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager);
-        var services = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Services);
-        var device = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Device);
-        var channels = inversify_config_1.container.get(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels);
+        var networkManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager);
+        var services = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Services);
+        var device = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Device);
+        var channels = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels);
         var foundation = new Foundation(eventManager, logger, networkManager, services, device, channels);
         if (doSingleton) {
             Foundation._foundation = foundation;

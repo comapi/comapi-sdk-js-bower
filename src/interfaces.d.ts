@@ -157,6 +157,7 @@ export interface IComapiConfig {
     isTypingOffTimeout?: number;
     foundationRestUrls?: IFoundationRestUrls;
     eventMapping?: IEventMapping;
+    interfaceContainer?: any;
 }
 export interface IProfileManager {
     getProfile(id: string): Promise<any>;

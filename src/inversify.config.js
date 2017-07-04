@@ -26,69 +26,81 @@ var channels_1 = require("./channels");
 var indexedDBLogger_1 = require("./indexedDBLogger");
 var eventMapper_1 = require("./eventMapper");
 var interfaceSymbols_1 = require("./interfaceSymbols");
-var container = new inversify_1.Container();
-exports.container = container;
-function initInterfaces() {
-    "use strict";
-    container.unbindAll();
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager).to(eventManager_1.EventManager).inSingletonScope();
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData).to(localStorageData_1.LocalStorageData).inSingletonScope();
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger).to(logger_1.Logger).inSingletonScope();
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient).to(restClient_1.RestClient).inSingletonScope();
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager).to(sessionManager_1.SessionManager).inSingletonScope();
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.EventMapper).to(eventMapper_1.EventMapper).inSingletonScope();
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager).to(webSocketManager_1.WebSocketManager).inSingletonScope();
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager).to(networkManager_1.NetworkManager).inSingletonScope();
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient).to(authenticatedRestClient_1.AuthenticatedRestClient).inSingletonScope();
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager).to(deviceManager_1.DeviceManager).inSingletonScope();
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager).to(facebookManager_1.FacebookManager).inSingletonScope();
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager).to(conversationManager_1.ConversationManager).inSingletonScope();
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager).to(profileManager_1.ProfileManager).inSingletonScope();
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager).to(messagePager_1.MessagePager).inSingletonScope();
-    var dbSupported = "indexedDB" in window;
-    if (dbSupported) {
-        container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(indexedDBOrphanedEventManager_1.IndexedDBOrphanedEventManager).inSingletonScope();
+var InterfaceContainer = (function () {
+    function InterfaceContainer() {
+        this._overriddenInterfaces = {};
+        this._container = new inversify_1.Container();
     }
-    else {
-        container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(localStorageOrphanedEventManager_1.LocalStorageOrphanedEventManager).inSingletonScope();
-    }
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager).to(messageManager_1.MessageManager).inSingletonScope();
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.AppMessaging).to(appMessaging_1.AppMessaging).inSingletonScope();
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Profile).to(profile_1.Profile).inSingletonScope();
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Services).to(services_1.Services).inSingletonScope();
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Device).to(device_1.Device).inSingletonScope();
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels).to(channels_1.Channels).inSingletonScope();
-}
-exports.initInterfaces = initInterfaces;
-initInterfaces();
-function bindIndexedDBLogger() {
-    "use strict";
-    if (container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)) {
-        container.rebind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger).to(indexedDBLogger_1.IndexedDBLogger).inSingletonScope();
-    }
-    else {
-        container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger).to(indexedDBLogger_1.IndexedDBLogger).inSingletonScope();
-    }
-}
-exports.bindIndexedDBLogger = bindIndexedDBLogger;
-function unbindIndexedDBLogger() {
-    "use strict";
-    if (container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)) {
-        container.unbind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger);
-    }
-}
-exports.unbindIndexedDBLogger = unbindIndexedDBLogger;
-function bindComapiConfig(comapiConfig) {
-    "use strict";
-    var _comapiConfig = comapiConfig;
-    if (container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)) {
-        initInterfaces();
-    }
-    else {
-    }
-    container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig).toDynamicValue(function (context) {
-        return _comapiConfig;
-    });
-}
-exports.bindComapiConfig = bindComapiConfig;
+    InterfaceContainer.prototype.initialise = function () {
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager).to(eventManager_1.EventManager).inSingletonScope();
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData).to(localStorageData_1.LocalStorageData).inSingletonScope();
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger).to(logger_1.Logger).inSingletonScope();
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient).to(restClient_1.RestClient).inSingletonScope();
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager).to(sessionManager_1.SessionManager).inSingletonScope();
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.EventMapper).to(eventMapper_1.EventMapper).inSingletonScope();
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager).to(webSocketManager_1.WebSocketManager).inSingletonScope();
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager).to(networkManager_1.NetworkManager).inSingletonScope();
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient).to(authenticatedRestClient_1.AuthenticatedRestClient).inSingletonScope();
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager).to(deviceManager_1.DeviceManager).inSingletonScope();
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager).to(facebookManager_1.FacebookManager).inSingletonScope();
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager).to(conversationManager_1.ConversationManager).inSingletonScope();
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager).to(profileManager_1.ProfileManager).inSingletonScope();
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager).to(messagePager_1.MessagePager).inSingletonScope();
+        var dbSupported = "indexedDB" in window;
+        if (dbSupported) {
+            this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(indexedDBOrphanedEventManager_1.IndexedDBOrphanedEventManager).inSingletonScope();
+        }
+        else {
+            this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(localStorageOrphanedEventManager_1.LocalStorageOrphanedEventManager).inSingletonScope();
+        }
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager).to(messageManager_1.MessageManager).inSingletonScope();
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.AppMessaging).to(appMessaging_1.AppMessaging).inSingletonScope();
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Profile).to(profile_1.Profile).inSingletonScope();
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Services).to(services_1.Services).inSingletonScope();
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Device).to(device_1.Device).inSingletonScope();
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels).to(channels_1.Channels).inSingletonScope();
+    };
+    InterfaceContainer.prototype.uninitialise = function () {
+        this._container.unbindAll();
+    };
+    InterfaceContainer.prototype.bindIndexedDBLogger = function () {
+        if (this._container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)) {
+            this._container.rebind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger).to(indexedDBLogger_1.IndexedDBLogger).inSingletonScope();
+        }
+        else {
+            this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger).to(indexedDBLogger_1.IndexedDBLogger).inSingletonScope();
+        }
+    };
+    InterfaceContainer.prototype.unbindIndexedDBLogger = function () {
+        if (this._container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)) {
+            this._container.unbind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger);
+        }
+    };
+    InterfaceContainer.prototype.bindComapiConfig = function (comapiConfig) {
+        var _comapiConfig = comapiConfig;
+        if (this._container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)) {
+            this._container.unbind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig);
+        }
+        else {
+        }
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig).toDynamicValue(function (context) {
+            return _comapiConfig;
+        });
+    };
+    InterfaceContainer.prototype.getInterface = function (serviceIdentifier) {
+        return this._container.get(serviceIdentifier);
+    };
+    InterfaceContainer.prototype.setInterface = function (serviceIdentifier, instance) {
+        var _this = this;
+        if (this._container.isBound(serviceIdentifier)) {
+            this._container.unbind(serviceIdentifier);
+        }
+        this._overriddenInterfaces[serviceIdentifier.toString()] = instance;
+        this._container.bind(serviceIdentifier).toDynamicValue(function (context) {
+            return _this._overriddenInterfaces[serviceIdentifier.toString()];
+        });
+    };
+    return InterfaceContainer;
+}());
+exports.InterfaceContainer = InterfaceContainer;
 //# sourceMappingURL=inversify.config.js.map

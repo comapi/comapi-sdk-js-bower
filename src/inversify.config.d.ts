@@ -1,9 +1,14 @@
 import "reflect-metadata";
-import { Container } from "inversify";
 import { IComapiConfig } from "./interfaces";
-declare let container: Container;
-declare function initInterfaces(): void;
-declare function bindIndexedDBLogger(): void;
-declare function unbindIndexedDBLogger(): void;
-declare function bindComapiConfig(comapiConfig: IComapiConfig): void;
-export { container, initInterfaces, bindIndexedDBLogger, unbindIndexedDBLogger, bindComapiConfig };
+export declare class InterfaceContainer {
+    private _container;
+    private _overriddenInterfaces;
+    constructor();
+    initialise(): void;
+    uninitialise(): void;
+    bindIndexedDBLogger(): void;
+    unbindIndexedDBLogger(): void;
+    bindComapiConfig(comapiConfig: IComapiConfig): void;
+    getInterface<T>(serviceIdentifier: string): T;
+    setInterface(serviceIdentifier: string, instance: any): void;
+}
