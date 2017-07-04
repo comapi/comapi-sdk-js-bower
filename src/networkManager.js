@@ -14,10 +14,12 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var inversify_1 = require("inversify");
 var interfaceSymbols_1 = require("./interfaceSymbols");
+var mutex_1 = require("./mutex");
 var NetworkManager = (function () {
     function NetworkManager(_sessionManager, _webSocketManager) {
         this._sessionManager = _sessionManager;
         this._webSocketManager = _webSocketManager;
+        this._mutex = new mutex_1.Mutex();
     }
     NetworkManager.prototype.startSession = function () {
         var _this = this;
@@ -61,12 +63,14 @@ var NetworkManager = (function () {
     };
     NetworkManager.prototype.ensureSessionAndSocket = function () {
         var _this = this;
-        return this.ensureSession()
-            .then(function (sessionInfo) {
-            return _this.ensureSocket();
-        })
-            .then(function (connected) {
-            return _this._sessionManager.sessionInfo;
+        return this._mutex.runExclusive(function () {
+            return _this.ensureSession()
+                .then(function (sessionInfo) {
+                return _this.ensureSocket();
+            })
+                .then(function (connected) {
+                return _this._sessionManager.sessionInfo;
+            });
         });
     };
     NetworkManager.prototype.ensureSession = function () {

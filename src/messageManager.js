@@ -16,13 +16,12 @@ var inversify_1 = require("inversify");
 var utils_1 = require("./utils");
 var interfaceSymbols_1 = require("./interfaceSymbols");
 var MessageManager = (function () {
-    function MessageManager(_logger, _restClient, _localStorageData, _comapiConfig, _sessionManager, _conversationManager) {
+    function MessageManager(_logger, _restClient, _localStorageData, _comapiConfig, _sessionManager) {
         this._logger = _logger;
         this._restClient = _restClient;
         this._localStorageData = _localStorageData;
         this._comapiConfig = _comapiConfig;
         this._sessionManager = _sessionManager;
-        this._conversationManager = _conversationManager;
     }
     MessageManager.prototype.getConversationEvents = function (conversationId, from, limit) {
         var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.events, {
@@ -102,8 +101,7 @@ MessageManager = __decorate([
     __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
     __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
     __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
-    __param(5, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager)),
-    __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object])
+    __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
 ], MessageManager);
 exports.MessageManager = MessageManager;
 //# sourceMappingURL=messageManager.js.map

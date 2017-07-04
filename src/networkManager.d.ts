@@ -2,6 +2,7 @@ import { ISessionManager, IWebSocketManager, ISessionInfo, ISession, INetworkMan
 export declare class NetworkManager implements INetworkManager {
     private _sessionManager;
     private _webSocketManager;
+    private _mutex;
     constructor(_sessionManager: ISessionManager, _webSocketManager: IWebSocketManager);
     startSession(): Promise<ISessionInfo>;
     restartSession(): Promise<ISessionInfo>;

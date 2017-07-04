@@ -5184,7 +5184,7 @@ var COMAPI =
 	            platform: "javascript",
 	            platformVersion: browserInfo.version,
 	            sdkType: "native",
-	            sdkVersion: "1.0.2.151"
+	            sdkVersion: "1.0.2.153"
 	        };
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -5541,10 +5541,12 @@ var COMAPI =
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(56);
+	var mutex_1 = __webpack_require__(57);
 	var NetworkManager = (function () {
 	    function NetworkManager(_sessionManager, _webSocketManager) {
 	        this._sessionManager = _sessionManager;
 	        this._webSocketManager = _webSocketManager;
+	        this._mutex = new mutex_1.Mutex();
 	    }
 	    NetworkManager.prototype.startSession = function () {
 	        var _this = this;
@@ -5588,12 +5590,14 @@ var COMAPI =
 	    };
 	    NetworkManager.prototype.ensureSessionAndSocket = function () {
 	        var _this = this;
-	        return this.ensureSession()
-	            .then(function (sessionInfo) {
-	            return _this.ensureSocket();
-	        })
-	            .then(function (connected) {
-	            return _this._sessionManager.sessionInfo;
+	        return this._mutex.runExclusive(function () {
+	            return _this.ensureSession()
+	                .then(function (sessionInfo) {
+	                return _this.ensureSocket();
+	            })
+	                .then(function (connected) {
+	                return _this._sessionManager.sessionInfo;
+	            });
 	        });
 	    };
 	    NetworkManager.prototype.ensureSession = function () {
@@ -6052,13 +6056,12 @@ var COMAPI =
 	var utils_1 = __webpack_require__(6);
 	var interfaceSymbols_1 = __webpack_require__(56);
 	var MessageManager = (function () {
-	    function MessageManager(_logger, _restClient, _localStorageData, _comapiConfig, _sessionManager, _conversationManager) {
+	    function MessageManager(_logger, _restClient, _localStorageData, _comapiConfig, _sessionManager) {
 	        this._logger = _logger;
 	        this._restClient = _restClient;
 	        this._localStorageData = _localStorageData;
 	        this._comapiConfig = _comapiConfig;
 	        this._sessionManager = _sessionManager;
-	        this._conversationManager = _conversationManager;
 	    }
 	    MessageManager.prototype.getConversationEvents = function (conversationId, from, limit) {
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.events, {
@@ -6138,8 +6141,7 @@ var COMAPI =
 	    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
 	    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
 	    __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
-	    __param(5, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager)),
-	    __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object])
+	    __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
 	], MessageManager);
 	exports.MessageManager = MessageManager;
 	//# sourceMappingURL=messageManager.js.map
