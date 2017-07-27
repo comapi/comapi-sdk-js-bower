@@ -126,7 +126,7 @@ var SessionManager = (function () {
             platform: "javascript",
             platformVersion: browserInfo.version,
             sdkType: "native",
-            sdkVersion: "1.0.2.161"
+            sdkVersion: "1.0.2.163"
         };
         var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
             apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -154,6 +154,7 @@ var SessionManager = (function () {
         };
         var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.session, {
             apiSpaceId: this._comapiConfig.apiSpaceId,
+            sessionId: this.sessionInfo.session.id,
             urlBase: this._comapiConfig.urlBase,
         });
         return this._restClient.delete(url, headers)

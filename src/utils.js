@@ -59,16 +59,11 @@ var Utils = (function () {
     };
     Utils.format = function (content, tags) {
         return content.replace(/{{(.*?)}}/g, function (tag, key) {
-            var replacement = false;
+            var replacement;
             if (typeof tags[key] === "string") {
                 replacement = tags[key];
             }
-            if (typeof replacement === "string") {
-                return replacement;
-            }
-            else {
-                return tag;
-            }
+            return typeof replacement === "string" ? replacement : "";
         });
     };
     return Utils;

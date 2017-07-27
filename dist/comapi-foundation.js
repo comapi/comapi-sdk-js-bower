@@ -1675,16 +1675,11 @@ var COMAPI =
 	    };
 	    Utils.format = function (content, tags) {
 	        return content.replace(/{{(.*?)}}/g, function (tag, key) {
-	            var replacement = false;
+	            var replacement;
 	            if (typeof tags[key] === "string") {
 	                replacement = tags[key];
 	            }
-	            if (typeof replacement === "string") {
-	                return replacement;
-	            }
-	            else {
-	                return tag;
-	            }
+	            return typeof replacement === "string" ? replacement : "";
 	        });
 	    };
 	    return Utils;
@@ -4974,7 +4969,7 @@ var COMAPI =
 	            platform: "javascript",
 	            platformVersion: browserInfo.version,
 	            sdkType: "native",
-	            sdkVersion: "1.0.2.161"
+	            sdkVersion: "1.0.2.163"
 	        };
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -5002,6 +4997,7 @@ var COMAPI =
 	        };
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.session, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            sessionId: this.sessionInfo.session.id,
 	            urlBase: this._comapiConfig.urlBase,
 	        });
 	        return this._restClient.delete(url, headers)
