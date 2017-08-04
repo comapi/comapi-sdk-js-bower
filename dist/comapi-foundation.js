@@ -1677,7 +1677,7 @@ var COMAPI =
 	        return content.replace(/{{(.*?)}}/g, function (tag, key) {
 	            var replacement;
 	            if (typeof tags[key] === "string") {
-	                replacement = tags[key];
+	                replacement = key !== "urlBase" ? encodeURIComponent(tags[key]) : tags[key];
 	            }
 	            return typeof replacement === "string" ? replacement : "";
 	        });
@@ -4969,7 +4969,7 @@ var COMAPI =
 	            platform: "javascript",
 	            platformVersion: browserInfo.version,
 	            sdkType: "native",
-	            sdkVersion: "1.0.2.163"
+	            sdkVersion: "1.0.2.165"
 	        };
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,

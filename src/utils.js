@@ -61,7 +61,7 @@ var Utils = (function () {
         return content.replace(/{{(.*?)}}/g, function (tag, key) {
             var replacement;
             if (typeof tags[key] === "string") {
-                replacement = tags[key];
+                replacement = key !== "urlBase" ? encodeURIComponent(tags[key]) : tags[key];
             }
             return typeof replacement === "string" ? replacement : "";
         });
