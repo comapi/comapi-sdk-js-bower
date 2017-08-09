@@ -13,6 +13,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var inversify_1 = require("inversify");
+var utils_1 = require("./utils");
 var interfaceSymbols_1 = require("./interfaceSymbols");
 var Profile = (function () {
     function Profile(_networkManager, _localStorage, _profileManager) {
@@ -57,7 +58,7 @@ var Profile = (function () {
         })
             .then(function (result) {
             if (useEtag) {
-                _this._localStorage.setString("MyProfileETag", result.headers.ETag);
+                _this._localStorage.setString("MyProfileETag", utils_1.Utils.getHeaderValue(result.headers, "ETag"));
             }
             return Promise.resolve(result.response);
         });
@@ -71,7 +72,7 @@ var Profile = (function () {
         })
             .then(function (result) {
             if (useEtag) {
-                _this._localStorage.setString("MyProfileETag", result.headers.ETag);
+                _this._localStorage.setString("MyProfileETag", utils_1.Utils.getHeaderValue(result.headers, "ETag"));
             }
             return Promise.resolve(result.response);
         });
@@ -84,7 +85,7 @@ var Profile = (function () {
         })
             .then(function (result) {
             if (useEtag) {
-                _this._localStorage.setString("MyProfileETag", result.headers.ETag);
+                _this._localStorage.setString("MyProfileETag", utils_1.Utils.getHeaderValue(result.headers, "ETag"));
             }
             return Promise.resolve(result.response);
         });

@@ -8,5 +8,6 @@ export declare class Utils {
     static eachSeries(arr: any[], iteratorFn: Function): Promise<any>;
     static doUntil(operation: DoUntilOperationFunction, test: DoUntilTestFunction, data?: any): Promise<any>;
     static format(content: string, tags: Object): any;
+    static getHeaderValue(headers: Object, key: string): any;
     constructor();
 }

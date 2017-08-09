@@ -66,6 +66,9 @@ var Utils = (function () {
             return typeof replacement === "string" ? replacement : "";
         });
     };
+    Utils.getHeaderValue = function (headers, key) {
+        return headers[key] || headers[key.toLowerCase()];
+    };
     return Utils;
 }());
 exports.Utils = Utils;

@@ -1682,6 +1682,9 @@ var COMAPI =
 	            return typeof replacement === "string" ? replacement : "";
 	        });
 	    };
+	    Utils.getHeaderValue = function (headers, key) {
+	        return headers[key] || headers[key.toLowerCase()];
+	    };
 	    return Utils;
 	}());
 	exports.Utils = Utils;
@@ -4969,7 +4972,7 @@ var COMAPI =
 	            platform: "javascript",
 	            platformVersion: browserInfo.version,
 	            sdkType: "native",
-	            sdkVersion: "1.0.2.165"
+	            sdkVersion: "1.0.2.170"
 	        };
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -5008,9 +5011,20 @@ var COMAPI =
 	    SessionManager.prototype._getSession = function () {
 	        var sessionInfo = this._localStorageData.getObject("session");
 	        if (sessionInfo) {
-	            this._sessionInfo = sessionInfo;
+	            if (sessionInfo.token) {
+	                var bits = sessionInfo.token.split(".");
+	                if (bits.length === 3) {
+	                    var payload = JSON.parse(atob(bits[1]));
+	                    if (payload.apiSpaceId === this._comapiConfig.apiSpaceId) {
+	                        this._sessionInfo = sessionInfo;
+	                    }
+	                }
+	            }
+	            if (!this._sessionInfo) {
+	                this._localStorageData.remove("session");
+	            }
 	        }
-	        return sessionInfo;
+	        return this._sessionInfo;
 	    };
 	    SessionManager.prototype._setSession = function (sessionInfo) {
 	        var expiry = new Date(sessionInfo.session.expiresOn);
@@ -5566,7 +5580,7 @@ var COMAPI =
 	        });
 	        return this._restClient.post(url, {}, conversationDetails)
 	            .then(function (result) {
-	            result.response._etag = result.headers.ETag;
+	            result.response._etag = utils_1.Utils.getHeaderValue(result.headers, "ETag");
 	            return Promise.resolve(result.response);
 	        });
 	    };
@@ -5588,7 +5602,7 @@ var COMAPI =
 	        });
 	        return this._restClient.put(url, headers, args)
 	            .then(function (result) {
-	            result.response._etag = result.headers.ETag;
+	            result.response._etag = utils_1.Utils.getHeaderValue(result.headers, "ETag");
 	            return Promise.resolve(result.response);
 	        });
 	    };
@@ -5600,7 +5614,7 @@ var COMAPI =
 	        });
 	        return this._restClient.get(url)
 	            .then(function (result) {
-	            result.response._etag = result.headers.ETag;
+	            result.response._etag = utils_1.Utils.getHeaderValue(result.headers, "ETag");
 	            return Promise.resolve(result.response);
 	        });
 	    };
@@ -6667,6 +6681,7 @@ var COMAPI =
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
+	var utils_1 = __webpack_require__(6);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var Profile = (function () {
 	    function Profile(_networkManager, _localStorage, _profileManager) {
@@ -6711,7 +6726,7 @@ var COMAPI =
 	        })
 	            .then(function (result) {
 	            if (useEtag) {
-	                _this._localStorage.setString("MyProfileETag", result.headers.ETag);
+	                _this._localStorage.setString("MyProfileETag", utils_1.Utils.getHeaderValue(result.headers, "ETag"));
 	            }
 	            return Promise.resolve(result.response);
 	        });
@@ -6725,7 +6740,7 @@ var COMAPI =
 	        })
 	            .then(function (result) {
 	            if (useEtag) {
-	                _this._localStorage.setString("MyProfileETag", result.headers.ETag);
+	                _this._localStorage.setString("MyProfileETag", utils_1.Utils.getHeaderValue(result.headers, "ETag"));
 	            }
 	            return Promise.resolve(result.response);
 	        });
@@ -6738,7 +6753,7 @@ var COMAPI =
 	        })
 	            .then(function (result) {
 	            if (useEtag) {
-	                _this._localStorage.setString("MyProfileETag", result.headers.ETag);
+	                _this._localStorage.setString("MyProfileETag", utils_1.Utils.getHeaderValue(result.headers, "ETag"));
 	            }
 	            return Promise.resolve(result.response);
 	        });

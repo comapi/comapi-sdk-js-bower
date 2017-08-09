@@ -33,7 +33,7 @@ var ConversationManager = (function () {
         });
         return this._restClient.post(url, {}, conversationDetails)
             .then(function (result) {
-            result.response._etag = result.headers.ETag;
+            result.response._etag = utils_1.Utils.getHeaderValue(result.headers, "ETag");
             return Promise.resolve(result.response);
         });
     };
@@ -55,7 +55,7 @@ var ConversationManager = (function () {
         });
         return this._restClient.put(url, headers, args)
             .then(function (result) {
-            result.response._etag = result.headers.ETag;
+            result.response._etag = utils_1.Utils.getHeaderValue(result.headers, "ETag");
             return Promise.resolve(result.response);
         });
     };
@@ -67,7 +67,7 @@ var ConversationManager = (function () {
         });
         return this._restClient.get(url)
             .then(function (result) {
-            result.response._etag = result.headers.ETag;
+            result.response._etag = utils_1.Utils.getHeaderValue(result.headers, "ETag");
             return Promise.resolve(result.response);
         });
     };

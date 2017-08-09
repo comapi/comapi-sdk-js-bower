@@ -126,7 +126,7 @@ var SessionManager = (function () {
             platform: "javascript",
             platformVersion: browserInfo.version,
             sdkType: "native",
-            sdkVersion: "1.0.2.165"
+            sdkVersion: "1.0.2.170"
         };
         var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
             apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -165,9 +165,20 @@ var SessionManager = (function () {
     SessionManager.prototype._getSession = function () {
         var sessionInfo = this._localStorageData.getObject("session");
         if (sessionInfo) {
-            this._sessionInfo = sessionInfo;
+            if (sessionInfo.token) {
+                var bits = sessionInfo.token.split(".");
+                if (bits.length === 3) {
+                    var payload = JSON.parse(atob(bits[1]));
+                    if (payload.apiSpaceId === this._comapiConfig.apiSpaceId) {
+                        this._sessionInfo = sessionInfo;
+                    }
+                }
+            }
+            if (!this._sessionInfo) {
+                this._localStorageData.remove("session");
+            }
         }
-        return sessionInfo;
+        return this._sessionInfo;
     };
     SessionManager.prototype._setSession = function (sessionInfo) {
         var expiry = new Date(sessionInfo.session.expiresOn);
