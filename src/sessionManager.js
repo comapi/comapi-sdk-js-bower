@@ -109,7 +109,7 @@ var SessionManager = (function () {
                     resolve(true);
                 }).catch(function (error) {
                     _this._removeSession();
-                    reject(error);
+                    resolve(false);
                 });
             }
             else {
@@ -126,7 +126,7 @@ var SessionManager = (function () {
             platform: "javascript",
             platformVersion: browserInfo.version,
             sdkType: "native",
-            sdkVersion: "1.0.2.170"
+            sdkVersion: "1.0.2.172"
         };
         var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
             apiSpaceId: this._comapiConfig.apiSpaceId,

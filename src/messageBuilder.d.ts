@@ -9,6 +9,7 @@ export declare class MessageBuilder implements IConversationMessage {
     statusUpdates: any;
     withText(text: any): MessageBuilder;
     withData(type: string, data: string): this;
+    withURL(type: string, url: string, size?: number): this;
     withPart(part: IMessagePart): this;
     withPush(text: any): this;
     withApnsAlert(info: IApnsAlert): this;

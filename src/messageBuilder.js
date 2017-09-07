@@ -26,6 +26,14 @@ var MessageBuilder = (function () {
         });
         return this;
     };
+    MessageBuilder.prototype.withURL = function (type, url, size) {
+        this.parts.push({
+            size: size,
+            type: type,
+            url: url,
+        });
+        return this;
+    };
     MessageBuilder.prototype.withPart = function (part) {
         this.parts.push(part);
         return this;
