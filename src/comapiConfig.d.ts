@@ -11,6 +11,7 @@ export declare class ComapiConfig implements IComapiConfig {
     isTypingOffTimeout: number;
     foundationRestUrls: IFoundationRestUrls;
     eventMapping: IEventMapping;
+    localStoragePrefix: string;
     constructor();
     withApiSpace(id: string): this;
     withLogRetentionTime(hours: number): this;
@@ -21,4 +22,5 @@ export declare class ComapiConfig implements IComapiConfig {
     withLogPersistence(logPersistence: LogPersistences): this;
     withFoundationRestUrls(foundationRestUrls: IFoundationRestUrls): this;
     withEventMapping(eventMapping: IEventMapping): this;
+    withLocalStoragePrefix(localStoragePrefix: string): this;
 }

@@ -1860,6 +1860,10 @@ var COMAPI =
 	        this.eventMapping = eventMapping;
 	        return this;
 	    };
+	    ComapiConfig.prototype.withLocalStoragePrefix = function (localStoragePrefix) {
+	        this.localStoragePrefix = localStoragePrefix;
+	        return this;
+	    };
 	    return ComapiConfig;
 	}());
 	exports.ComapiConfig = ComapiConfig;
@@ -4058,11 +4062,21 @@ var COMAPI =
 	var __metadata = (this && this.__metadata) || function (k, v) {
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
+	var __param = (this && this.__param) || function (paramIndex, decorator) {
+	    return function (target, key) { decorator(target, key, paramIndex); }
+	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
+	var interfaceSymbols_1 = __webpack_require__(11);
 	var LocalStorageData = (function () {
-	    function LocalStorageData() {
-	        this._prefix = "comapi.";
+	    function LocalStorageData(_comapiConfig) {
+	        this._comapiConfig = _comapiConfig;
+	        if (_comapiConfig && _comapiConfig.localStoragePrefix) {
+	            this._prefix = _comapiConfig.localStoragePrefix;
+	        }
+	        else {
+	            this._prefix = "comapi.";
+	        }
 	    }
 	    Object.defineProperty(LocalStorageData.prototype, "prefix", {
 	        set: function (prefix) {
@@ -4112,7 +4126,8 @@ var COMAPI =
 	}());
 	LocalStorageData = __decorate([
 	    inversify_1.injectable(),
-	    __metadata("design:paramtypes", [])
+	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+	    __metadata("design:paramtypes", [Object])
 	], LocalStorageData);
 	exports.LocalStorageData = LocalStorageData;
 	//# sourceMappingURL=localStorageData.js.map
@@ -4980,7 +4995,7 @@ var COMAPI =
 	            platform: "javascript",
 	            platformVersion: browserInfo.version,
 	            sdkType: "native",
-	            sdkVersion: "1.0.2.172"
+	            sdkVersion: "1.0.2.176"
 	        };
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,

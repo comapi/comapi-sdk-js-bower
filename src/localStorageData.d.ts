@@ -1,7 +1,8 @@
-import { ILocalStorageData } from "./interfaces";
+import { ILocalStorageData, IComapiConfig } from "./interfaces";
 export declare class LocalStorageData implements ILocalStorageData {
+    private _comapiConfig;
     private _prefix;
-    constructor();
+    constructor(_comapiConfig: IComapiConfig);
     prefix: string;
     getString(key: string): string;
     setString(key: string, value: string): void;

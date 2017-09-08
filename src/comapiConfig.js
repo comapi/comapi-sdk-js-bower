@@ -50,6 +50,10 @@ var ComapiConfig = (function () {
         this.eventMapping = eventMapping;
         return this;
     };
+    ComapiConfig.prototype.withLocalStoragePrefix = function (localStoragePrefix) {
+        this.localStoragePrefix = localStoragePrefix;
+        return this;
+    };
     return ComapiConfig;
 }());
 exports.ComapiConfig = ComapiConfig;

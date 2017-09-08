@@ -8,11 +8,21 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var inversify_1 = require("inversify");
+var interfaceSymbols_1 = require("./interfaceSymbols");
 var LocalStorageData = (function () {
-    function LocalStorageData() {
-        this._prefix = "comapi.";
+    function LocalStorageData(_comapiConfig) {
+        this._comapiConfig = _comapiConfig;
+        if (_comapiConfig && _comapiConfig.localStoragePrefix) {
+            this._prefix = _comapiConfig.localStoragePrefix;
+        }
+        else {
+            this._prefix = "comapi.";
+        }
     }
     Object.defineProperty(LocalStorageData.prototype, "prefix", {
         set: function (prefix) {
@@ -62,7 +72,8 @@ var LocalStorageData = (function () {
 }());
 LocalStorageData = __decorate([
     inversify_1.injectable(),
-    __metadata("design:paramtypes", [])
+    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+    __metadata("design:paramtypes", [Object])
 ], LocalStorageData);
 exports.LocalStorageData = LocalStorageData;
 //# sourceMappingURL=localStorageData.js.map
