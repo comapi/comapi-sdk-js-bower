@@ -1,11 +1,23 @@
 "use strict";
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
 Object.defineProperty(exports, "__esModule", { value: true });
-var comapiChatClient_1 = require("./comapiChatClient");
-exports.ComapiChatClient = comapiChatClient_1.ComapiChatClient;
-var chatConfig_1 = require("./chatConfig");
-exports.ComapiChatConfig = chatConfig_1.ComapiChatConfig;
-var memoryStore_1 = require("./memoryStore");
-exports.MemoryConversationStore = memoryStore_1.MemoryConversationStore;
-var dbStore_1 = require("./dbStore");
-exports.IndexedDBConversationStore = dbStore_1.IndexedDBConversationStore;
+var foundation_1 = require("./foundation");
+exports.Foundation = foundation_1.Foundation;
+var utils_1 = require("./utils");
+exports.Utils = utils_1.Utils;
+var comapiConfig_1 = require("./comapiConfig");
+exports.ComapiConfig = comapiConfig_1.ComapiConfig;
+var conversationBuilder_1 = require("./conversationBuilder");
+exports.ConversationBuilder = conversationBuilder_1.ConversationBuilder;
+var messageBuilder_1 = require("./messageBuilder");
+exports.MessageBuilder = messageBuilder_1.MessageBuilder;
+var messageStatusBuilder_1 = require("./messageStatusBuilder");
+exports.MessageStatusBuilder = messageStatusBuilder_1.MessageStatusBuilder;
+var inversify_config_1 = require("./inversify.config");
+exports.InterfaceContainer = inversify_config_1.InterfaceContainer;
+var interfaceSymbols_1 = require("./interfaceSymbols");
+exports.INTERFACE_SYMBOLS = interfaceSymbols_1.INTERFACE_SYMBOLS;
+__export(require("./interfaces"));
 //# sourceMappingURL=index.js.map
