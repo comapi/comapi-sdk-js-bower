@@ -55,6 +55,10 @@ var ComapiConfig = (function () {
         this.localStoragePrefix = localStoragePrefix;
         return this;
     };
+    ComapiConfig.prototype.withOrphanedEventPersistence = function (orphanedEventPersistence) {
+        this.orphanedEventPersistence = orphanedEventPersistence;
+        return this;
+    };
     return ComapiConfig;
 }());
 exports.ComapiConfig = ComapiConfig;

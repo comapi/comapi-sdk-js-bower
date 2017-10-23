@@ -1876,6 +1876,10 @@ var COMAPI =
 	        this.localStoragePrefix = localStoragePrefix;
 	        return this;
 	    };
+	    ComapiConfig.prototype.withOrphanedEventPersistence = function (orphanedEventPersistence) {
+	        this.orphanedEventPersistence = orphanedEventPersistence;
+	        return this;
+	    };
 	    return ComapiConfig;
 	}());
 	exports.ComapiConfig = ComapiConfig;
@@ -5027,7 +5031,7 @@ var COMAPI =
 	            platform: "javascript",
 	            platformVersion: browserInfo.version,
 	            sdkType: "native",
-	            sdkVersion: "1.0.2.193"
+	            sdkVersion: "1.0.3.194"
 	        };
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,

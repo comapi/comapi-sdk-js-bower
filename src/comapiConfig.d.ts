@@ -24,4 +24,5 @@ export declare class ComapiConfig implements IComapiConfig {
     withFoundationRestUrls(foundationRestUrls: IFoundationRestUrls): this;
     withEventMapping(eventMapping: IEventMapping): this;
     withLocalStoragePrefix(localStoragePrefix: string): this;
+    withOrphanedEventPersistence(orphanedEventPersistence: OrphanedEventPersistences): this;
 }
