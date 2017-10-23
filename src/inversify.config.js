@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
 var inversify_1 = require("inversify");
+var interfaces_1 = require("./interfaces");
 var eventManager_1 = require("./eventManager");
 var localStorageData_1 = require("./localStorageData");
 var logger_1 = require("./logger");
@@ -25,13 +26,14 @@ var device_1 = require("./device");
 var channels_1 = require("./channels");
 var indexedDBLogger_1 = require("./indexedDBLogger");
 var eventMapper_1 = require("./eventMapper");
+var contentManager_1 = require("./contentManager");
 var interfaceSymbols_1 = require("./interfaceSymbols");
 var InterfaceContainer = (function () {
     function InterfaceContainer() {
         this._overriddenInterfaces = {};
         this._container = new inversify_1.Container();
     }
-    InterfaceContainer.prototype.initialise = function () {
+    InterfaceContainer.prototype.initialise = function (comapiConfig) {
         this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager).to(eventManager_1.EventManager).inSingletonScope();
         this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData).to(localStorageData_1.LocalStorageData).inSingletonScope();
         this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger).to(logger_1.Logger).inSingletonScope();
@@ -47,11 +49,26 @@ var InterfaceContainer = (function () {
         this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager).to(profileManager_1.ProfileManager).inSingletonScope();
         this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager).to(messagePager_1.MessagePager).inSingletonScope();
         var dbSupported = "indexedDB" in window;
-        if (dbSupported) {
-            this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(indexedDBOrphanedEventManager_1.IndexedDBOrphanedEventManager).inSingletonScope();
+        if (comapiConfig && comapiConfig.orphanedEventPersistence) {
+            if (comapiConfig.orphanedEventPersistence === interfaces_1.OrphanedEventPersistences.LocalStorage) {
+                this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(localStorageOrphanedEventManager_1.LocalStorageOrphanedEventManager).inSingletonScope();
+            }
+            else if (comapiConfig.orphanedEventPersistence === interfaces_1.OrphanedEventPersistences.IndexedDbIfSupported) {
+                if (dbSupported) {
+                    this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(indexedDBOrphanedEventManager_1.IndexedDBOrphanedEventManager).inSingletonScope();
+                }
+                else {
+                    this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(localStorageOrphanedEventManager_1.LocalStorageOrphanedEventManager).inSingletonScope();
+                }
+            }
         }
         else {
-            this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(localStorageOrphanedEventManager_1.LocalStorageOrphanedEventManager).inSingletonScope();
+            if (dbSupported) {
+                this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(indexedDBOrphanedEventManager_1.IndexedDBOrphanedEventManager).inSingletonScope();
+            }
+            else {
+                this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(localStorageOrphanedEventManager_1.LocalStorageOrphanedEventManager).inSingletonScope();
+            }
         }
         this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager).to(messageManager_1.MessageManager).inSingletonScope();
         this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.AppMessaging).to(appMessaging_1.AppMessaging).inSingletonScope();
@@ -59,6 +76,7 @@ var InterfaceContainer = (function () {
         this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Services).to(services_1.Services).inSingletonScope();
         this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Device).to(device_1.Device).inSingletonScope();
         this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels).to(channels_1.Channels).inSingletonScope();
+        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ContentManager).to(contentManager_1.ContentManager).inSingletonScope();
     };
     InterfaceContainer.prototype.uninitialise = function () {
         this._container.unbindAll();

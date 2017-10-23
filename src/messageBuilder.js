@@ -26,8 +26,9 @@ var MessageBuilder = (function () {
         });
         return this;
     };
-    MessageBuilder.prototype.withURL = function (type, url, size) {
+    MessageBuilder.prototype.withURL = function (type, url, size, name) {
         this.parts.push({
+            name: name,
             size: size,
             type: type,
             url: url,

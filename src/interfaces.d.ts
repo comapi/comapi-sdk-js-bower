@@ -22,6 +22,11 @@ export declare enum LogPersistences {
     IndexedDB = 1,
     LocalStorage = 2,
 }
+export declare enum OrphanedEventPersistences {
+    None = 0,
+    IndexedDbIfSupported = 1,
+    LocalStorage = 2,
+}
 export interface ILogEvent {
     key?: number;
     logLevel: LogLevels;
@@ -127,6 +132,7 @@ export interface IAuthChallenge {
     (options: IAuthChallengeOptions, answerAuthenticationChallenge: Function): void;
 }
 export interface IFoundationRestUrls {
+    content: string;
     conversations: string;
     conversation: string;
     participants: string;
@@ -159,6 +165,16 @@ export interface IComapiConfig {
     eventMapping?: IEventMapping;
     interfaceContainer?: any;
     localStoragePrefix?: string;
+    orphanedEventPersistence?: OrphanedEventPersistences;
+}
+export interface IContentData {
+    file: File;
+    data: string;
+    name: string;
+    type: string;
+}
+export interface IContentManager {
+    uploadContent(content: IContentData, folder?: string): Promise<string>;
 }
 export interface IProfileManager {
     getProfile(id: string): Promise<any>;
@@ -378,6 +394,7 @@ export interface IAppMessaging {
     getMessages(conversationId: string, pageSize: number, continuationToken?: number): Promise<IGetMessagesResponse>;
     sendIsTyping(conversationId: string): Promise<boolean>;
     sendIsTypingOff(conversationId: string): Promise<boolean>;
+    uploadContent(content: IContentData, folder?: string): Promise<string>;
 }
 export interface IProfile {
     getProfile(profileId: string): Promise<any>;

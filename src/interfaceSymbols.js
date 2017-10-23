@@ -5,6 +5,7 @@ var INTERFACE_SYMBOLS = {
     AuthenticatedRestClient: "AuthenticatedRestClient",
     Channels: "Channels",
     ComapiConfig: "ComapiConfig",
+    ContentManager: "ContentManager",
     ConversationManager: "ConversationManager",
     Device: "Device",
     DeviceManager: "DeviceManager",

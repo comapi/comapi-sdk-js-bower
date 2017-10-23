@@ -3,6 +3,7 @@ declare let INTERFACE_SYMBOLS: {
     AuthenticatedRestClient: string;
     Channels: string;
     ComapiConfig: string;
+    ContentManager: string;
     ConversationManager: string;
     Device: string;
     DeviceManager: string;

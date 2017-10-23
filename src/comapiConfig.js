@@ -12,6 +12,7 @@ var ComapiConfig = (function () {
         this.isTypingTimeout = 10;
         this.isTypingOffTimeout = 10;
         this.foundationRestUrls = new urlConfig_1.FoundationRestUrls();
+        this.orphanedEventPersistence = interfaces_1.OrphanedEventPersistences.IndexedDbIfSupported;
         this.apiSpaceId = undefined;
     }
     ComapiConfig.prototype.withApiSpace = function (id) {

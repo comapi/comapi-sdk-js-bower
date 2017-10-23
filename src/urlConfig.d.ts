@@ -1,5 +1,6 @@
 import { IFoundationRestUrls } from "./interfaces";
 export declare class FoundationRestUrls implements IFoundationRestUrls {
+    content: string;
     conversations: string;
     conversation: string;
     participants: string;

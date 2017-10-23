@@ -15,11 +15,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var inversify_1 = require("inversify");
 var interfaceSymbols_1 = require("./interfaceSymbols");
 var AppMessaging = (function () {
-    function AppMessaging(_networkManager, _conversationManager, _messageManager, _messagePager) {
+    function AppMessaging(_networkManager, _conversationManager, _messageManager, _messagePager, _contentManager) {
         this._networkManager = _networkManager;
         this._conversationManager = _conversationManager;
         this._messageManager = _messageManager;
         this._messagePager = _messagePager;
+        this._contentManager = _contentManager;
     }
     AppMessaging.prototype.createConversation = function (conversationDetails) {
         var _this = this;
@@ -132,6 +133,13 @@ var AppMessaging = (function () {
             return _this._conversationManager.sendIsTypingOff(conversationId);
         });
     };
+    AppMessaging.prototype.uploadContent = function (content, folder) {
+        var _this = this;
+        return this._networkManager.ensureSessionAndSocket()
+            .then(function (sessionInfo) {
+            return _this._contentManager.uploadContent(content, folder);
+        });
+    };
     return AppMessaging;
 }());
 AppMessaging = __decorate([
@@ -140,7 +148,8 @@ AppMessaging = __decorate([
     __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager)),
     __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager)),
     __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager)),
-    __metadata("design:paramtypes", [Object, Object, Object, Object])
+    __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ContentManager)),
+    __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
 ], AppMessaging);
 exports.AppMessaging = AppMessaging;
 //# sourceMappingURL=appMessaging.js.map

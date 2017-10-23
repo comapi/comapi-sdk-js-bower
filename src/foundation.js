@@ -12,6 +12,8 @@ exports.ComapiConfig = comapiConfig_1.ComapiConfig;
 var urlConfig_1 = require("./urlConfig");
 var interfaceSymbols_1 = require("./interfaceSymbols");
 var inversify_config_1 = require("./inversify.config");
+var contentData_1 = require("./contentData");
+exports.ContentData = contentData_1.ContentData;
 var Foundation = (function () {
     function Foundation(_eventManager, _logger, _networkManager, services, device, channels) {
         this._eventManager = _eventManager;
@@ -47,7 +49,7 @@ var Foundation = (function () {
         }
         else {
             container = new inversify_config_1.InterfaceContainer();
-            container.initialise();
+            container.initialise(comapiConfig);
             container.bindComapiConfig(comapiConfig);
         }
         if (comapiConfig.logPersistence &&

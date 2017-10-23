@@ -1,4 +1,4 @@
-import { IComapiConfig, IAuthChallenge, LogLevels, LogPersistences, IFoundationRestUrls, IEventMapping } from "./interfaces";
+import { IComapiConfig, IAuthChallenge, LogLevels, LogPersistences, OrphanedEventPersistences, IFoundationRestUrls, IEventMapping } from "./interfaces";
 export declare class ComapiConfig implements IComapiConfig {
     apiSpaceId: string;
     logRetentionHours: number;
@@ -12,6 +12,7 @@ export declare class ComapiConfig implements IComapiConfig {
     foundationRestUrls: IFoundationRestUrls;
     eventMapping: IEventMapping;
     localStoragePrefix: string;
+    orphanedEventPersistence: OrphanedEventPersistences;
     constructor();
     withApiSpace(id: string): this;
     withLogRetentionTime(hours: number): this;

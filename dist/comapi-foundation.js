@@ -1388,6 +1388,8 @@ var COMAPI =
 	var urlConfig_1 = __webpack_require__(10);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var inversify_config_1 = __webpack_require__(12);
+	var contentData_1 = __webpack_require__(77);
+	exports.ContentData = contentData_1.ContentData;
 	var Foundation = (function () {
 	    function Foundation(_eventManager, _logger, _networkManager, services, device, channels) {
 	        this._eventManager = _eventManager;
@@ -1423,7 +1425,7 @@ var COMAPI =
 	        }
 	        else {
 	            container = new inversify_config_1.InterfaceContainer();
-	            container.initialise();
+	            container.initialise(comapiConfig);
 	            container.bindComapiConfig(comapiConfig);
 	        }
 	        if (comapiConfig.logPersistence &&
@@ -1524,6 +1526,13 @@ var COMAPI =
 	    LogPersistences[LogPersistences["LocalStorage"] = 2] = "LocalStorage";
 	})(LogPersistences = exports.LogPersistences || (exports.LogPersistences = {}));
 	;
+	var OrphanedEventPersistences;
+	(function (OrphanedEventPersistences) {
+	    OrphanedEventPersistences[OrphanedEventPersistences["None"] = 0] = "None";
+	    OrphanedEventPersistences[OrphanedEventPersistences["IndexedDbIfSupported"] = 1] = "IndexedDbIfSupported";
+	    OrphanedEventPersistences[OrphanedEventPersistences["LocalStorage"] = 2] = "LocalStorage";
+	})(OrphanedEventPersistences = exports.OrphanedEventPersistences || (exports.OrphanedEventPersistences = {}));
+	;
 	;
 	;
 	;
@@ -1532,6 +1541,7 @@ var COMAPI =
 	    Environment[Environment["development"] = 0] = "development";
 	    Environment[Environment["production"] = 1] = "production";
 	})(Environment = exports.Environment || (exports.Environment = {}));
+	;
 	;
 	;
 	;
@@ -1723,8 +1733,9 @@ var COMAPI =
 	        });
 	        return this;
 	    };
-	    MessageBuilder.prototype.withURL = function (type, url, size) {
+	    MessageBuilder.prototype.withURL = function (type, url, size, name) {
 	        this.parts.push({
+	            name: name,
 	            size: size,
 	            type: type,
 	            url: url,
@@ -1822,6 +1833,7 @@ var COMAPI =
 	        this.isTypingTimeout = 10;
 	        this.isTypingOffTimeout = 10;
 	        this.foundationRestUrls = new urlConfig_1.FoundationRestUrls();
+	        this.orphanedEventPersistence = interfaces_1.OrphanedEventPersistences.IndexedDbIfSupported;
 	        this.apiSpaceId = undefined;
 	    }
 	    ComapiConfig.prototype.withApiSpace = function (id) {
@@ -1877,6 +1889,7 @@ var COMAPI =
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var FoundationRestUrls = (function () {
 	    function FoundationRestUrls() {
+	        this.content = "{{urlBase}}/apispaces/{{apiSpaceId}}/content";
 	        this.conversations = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations";
 	        this.conversation = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}";
 	        this.participants = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/participants";
@@ -1908,6 +1921,7 @@ var COMAPI =
 	    AuthenticatedRestClient: "AuthenticatedRestClient",
 	    Channels: "Channels",
 	    ComapiConfig: "ComapiConfig",
+	    ContentManager: "ContentManager",
 	    ConversationManager: "ConversationManager",
 	    Device: "Device",
 	    DeviceManager: "DeviceManager",
@@ -1939,6 +1953,7 @@ var COMAPI =
 	Object.defineProperty(exports, "__esModule", { value: true });
 	__webpack_require__(1);
 	var inversify_1 = __webpack_require__(13);
+	var interfaces_1 = __webpack_require__(4);
 	var eventManager_1 = __webpack_require__(52);
 	var localStorageData_1 = __webpack_require__(53);
 	var logger_1 = __webpack_require__(54);
@@ -1962,13 +1977,14 @@ var COMAPI =
 	var channels_1 = __webpack_require__(74);
 	var indexedDBLogger_1 = __webpack_require__(55);
 	var eventMapper_1 = __webpack_require__(75);
+	var contentManager_1 = __webpack_require__(76);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var InterfaceContainer = (function () {
 	    function InterfaceContainer() {
 	        this._overriddenInterfaces = {};
 	        this._container = new inversify_1.Container();
 	    }
-	    InterfaceContainer.prototype.initialise = function () {
+	    InterfaceContainer.prototype.initialise = function (comapiConfig) {
 	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager).to(eventManager_1.EventManager).inSingletonScope();
 	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData).to(localStorageData_1.LocalStorageData).inSingletonScope();
 	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger).to(logger_1.Logger).inSingletonScope();
@@ -1984,11 +2000,26 @@ var COMAPI =
 	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager).to(profileManager_1.ProfileManager).inSingletonScope();
 	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager).to(messagePager_1.MessagePager).inSingletonScope();
 	        var dbSupported = "indexedDB" in window;
-	        if (dbSupported) {
-	            this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(indexedDBOrphanedEventManager_1.IndexedDBOrphanedEventManager).inSingletonScope();
+	        if (comapiConfig && comapiConfig.orphanedEventPersistence) {
+	            if (comapiConfig.orphanedEventPersistence === interfaces_1.OrphanedEventPersistences.LocalStorage) {
+	                this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(localStorageOrphanedEventManager_1.LocalStorageOrphanedEventManager).inSingletonScope();
+	            }
+	            else if (comapiConfig.orphanedEventPersistence === interfaces_1.OrphanedEventPersistences.IndexedDbIfSupported) {
+	                if (dbSupported) {
+	                    this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(indexedDBOrphanedEventManager_1.IndexedDBOrphanedEventManager).inSingletonScope();
+	                }
+	                else {
+	                    this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(localStorageOrphanedEventManager_1.LocalStorageOrphanedEventManager).inSingletonScope();
+	                }
+	            }
 	        }
 	        else {
-	            this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(localStorageOrphanedEventManager_1.LocalStorageOrphanedEventManager).inSingletonScope();
+	            if (dbSupported) {
+	                this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(indexedDBOrphanedEventManager_1.IndexedDBOrphanedEventManager).inSingletonScope();
+	            }
+	            else {
+	                this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager).to(localStorageOrphanedEventManager_1.LocalStorageOrphanedEventManager).inSingletonScope();
+	            }
 	        }
 	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager).to(messageManager_1.MessageManager).inSingletonScope();
 	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.AppMessaging).to(appMessaging_1.AppMessaging).inSingletonScope();
@@ -1996,6 +2027,7 @@ var COMAPI =
 	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Services).to(services_1.Services).inSingletonScope();
 	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Device).to(device_1.Device).inSingletonScope();
 	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels).to(channels_1.Channels).inSingletonScope();
+	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ContentManager).to(contentManager_1.ContentManager).inSingletonScope();
 	    };
 	    InterfaceContainer.prototype.uninitialise = function () {
 	        this._container.unbindAll();
@@ -4995,7 +5027,7 @@ var COMAPI =
 	            platform: "javascript",
 	            platformVersion: browserInfo.version,
 	            sdkType: "native",
-	            sdkVersion: "1.0.2.177"
+	            sdkVersion: "1.0.2.193"
 	        };
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -6555,11 +6587,12 @@ var COMAPI =
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var AppMessaging = (function () {
-	    function AppMessaging(_networkManager, _conversationManager, _messageManager, _messagePager) {
+	    function AppMessaging(_networkManager, _conversationManager, _messageManager, _messagePager, _contentManager) {
 	        this._networkManager = _networkManager;
 	        this._conversationManager = _conversationManager;
 	        this._messageManager = _messageManager;
 	        this._messagePager = _messagePager;
+	        this._contentManager = _contentManager;
 	    }
 	    AppMessaging.prototype.createConversation = function (conversationDetails) {
 	        var _this = this;
@@ -6672,6 +6705,13 @@ var COMAPI =
 	            return _this._conversationManager.sendIsTypingOff(conversationId);
 	        });
 	    };
+	    AppMessaging.prototype.uploadContent = function (content, folder) {
+	        var _this = this;
+	        return this._networkManager.ensureSessionAndSocket()
+	            .then(function (sessionInfo) {
+	            return _this._contentManager.uploadContent(content, folder);
+	        });
+	    };
 	    return AppMessaging;
 	}());
 	AppMessaging = __decorate([
@@ -6680,7 +6720,8 @@ var COMAPI =
 	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager)),
 	    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager)),
 	    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager)),
-	    __metadata("design:paramtypes", [Object, Object, Object, Object])
+	    __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ContentManager)),
+	    __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
 	], AppMessaging);
 	exports.AppMessaging = AppMessaging;
 	//# sourceMappingURL=appMessaging.js.map
@@ -7074,6 +7115,139 @@ var COMAPI =
 	], EventMapper);
 	exports.EventMapper = EventMapper;
 	//# sourceMappingURL=eventMapper.js.map
+
+/***/ }),
+/* 76 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
+	var __param = (this && this.__param) || function (paramIndex, decorator) {
+	    return function (target, key) { decorator(target, key, paramIndex); }
+	};
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var inversify_1 = __webpack_require__(13);
+	var interfaceSymbols_1 = __webpack_require__(11);
+	var utils_1 = __webpack_require__(6);
+	var ContentManager = (function () {
+	    function ContentManager(_logger, networkManager, _comapiConfig) {
+	        this._logger = _logger;
+	        this.networkManager = networkManager;
+	        this._comapiConfig = _comapiConfig;
+	    }
+	    ContentManager.prototype.uploadContent = function (content, folder) {
+	        var _this = this;
+	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.content, {
+	            apiSpaceId: this._comapiConfig.apiSpaceId,
+	            urlBase: this._comapiConfig.urlBase,
+	        });
+	        return this.networkManager.getValidToken()
+	            .then(function (token) {
+	            return new Promise(function (resolve, reject) {
+	                var xhr = new XMLHttpRequest();
+	                xhr.open("POST", url);
+	                xhr.setRequestHeader("authorization", _this.constructAUthHeader(token));
+	                var body;
+	                if (content.file) {
+	                    throw new Error("Not implemented");
+	                }
+	                else {
+	                    xhr.setRequestHeader("Content-Type", "application/json");
+	                    body = JSON.stringify({
+	                        data: content.data,
+	                        name: content.name,
+	                        type: content.type
+	                    });
+	                }
+	                xhr.send(body);
+	                xhr.onload = function () {
+	                    var response;
+	                    try {
+	                        response = JSON.parse(xhr.responseText);
+	                        if (_this._logger) {
+	                            _this._logger.log("uploadContent() returned this object: ", response);
+	                        }
+	                    }
+	                    catch (e) {
+	                        response = xhr.responseText;
+	                        if (_this._logger) {
+	                            _this._logger.log("uploadContent returned this text: " + xhr.responseText);
+	                        }
+	                    }
+	                    if (xhr.status === 200) {
+	                        resolve(response);
+	                    }
+	                    else {
+	                        reject(response);
+	                    }
+	                };
+	                xhr.onerror = function () {
+	                    reject(xhr.responseText);
+	                };
+	                xhr.onabort = function () {
+	                    reject(xhr.responseText);
+	                };
+	                xhr.onprogress = function (evt) {
+	                    if (evt.lengthComputable) {
+	                        var percentComplete = (evt.loaded / evt.total) * 100;
+	                        console.log("onprogress: " + percentComplete + " %");
+	                    }
+	                };
+	            });
+	        });
+	    };
+	    ContentManager.prototype.constructAUthHeader = function (token) {
+	        return "Bearer " + token;
+	    };
+	    return ContentManager;
+	}());
+	ContentManager = __decorate([
+	    inversify_1.injectable(),
+	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
+	    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+	    __metadata("design:paramtypes", [Object, Object, Object])
+	], ContentManager);
+	exports.ContentManager = ContentManager;
+	//# sourceMappingURL=contentManager.js.map
+
+/***/ }),
+/* 77 */
+/***/ (function(module, exports) {
+
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var ContentData = (function () {
+	    function ContentData() {
+	    }
+	    ContentData.createFromFile = function (file) {
+	        return new ContentData().initFromFile(file);
+	    };
+	    ContentData.createFromBase64 = function (data, name, type) {
+	        return new ContentData().initFromBase64Data(data, name, type);
+	    };
+	    ContentData.prototype.initFromFile = function (file) {
+	        this.file = file;
+	        return this;
+	    };
+	    ContentData.prototype.initFromBase64Data = function (data, name, type) {
+	        this.data = data;
+	        this.name = name;
+	        this.type = type;
+	        return this;
+	    };
+	    return ContentData;
+	}());
+	exports.ContentData = ContentData;
+	//# sourceMappingURL=contentData.js.map
 
 /***/ })
 /******/ ]);

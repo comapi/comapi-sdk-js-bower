@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var FoundationRestUrls = (function () {
     function FoundationRestUrls() {
+        this.content = "{{urlBase}}/apispaces/{{apiSpaceId}}/content";
         this.conversations = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations";
         this.conversation = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}";
         this.participants = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/participants";

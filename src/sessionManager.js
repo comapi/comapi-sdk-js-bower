@@ -126,7 +126,7 @@ var SessionManager = (function () {
             platform: "javascript",
             platformVersion: browserInfo.version,
             sdkType: "native",
-            sdkVersion: "1.0.2.177"
+            sdkVersion: "1.0.2.193"
         };
         var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
             apiSpaceId: this._comapiConfig.apiSpaceId,

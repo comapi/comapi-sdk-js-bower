@@ -1,10 +1,11 @@
-import { IConversationManager, IConversationDetails, IConversationDetails2, IConversationParticipant, ConversationScope, IMessageManager, IConversationMessageEvent, IConversationMessage, ISendMessageResult, IMessageStatus, IGetMessagesResponse, INetworkManager, IMessagePager } from "./interfaces";
+import { IConversationManager, IConversationDetails, IConversationDetails2, IConversationParticipant, ConversationScope, IMessageManager, IConversationMessageEvent, IConversationMessage, ISendMessageResult, IMessageStatus, IGetMessagesResponse, INetworkManager, IMessagePager, IContentManager, IContentData } from "./interfaces";
 export declare class AppMessaging {
     private _networkManager;
     private _conversationManager;
     private _messageManager;
     private _messagePager;
-    constructor(_networkManager: INetworkManager, _conversationManager: IConversationManager, _messageManager: IMessageManager, _messagePager: IMessagePager);
+    private _contentManager;
+    constructor(_networkManager: INetworkManager, _conversationManager: IConversationManager, _messageManager: IMessageManager, _messagePager: IMessagePager, _contentManager: IContentManager);
     createConversation(conversationDetails: IConversationDetails): Promise<IConversationDetails2>;
     updateConversation(conversationDetails: IConversationDetails, eTag?: string): Promise<IConversationDetails2>;
     getConversation(conversationId: string): Promise<IConversationDetails2>;
@@ -19,4 +20,5 @@ export declare class AppMessaging {
     getMessages(conversationId: string, pageSize: number, continuationToken?: number): Promise<IGetMessagesResponse>;
     sendIsTyping(conversationId: string): Promise<boolean>;
     sendIsTypingOff(conversationId: string): Promise<boolean>;
+    uploadContent(content: IContentData, folder?: string): Promise<string>;
 }

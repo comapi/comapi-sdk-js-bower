@@ -4,7 +4,7 @@ export declare class InterfaceContainer {
     private _container;
     private _overriddenInterfaces;
     constructor();
-    initialise(): void;
+    initialise(comapiConfig?: IComapiConfig): void;
     uninitialise(): void;
     bindIndexedDBLogger(): void;
     unbindIndexedDBLogger(): void;
