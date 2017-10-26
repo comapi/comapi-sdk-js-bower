@@ -5031,7 +5031,7 @@ var COMAPI =
 	            platform: "javascript",
 	            platformVersion: browserInfo.version,
 	            sdkType: "native",
-	            sdkVersion: "1.0.3.194"
+	            sdkVersion: "1.0.3.200"
 	        };
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -7181,10 +7181,10 @@ var COMAPI =
 	                        }
 	                    }
 	                    catch (e) {
-	                        response = xhr.responseText;
 	                        if (_this._logger) {
 	                            _this._logger.log("uploadContent returned this text: " + xhr.responseText);
 	                        }
+	                        reject(xhr.responseText);
 	                    }
 	                    if (xhr.status === 200) {
 	                        resolve(response);

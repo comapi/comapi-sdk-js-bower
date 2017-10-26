@@ -173,8 +173,16 @@ export interface IContentData {
     name: string;
     type: string;
 }
+export interface IUploadContentResult {
+    folder: string;
+    id: string;
+    type: string;
+    url: string;
+    size: string;
+    name: string;
+}
 export interface IContentManager {
-    uploadContent(content: IContentData, folder?: string): Promise<string>;
+    uploadContent(content: IContentData, folder?: string): Promise<IUploadContentResult>;
 }
 export interface IProfileManager {
     getProfile(id: string): Promise<any>;
@@ -394,7 +402,7 @@ export interface IAppMessaging {
     getMessages(conversationId: string, pageSize: number, continuationToken?: number): Promise<IGetMessagesResponse>;
     sendIsTyping(conversationId: string): Promise<boolean>;
     sendIsTypingOff(conversationId: string): Promise<boolean>;
-    uploadContent(content: IContentData, folder?: string): Promise<string>;
+    uploadContent(content: IContentData, folder?: string): Promise<IUploadContentResult>;
 }
 export interface IProfile {
     getProfile(profileId: string): Promise<any>;

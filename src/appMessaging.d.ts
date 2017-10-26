@@ -1,4 +1,4 @@
-import { IConversationManager, IConversationDetails, IConversationDetails2, IConversationParticipant, ConversationScope, IMessageManager, IConversationMessageEvent, IConversationMessage, ISendMessageResult, IMessageStatus, IGetMessagesResponse, INetworkManager, IMessagePager, IContentManager, IContentData } from "./interfaces";
+import { IConversationManager, IConversationDetails, IConversationDetails2, IConversationParticipant, ConversationScope, IMessageManager, IConversationMessageEvent, IConversationMessage, ISendMessageResult, IMessageStatus, IGetMessagesResponse, INetworkManager, IMessagePager, IContentManager, IContentData, IUploadContentResult } from "./interfaces";
 export declare class AppMessaging {
     private _networkManager;
     private _conversationManager;
@@ -20,5 +20,5 @@ export declare class AppMessaging {
     getMessages(conversationId: string, pageSize: number, continuationToken?: number): Promise<IGetMessagesResponse>;
     sendIsTyping(conversationId: string): Promise<boolean>;
     sendIsTypingOff(conversationId: string): Promise<boolean>;
-    uploadContent(content: IContentData, folder?: string): Promise<string>;
+    uploadContent(content: IContentData, folder?: string): Promise<IUploadContentResult>;
 }

@@ -19,5 +19,7 @@ var inversify_config_1 = require("./inversify.config");
 exports.InterfaceContainer = inversify_config_1.InterfaceContainer;
 var interfaceSymbols_1 = require("./interfaceSymbols");
 exports.INTERFACE_SYMBOLS = interfaceSymbols_1.INTERFACE_SYMBOLS;
+var contentData_1 = require("./contentData");
+exports.ContentData = contentData_1.ContentData;
 __export(require("./interfaces"));
 //# sourceMappingURL=index.js.map

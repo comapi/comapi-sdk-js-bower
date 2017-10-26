@@ -55,10 +55,10 @@ var ContentManager = (function () {
                         }
                     }
                     catch (e) {
-                        response = xhr.responseText;
                         if (_this._logger) {
                             _this._logger.log("uploadContent returned this text: " + xhr.responseText);
                         }
+                        reject(xhr.responseText);
                     }
                     if (xhr.status === 200) {
                         resolve(response);
