@@ -35,7 +35,9 @@ var ContentManager = (function () {
                 xhr.setRequestHeader("authorization", _this.constructAUthHeader(token));
                 var body;
                 if (content.file) {
-                    throw new Error("Not implemented");
+                    var fd = new FormData();
+                    fd.append("file", content.file);
+                    body = fd;
                 }
                 else {
                     xhr.setRequestHeader("Content-Type", "application/json");

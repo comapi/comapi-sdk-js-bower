@@ -5031,7 +5031,7 @@ var COMAPI =
 	            platform: "javascript",
 	            platformVersion: browserInfo.version,
 	            sdkType: "native",
-	            sdkVersion: "1.0.3.201"
+	            sdkVersion: "1.0.3.203"
 	        };
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -7161,7 +7161,9 @@ var COMAPI =
 	                xhr.setRequestHeader("authorization", _this.constructAUthHeader(token));
 	                var body;
 	                if (content.file) {
-	                    throw new Error("Not implemented");
+	                    var fd = new FormData();
+	                    fd.append("file", content.file);
+	                    body = fd;
 	                }
 	                else {
 	                    xhr.setRequestHeader("Content-Type", "application/json");
