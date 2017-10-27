@@ -58,6 +58,7 @@ var WebSocketManager = (function () {
                             _this._logger.log("resolving connect() promise");
                             resolve(true);
                         }
+                        _this._eventManager.publishLocalEvent("WebsocketOpened", { timestamp: new Date().toISOString() });
                     };
                     _this.webSocket.onerror = function (event) {
                         _this._logger.log("websocket onerror - readystate: " + _this.readystates[_this.webSocket.readyState], event);
@@ -79,6 +80,7 @@ var WebSocketManager = (function () {
                         _this.connected = false;
                         _this.webSocket = undefined;
                         _this._logger.log("WebSocket Connection closed.");
+                        _this._eventManager.publishLocalEvent("WebsocketClosed", { timestamp: new Date().toISOString() });
                         if (_this.didConnect === false) {
                             reject({
                                 code: event.code,

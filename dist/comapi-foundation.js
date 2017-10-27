@@ -5031,7 +5031,7 @@ var COMAPI =
 	            platform: "javascript",
 	            platformVersion: browserInfo.version,
 	            sdkType: "native",
-	            sdkVersion: "1.0.3.203"
+	            sdkVersion: "1.0.3.204"
 	        };
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -5178,6 +5178,7 @@ var COMAPI =
 	                            _this._logger.log("resolving connect() promise");
 	                            resolve(true);
 	                        }
+	                        _this._eventManager.publishLocalEvent("WebsocketOpened", { timestamp: new Date().toISOString() });
 	                    };
 	                    _this.webSocket.onerror = function (event) {
 	                        _this._logger.log("websocket onerror - readystate: " + _this.readystates[_this.webSocket.readyState], event);
@@ -5199,6 +5200,7 @@ var COMAPI =
 	                        _this.connected = false;
 	                        _this.webSocket = undefined;
 	                        _this._logger.log("WebSocket Connection closed.");
+	                        _this._eventManager.publishLocalEvent("WebsocketClosed", { timestamp: new Date().toISOString() });
 	                        if (_this.didConnect === false) {
 	                            reject({
 	                                code: event.code,
