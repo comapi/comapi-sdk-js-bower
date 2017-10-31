@@ -32,21 +32,24 @@ var LocalStorageData = (function () {
         configurable: true
     });
     LocalStorageData.prototype.getString = function (key) {
-        return localStorage.getItem(this._prefix + key);
+        return Promise.resolve(localStorage.getItem(this._prefix + key));
     };
     LocalStorageData.prototype.setString = function (key, value) {
         localStorage.setItem(this._prefix + key, value);
+        return Promise.resolve(true);
     };
     LocalStorageData.prototype.getObject = function (key) {
-        var obj = null;
-        var raw = this.getString(key);
-        try {
-            obj = JSON.parse(raw);
-        }
-        catch (e) {
-            console.error("caught exception in LocalStorageData.get(" + key + "): " + e);
-        }
-        return obj;
+        return this.getString(key)
+            .then(function (raw) {
+            var obj = null;
+            try {
+                obj = JSON.parse(raw);
+            }
+            catch (e) {
+                console.error("caught exception in LocalStorageData.get(" + key + "): " + e);
+            }
+            return Promise.resolve(obj);
+        });
     };
     LocalStorageData.prototype.setObject = function (key, data) {
         var succeeded = true;
@@ -58,7 +61,7 @@ var LocalStorageData = (function () {
             console.log("caught exception in LocalStorageData.set(" + key + "): " + e);
             succeeded = false;
         }
-        return succeeded;
+        return Promise.resolve(succeeded);
     };
     LocalStorageData.prototype.remove = function (key) {
         try {
@@ -67,6 +70,7 @@ var LocalStorageData = (function () {
         catch (e) {
             console.error("caught exception in LocalStorageData.remove(" + key + "): " + e);
         }
+        return Promise.resolve(true);
     };
     return LocalStorageData;
 }());

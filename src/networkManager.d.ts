@@ -1,4 +1,4 @@
-import { ISessionManager, IWebSocketManager, ISessionInfo, ISession, INetworkManager } from "./interfaces";
+import { ISessionManager, IWebSocketManager, ISessionInfo, INetworkManager } from "./interfaces";
 export declare class NetworkManager implements INetworkManager {
     private _sessionManager;
     private _webSocketManager;
@@ -6,7 +6,6 @@ export declare class NetworkManager implements INetworkManager {
     constructor(_sessionManager: ISessionManager, _webSocketManager: IWebSocketManager);
     startSession(): Promise<ISessionInfo>;
     restartSession(): Promise<ISessionInfo>;
-    readonly session: ISession;
     endSession(): Promise<boolean>;
     getValidToken(): Promise<string>;
     ensureSessionAndSocket(): Promise<ISessionInfo>;

@@ -21,12 +21,6 @@ var SessionManager = (function () {
         this._restClient = _restClient;
         this._localStorageData = _localStorageData;
         this._comapiConfig = _comapiConfig;
-        this._deviceId = _localStorageData.getString("deviceId");
-        if (!this._deviceId) {
-            this._deviceId = utils_1.Utils.uuid();
-            _localStorageData.setString("deviceId", this._deviceId);
-        }
-        this._getSession();
     }
     Object.defineProperty(SessionManager.prototype, "sessionInfo", {
         get: function () {
@@ -35,68 +29,51 @@ var SessionManager = (function () {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(SessionManager.prototype, "expiry", {
-        get: function () {
-            return this._sessionInfo.session.expiresOn;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(SessionManager.prototype, "isActive", {
-        get: function () {
-            var result = false;
-            if (this._sessionInfo) {
-                var now = new Date();
-                var expiry = new Date(this._sessionInfo.session.expiresOn);
-                if (now < expiry) {
-                    result = true;
-                }
-                else {
-                    this._removeSession();
-                }
-            }
-            return result;
-        },
-        enumerable: true,
-        configurable: true
-    });
     SessionManager.prototype.getValidToken = function () {
-        return this.isActive
-            ? Promise.resolve(this._sessionInfo.token)
-            : this.startSession()
-                .then(function (sessionInfo) {
-                return Promise.resolve(sessionInfo.token);
-            });
+        return this.startSession()
+            .then(function (sessionInfo) {
+            return Promise.resolve(sessionInfo.token);
+        });
     };
     SessionManager.prototype.startSession = function () {
         var _this = this;
         var self = this;
         return new Promise(function (resolve, reject) {
-            if (_this.isActive) {
-                self._logger.log("startSession() found an existing session: ");
-                resolve(_this._getSession());
-            }
-            else {
-                _this._startAuth().then(function (sessionStartResponse) {
-                    var authChallengeOptions = {
-                        nonce: sessionStartResponse.nonce
-                    };
-                    self._comapiConfig.authChallenge(authChallengeOptions, function (jwt) {
-                        if (jwt) {
-                            self._createAuthenticatedSession(jwt, sessionStartResponse.authenticationId, {})
-                                .then(function (sessionInfo) {
-                                self._setSession(sessionInfo);
-                                resolve(sessionInfo);
-                            }).catch(function (error) {
-                                reject(error);
-                            });
-                        }
-                        else {
-                            reject({ message: "Failed to get a JWT from authChallenge", statusCode: 401 });
-                        }
-                    });
-                }).catch(function (error) { return reject(error); });
-            }
+            return _this._getCachedSession()
+                .then(function (cachedSessionInfo) {
+                if (cachedSessionInfo) {
+                    self._logger.log("startSession() found an existing session: ");
+                    resolve(cachedSessionInfo);
+                }
+                else {
+                    _this._startAuth().then(function (sessionStartResponse) {
+                        var authChallengeOptions = {
+                            nonce: sessionStartResponse.nonce
+                        };
+                        self._comapiConfig.authChallenge(authChallengeOptions, function (jwt) {
+                            if (jwt) {
+                                self._createAuthenticatedSession(jwt, sessionStartResponse.authenticationId, {})
+                                    .then(function (sessionInfo) {
+                                    return Promise.all([sessionInfo, self._setSession(sessionInfo)]);
+                                })
+                                    .then(function (_a) {
+                                    var sessionInfo = _a[0], result = _a[1];
+                                    if (!result) {
+                                        console.error("_setSession() failed");
+                                    }
+                                    resolve(sessionInfo);
+                                })
+                                    .catch(function (error) {
+                                    reject(error);
+                                });
+                            }
+                            else {
+                                reject({ message: "Failed to get a JWT from authChallenge", statusCode: 401 });
+                            }
+                        });
+                    }).catch(function (error) { return reject(error); });
+                }
+            });
         });
     };
     SessionManager.prototype.endSession = function () {
@@ -118,21 +95,25 @@ var SessionManager = (function () {
         });
     };
     SessionManager.prototype._createAuthenticatedSession = function (jwt, authenticationId, deviceInfo) {
-        var browserInfo = utils_1.Utils.getBrowserInfo();
-        var data = {
-            authenticationId: authenticationId,
-            authenticationToken: jwt,
-            deviceId: this._deviceId,
-            platform: "javascript",
-            platformVersion: browserInfo.version,
-            sdkType: "native",
-            sdkVersion: "1.0.3.204"
-        };
+        var _this = this;
         var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
             apiSpaceId: this._comapiConfig.apiSpaceId,
             urlBase: this._comapiConfig.urlBase,
         });
-        return this._restClient.post(url, {}, data)
+        return this.getDeviceId()
+            .then(function () {
+            var browserInfo = utils_1.Utils.getBrowserInfo();
+            var data = {
+                authenticationId: authenticationId,
+                authenticationToken: jwt,
+                deviceId: _this._deviceId,
+                platform: "javascript",
+                platformVersion: browserInfo.version,
+                sdkType: "native",
+                sdkVersion: "1.0.3.229"
+            };
+            return _this._restClient.post(url, {}, data);
+        })
             .then(function (result) {
             return Promise.resolve(result.response);
         });
@@ -162,39 +143,95 @@ var SessionManager = (function () {
             return Promise.resolve(true);
         });
     };
-    SessionManager.prototype._getSession = function () {
-        var sessionInfo = this._localStorageData.getObject("session");
-        if (sessionInfo) {
-            if (sessionInfo.token) {
-                var bits = sessionInfo.token.split(".");
-                if (bits.length === 3) {
-                    var payload = JSON.parse(atob(bits[1]));
-                    if (payload.apiSpaceId === this._comapiConfig.apiSpaceId) {
-                        this._sessionInfo = sessionInfo;
+    SessionManager.prototype._getSessionInfo = function () {
+        if (this._sessionInfo) {
+            return Promise.resolve(this._sessionInfo);
+        }
+        else {
+            return this._localStorageData.getObject("session");
+        }
+    };
+    SessionManager.prototype._getCachedSession = function () {
+        var _this = this;
+        return this._getSessionInfo()
+            .then(function (sessionInfo) {
+            if (sessionInfo) {
+                if (!_this.hasExpired(sessionInfo.session.expiresOn)) {
+                    if (sessionInfo.token) {
+                        var bits = sessionInfo.token.split(".");
+                        if (bits.length === 3) {
+                            var payload = JSON.parse(atob(bits[1]));
+                            if (payload.apiSpaceId === _this._comapiConfig.apiSpaceId) {
+                                _this._sessionInfo = sessionInfo;
+                            }
+                            else {
+                                _this._sessionInfo = null;
+                            }
+                        }
                     }
                 }
+                else {
+                    _this._sessionInfo = null;
+                }
+                if (!_this._sessionInfo) {
+                    _this._localStorageData.remove("session")
+                        .then(function () {
+                        return null;
+                    });
+                }
+                else {
+                    return _this._sessionInfo;
+                }
             }
-            if (!this._sessionInfo) {
-                this._localStorageData.remove("session");
+            else {
+                return null;
             }
-        }
-        return this._sessionInfo;
+        });
     };
     SessionManager.prototype._setSession = function (sessionInfo) {
-        var expiry = new Date(sessionInfo.session.expiresOn);
-        var now = new Date();
-        if (expiry < now) {
+        if (this.hasExpired(sessionInfo.session.expiresOn)) {
             this._logger.error("Was given an expired token ;-(");
         }
         this._sessionInfo = sessionInfo;
-        this._localStorageData.setObject("session", sessionInfo);
+        return this._localStorageData.setObject("session", sessionInfo);
     };
     SessionManager.prototype._removeSession = function () {
-        this._localStorageData.remove("session");
-        this._sessionInfo = undefined;
+        var _this = this;
+        return this._localStorageData.remove("session")
+            .then(function (result) {
+            _this._sessionInfo = undefined;
+            return result;
+        });
     };
     SessionManager.prototype.getAuthHeader = function () {
         return "Bearer " + this.sessionInfo.token;
+    };
+    SessionManager.prototype.getDeviceId = function () {
+        var _this = this;
+        if (this._deviceId) {
+            return Promise.resolve(this._deviceId);
+        }
+        else {
+            return this._localStorageData.getString("deviceId")
+                .then(function (value) {
+                if (value === null) {
+                    _this._deviceId = utils_1.Utils.uuid();
+                    return _this._localStorageData.setString("deviceId", _this._deviceId)
+                        .then(function (result) {
+                        return Promise.resolve(_this._deviceId);
+                    });
+                }
+                else {
+                    _this._deviceId = value;
+                    return Promise.resolve(_this._deviceId);
+                }
+            });
+        }
+    };
+    SessionManager.prototype.hasExpired = function (expiresOn) {
+        var now = new Date();
+        var expiry = new Date(expiresOn);
+        return now > expiry;
     };
     return SessionManager;
 }());

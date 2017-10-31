@@ -5,11 +5,11 @@ export interface IEventManager {
     publishLocalEvent(eventType: string, data: any): any;
 }
 export interface ILocalStorageData {
-    getString(key: string): string;
-    setString(key: string, data: string): any;
-    getObject(key: string): Object;
-    setObject(key: string, data: Object): boolean;
-    remove(key: string): any;
+    getString(key: string): Promise<string>;
+    setString(key: string, data: string): Promise<boolean>;
+    getObject(key: string): Promise<Object>;
+    setObject(key: string, data: Object): Promise<boolean>;
+    remove(key: string): Promise<boolean>;
 }
 export declare enum LogLevels {
     None = 0,
@@ -104,13 +104,11 @@ export declare enum Environment {
     production = 1,
 }
 export interface ISessionManager {
-    sessionInfo: ISessionInfo;
     getValidToken(): Promise<string>;
     startSession(): Promise<ISessionInfo>;
     endSession(): Promise<boolean>;
 }
 export interface INetworkManager {
-    session: ISession;
     getValidToken(): Promise<string>;
     startSession(): Promise<ISessionInfo>;
     restartSession(): Promise<ISessionInfo>;
@@ -444,7 +442,6 @@ export interface IFoundation {
     services: IServices;
     device: IDevice;
     channels: IChannels;
-    session: ISession;
     logger: ILogger;
     startSession(): Promise<ISession>;
     endSession(): Promise<boolean>;

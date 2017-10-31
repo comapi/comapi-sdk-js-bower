@@ -68,7 +68,11 @@ var Profile = (function () {
         if (useEtag === void 0) { useEtag = true; }
         return this._networkManager.ensureSessionAndSocket()
             .then(function (sessionInfo) {
-            return _this._profileManager.updateProfile(sessionInfo.session.profileId, profile, useEtag ? _this._localStorage.getString("MyProfileETag") : undefined);
+            return Promise.all([sessionInfo, _this.getMyProfileETag(useEtag)]);
+        })
+            .then(function (_a) {
+            var sessionInfo = _a[0], eTag = _a[1];
+            return _this._profileManager.updateProfile(sessionInfo.session.profileId, profile, eTag);
         })
             .then(function (result) {
             if (useEtag) {
@@ -81,7 +85,11 @@ var Profile = (function () {
         var _this = this;
         return this._networkManager.ensureSessionAndSocket()
             .then(function (sessionInfo) {
-            return _this._profileManager.patchProfile(sessionInfo.session.profileId, profile, useEtag ? _this._localStorage.getString("MyProfileETag") : undefined);
+            return Promise.all([sessionInfo, _this.getMyProfileETag(useEtag)]);
+        })
+            .then(function (_a) {
+            var sessionInfo = _a[0], eTag = _a[1];
+            return _this._profileManager.patchProfile(sessionInfo.session.profileId, profile, eTag);
         })
             .then(function (result) {
             if (useEtag) {
@@ -89,6 +97,14 @@ var Profile = (function () {
             }
             return Promise.resolve(result.response);
         });
+    };
+    Profile.prototype.getMyProfileETag = function (useEtag) {
+        if (useEtag) {
+            return this._localStorage.getString("MyProfileETag");
+        }
+        else {
+            return Promise.resolve(undefined);
+        }
     };
     return Profile;
 }());

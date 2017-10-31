@@ -101,13 +101,6 @@ var Foundation = (function () {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Foundation.prototype, "session", {
-        get: function () {
-            return this._networkManager.session;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(Foundation.prototype, "logger", {
         get: function () {
             return this._logger;

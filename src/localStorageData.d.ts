@@ -4,9 +4,9 @@ export declare class LocalStorageData implements ILocalStorageData {
     private _prefix;
     constructor(_comapiConfig: IComapiConfig);
     prefix: string;
-    getString(key: string): string;
-    setString(key: string, value: string): void;
-    getObject(key: string): Object;
-    setObject(key: string, data: Object): boolean;
-    remove(key: string): void;
+    getString(key: string): Promise<string>;
+    setString(key: string, value: string): Promise<boolean>;
+    getObject(key: string): Promise<Object>;
+    setObject(key: string, data: Object): Promise<boolean>;
+    remove(key: string): Promise<boolean>;
 }

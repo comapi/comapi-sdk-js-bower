@@ -1477,13 +1477,6 @@ var COMAPI =
 	        enumerable: true,
 	        configurable: true
 	    });
-	    Object.defineProperty(Foundation.prototype, "session", {
-	        get: function () {
-	            return this._networkManager.session;
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
 	    Object.defineProperty(Foundation.prototype, "logger", {
 	        get: function () {
 	            return this._logger;
@@ -4122,21 +4115,24 @@ var COMAPI =
 	        configurable: true
 	    });
 	    LocalStorageData.prototype.getString = function (key) {
-	        return localStorage.getItem(this._prefix + key);
+	        return Promise.resolve(localStorage.getItem(this._prefix + key));
 	    };
 	    LocalStorageData.prototype.setString = function (key, value) {
 	        localStorage.setItem(this._prefix + key, value);
+	        return Promise.resolve(true);
 	    };
 	    LocalStorageData.prototype.getObject = function (key) {
-	        var obj = null;
-	        var raw = this.getString(key);
-	        try {
-	            obj = JSON.parse(raw);
-	        }
-	        catch (e) {
-	            console.error("caught exception in LocalStorageData.get(" + key + "): " + e);
-	        }
-	        return obj;
+	        return this.getString(key)
+	            .then(function (raw) {
+	            var obj = null;
+	            try {
+	                obj = JSON.parse(raw);
+	            }
+	            catch (e) {
+	                console.error("caught exception in LocalStorageData.get(" + key + "): " + e);
+	            }
+	            return Promise.resolve(obj);
+	        });
 	    };
 	    LocalStorageData.prototype.setObject = function (key, data) {
 	        var succeeded = true;
@@ -4148,7 +4144,7 @@ var COMAPI =
 	            console.log("caught exception in LocalStorageData.set(" + key + "): " + e);
 	            succeeded = false;
 	        }
-	        return succeeded;
+	        return Promise.resolve(succeeded);
 	    };
 	    LocalStorageData.prototype.remove = function (key) {
 	        try {
@@ -4157,6 +4153,7 @@ var COMAPI =
 	        catch (e) {
 	            console.error("caught exception in LocalStorageData.remove(" + key + "): " + e);
 	        }
+	        return Promise.resolve(true);
 	    };
 	    return LocalStorageData;
 	}());
@@ -4273,18 +4270,18 @@ var COMAPI =
 	        var _this = this;
 	        return new Promise(function (resolve, reject) {
 	            if (level <= _this._logLevel) {
-	                var formattedMessage = "[" + _this._uid + "] : " + new Date().toJSON() + " ["
+	                var formattedMessage_1 = "[" + _this._uid + "] : " + new Date().toJSON() + " ["
 	                    + _this._stringForLogLevel(level) + "] : " + message + (data !== undefined ? (" : "
 	                    + JSON.stringify(data)) : "") + "\r\n";
 	                switch (level) {
 	                    case interfaces_1.LogLevels.Error:
-	                        console.error(formattedMessage);
+	                        console.error(formattedMessage_1);
 	                        break;
 	                    case interfaces_1.LogLevels.Warn:
-	                        console.warn(formattedMessage);
+	                        console.warn(formattedMessage_1);
 	                        break;
 	                    case interfaces_1.LogLevels.Debug:
-	                        console.log(formattedMessage);
+	                        console.log(formattedMessage_1);
 	                        break;
 	                    default:
 	                        break;
@@ -4298,23 +4295,28 @@ var COMAPI =
 	                    timestamp: now.toISOString(),
 	                };
 	                if (_this._indexedDB) {
-	                    _this._indexedDB.addRecord(logEvent).then(function (index) {
+	                    _this._indexedDB.addRecord(logEvent)
+	                        .then(function (index) {
 	                        resolve(true);
 	                    });
 	                }
 	                else if (_this._localStorageData) {
-	                    var log = _this._localStorageData.getString(_this._localStorageKey);
-	                    if (log !== null) {
-	                        log += formattedMessage;
-	                    }
-	                    else {
-	                        log = formattedMessage;
-	                    }
-	                    if (log.length > _this._maxLocalStorageLogSize) {
-	                        log = log.substring(formattedMessage.length);
-	                    }
-	                    _this._localStorageData.setString(_this._localStorageKey, log);
-	                    resolve(true);
+	                    _this._localStorageData.getString(_this._localStorageKey)
+	                        .then(function (log) {
+	                        if (log !== null) {
+	                            log += formattedMessage_1;
+	                        }
+	                        else {
+	                            log = formattedMessage_1;
+	                        }
+	                        if (log.length > _this._maxLocalStorageLogSize) {
+	                            log = log.substring(formattedMessage_1.length);
+	                        }
+	                        _this._localStorageData.setString(_this._localStorageKey, log)
+	                            .then(function () {
+	                            resolve(true);
+	                        });
+	                    });
 	                }
 	                else {
 	                    resolve(true);
@@ -4926,12 +4928,6 @@ var COMAPI =
 	        this._restClient = _restClient;
 	        this._localStorageData = _localStorageData;
 	        this._comapiConfig = _comapiConfig;
-	        this._deviceId = _localStorageData.getString("deviceId");
-	        if (!this._deviceId) {
-	            this._deviceId = utils_1.Utils.uuid();
-	            _localStorageData.setString("deviceId", this._deviceId);
-	        }
-	        this._getSession();
 	    }
 	    Object.defineProperty(SessionManager.prototype, "sessionInfo", {
 	        get: function () {
@@ -4940,68 +4936,51 @@ var COMAPI =
 	        enumerable: true,
 	        configurable: true
 	    });
-	    Object.defineProperty(SessionManager.prototype, "expiry", {
-	        get: function () {
-	            return this._sessionInfo.session.expiresOn;
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(SessionManager.prototype, "isActive", {
-	        get: function () {
-	            var result = false;
-	            if (this._sessionInfo) {
-	                var now = new Date();
-	                var expiry = new Date(this._sessionInfo.session.expiresOn);
-	                if (now < expiry) {
-	                    result = true;
-	                }
-	                else {
-	                    this._removeSession();
-	                }
-	            }
-	            return result;
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
 	    SessionManager.prototype.getValidToken = function () {
-	        return this.isActive
-	            ? Promise.resolve(this._sessionInfo.token)
-	            : this.startSession()
-	                .then(function (sessionInfo) {
-	                return Promise.resolve(sessionInfo.token);
-	            });
+	        return this.startSession()
+	            .then(function (sessionInfo) {
+	            return Promise.resolve(sessionInfo.token);
+	        });
 	    };
 	    SessionManager.prototype.startSession = function () {
 	        var _this = this;
 	        var self = this;
 	        return new Promise(function (resolve, reject) {
-	            if (_this.isActive) {
-	                self._logger.log("startSession() found an existing session: ");
-	                resolve(_this._getSession());
-	            }
-	            else {
-	                _this._startAuth().then(function (sessionStartResponse) {
-	                    var authChallengeOptions = {
-	                        nonce: sessionStartResponse.nonce
-	                    };
-	                    self._comapiConfig.authChallenge(authChallengeOptions, function (jwt) {
-	                        if (jwt) {
-	                            self._createAuthenticatedSession(jwt, sessionStartResponse.authenticationId, {})
-	                                .then(function (sessionInfo) {
-	                                self._setSession(sessionInfo);
-	                                resolve(sessionInfo);
-	                            }).catch(function (error) {
-	                                reject(error);
-	                            });
-	                        }
-	                        else {
-	                            reject({ message: "Failed to get a JWT from authChallenge", statusCode: 401 });
-	                        }
-	                    });
-	                }).catch(function (error) { return reject(error); });
-	            }
+	            return _this._getCachedSession()
+	                .then(function (cachedSessionInfo) {
+	                if (cachedSessionInfo) {
+	                    self._logger.log("startSession() found an existing session: ");
+	                    resolve(cachedSessionInfo);
+	                }
+	                else {
+	                    _this._startAuth().then(function (sessionStartResponse) {
+	                        var authChallengeOptions = {
+	                            nonce: sessionStartResponse.nonce
+	                        };
+	                        self._comapiConfig.authChallenge(authChallengeOptions, function (jwt) {
+	                            if (jwt) {
+	                                self._createAuthenticatedSession(jwt, sessionStartResponse.authenticationId, {})
+	                                    .then(function (sessionInfo) {
+	                                    return Promise.all([sessionInfo, self._setSession(sessionInfo)]);
+	                                })
+	                                    .then(function (_a) {
+	                                    var sessionInfo = _a[0], result = _a[1];
+	                                    if (!result) {
+	                                        console.error("_setSession() failed");
+	                                    }
+	                                    resolve(sessionInfo);
+	                                })
+	                                    .catch(function (error) {
+	                                    reject(error);
+	                                });
+	                            }
+	                            else {
+	                                reject({ message: "Failed to get a JWT from authChallenge", statusCode: 401 });
+	                            }
+	                        });
+	                    }).catch(function (error) { return reject(error); });
+	                }
+	            });
 	        });
 	    };
 	    SessionManager.prototype.endSession = function () {
@@ -5023,21 +5002,25 @@ var COMAPI =
 	        });
 	    };
 	    SessionManager.prototype._createAuthenticatedSession = function (jwt, authenticationId, deviceInfo) {
-	        var browserInfo = utils_1.Utils.getBrowserInfo();
-	        var data = {
-	            authenticationId: authenticationId,
-	            authenticationToken: jwt,
-	            deviceId: this._deviceId,
-	            platform: "javascript",
-	            platformVersion: browserInfo.version,
-	            sdkType: "native",
-	            sdkVersion: "1.0.3.204"
-	        };
+	        var _this = this;
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
 	            urlBase: this._comapiConfig.urlBase,
 	        });
-	        return this._restClient.post(url, {}, data)
+	        return this.getDeviceId()
+	            .then(function () {
+	            var browserInfo = utils_1.Utils.getBrowserInfo();
+	            var data = {
+	                authenticationId: authenticationId,
+	                authenticationToken: jwt,
+	                deviceId: _this._deviceId,
+	                platform: "javascript",
+	                platformVersion: browserInfo.version,
+	                sdkType: "native",
+	                sdkVersion: "1.0.3.229"
+	            };
+	            return _this._restClient.post(url, {}, data);
+	        })
 	            .then(function (result) {
 	            return Promise.resolve(result.response);
 	        });
@@ -5067,39 +5050,95 @@ var COMAPI =
 	            return Promise.resolve(true);
 	        });
 	    };
-	    SessionManager.prototype._getSession = function () {
-	        var sessionInfo = this._localStorageData.getObject("session");
-	        if (sessionInfo) {
-	            if (sessionInfo.token) {
-	                var bits = sessionInfo.token.split(".");
-	                if (bits.length === 3) {
-	                    var payload = JSON.parse(atob(bits[1]));
-	                    if (payload.apiSpaceId === this._comapiConfig.apiSpaceId) {
-	                        this._sessionInfo = sessionInfo;
+	    SessionManager.prototype._getSessionInfo = function () {
+	        if (this._sessionInfo) {
+	            return Promise.resolve(this._sessionInfo);
+	        }
+	        else {
+	            return this._localStorageData.getObject("session");
+	        }
+	    };
+	    SessionManager.prototype._getCachedSession = function () {
+	        var _this = this;
+	        return this._getSessionInfo()
+	            .then(function (sessionInfo) {
+	            if (sessionInfo) {
+	                if (!_this.hasExpired(sessionInfo.session.expiresOn)) {
+	                    if (sessionInfo.token) {
+	                        var bits = sessionInfo.token.split(".");
+	                        if (bits.length === 3) {
+	                            var payload = JSON.parse(atob(bits[1]));
+	                            if (payload.apiSpaceId === _this._comapiConfig.apiSpaceId) {
+	                                _this._sessionInfo = sessionInfo;
+	                            }
+	                            else {
+	                                _this._sessionInfo = null;
+	                            }
+	                        }
 	                    }
 	                }
+	                else {
+	                    _this._sessionInfo = null;
+	                }
+	                if (!_this._sessionInfo) {
+	                    _this._localStorageData.remove("session")
+	                        .then(function () {
+	                        return null;
+	                    });
+	                }
+	                else {
+	                    return _this._sessionInfo;
+	                }
 	            }
-	            if (!this._sessionInfo) {
-	                this._localStorageData.remove("session");
+	            else {
+	                return null;
 	            }
-	        }
-	        return this._sessionInfo;
+	        });
 	    };
 	    SessionManager.prototype._setSession = function (sessionInfo) {
-	        var expiry = new Date(sessionInfo.session.expiresOn);
-	        var now = new Date();
-	        if (expiry < now) {
+	        if (this.hasExpired(sessionInfo.session.expiresOn)) {
 	            this._logger.error("Was given an expired token ;-(");
 	        }
 	        this._sessionInfo = sessionInfo;
-	        this._localStorageData.setObject("session", sessionInfo);
+	        return this._localStorageData.setObject("session", sessionInfo);
 	    };
 	    SessionManager.prototype._removeSession = function () {
-	        this._localStorageData.remove("session");
-	        this._sessionInfo = undefined;
+	        var _this = this;
+	        return this._localStorageData.remove("session")
+	            .then(function (result) {
+	            _this._sessionInfo = undefined;
+	            return result;
+	        });
 	    };
 	    SessionManager.prototype.getAuthHeader = function () {
 	        return "Bearer " + this.sessionInfo.token;
+	    };
+	    SessionManager.prototype.getDeviceId = function () {
+	        var _this = this;
+	        if (this._deviceId) {
+	            return Promise.resolve(this._deviceId);
+	        }
+	        else {
+	            return this._localStorageData.getString("deviceId")
+	                .then(function (value) {
+	                if (value === null) {
+	                    _this._deviceId = utils_1.Utils.uuid();
+	                    return _this._localStorageData.setString("deviceId", _this._deviceId)
+	                        .then(function (result) {
+	                        return Promise.resolve(_this._deviceId);
+	                    });
+	                }
+	                else {
+	                    _this._deviceId = value;
+	                    return Promise.resolve(_this._deviceId);
+	                }
+	            });
+	        }
+	    };
+	    SessionManager.prototype.hasExpired = function (expiresOn) {
+	        var now = new Date();
+	        var expiry = new Date(expiresOn);
+	        return now > expiry;
 	    };
 	    return SessionManager;
 	}());
@@ -5413,10 +5452,14 @@ var COMAPI =
 	        var _this = this;
 	        return this._sessionManager.startSession()
 	            .then(function (sessionInfo) {
-	            return _this._webSocketManager.connect();
+	            return Promise.all([sessionInfo, _this._webSocketManager.connect()]);
 	        })
-	            .then(function (connected) {
-	            return _this._sessionManager.sessionInfo;
+	            .then(function (_a) {
+	            var sessionInfo = _a[0], connected = _a[1];
+	            if (!connected) {
+	                console.error("Failed to connect web socket");
+	            }
+	            return sessionInfo;
 	        });
 	    };
 	    NetworkManager.prototype.restartSession = function () {
@@ -5426,19 +5469,16 @@ var COMAPI =
 	            return _this._sessionManager.startSession();
 	        })
 	            .then(function (sessionInfo) {
-	            return _this._webSocketManager.connect();
+	            return Promise.all([sessionInfo, _this._webSocketManager.connect()]);
 	        })
-	            .then(function (connected) {
-	            return _this._sessionManager.sessionInfo;
+	            .then(function (_a) {
+	            var sessionInfo = _a[0], connected = _a[1];
+	            if (!connected) {
+	                console.error("Failed to connect web socket");
+	            }
+	            return sessionInfo;
 	        });
 	    };
-	    Object.defineProperty(NetworkManager.prototype, "session", {
-	        get: function () {
-	            return this._sessionManager.sessionInfo ? this._sessionManager.sessionInfo.session : null;
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
 	    NetworkManager.prototype.endSession = function () {
 	        var _this = this;
 	        return this._webSocketManager.disconnect()
@@ -5454,15 +5494,19 @@ var COMAPI =
 	        return this._mutex.runExclusive(function () {
 	            return _this.ensureSession()
 	                .then(function (sessionInfo) {
-	                return _this.ensureSocket();
+	                return Promise.all([sessionInfo, _this.ensureSocket()]);
 	            })
-	                .then(function (connected) {
-	                return _this._sessionManager.sessionInfo;
+	                .then(function (_a) {
+	                var sessionInfo = _a[0], connected = _a[1];
+	                if (!connected) {
+	                    console.error("Failed to connect web socket");
+	                }
+	                return sessionInfo;
 	            });
 	        });
 	    };
 	    NetworkManager.prototype.ensureSession = function () {
-	        return this._sessionManager.sessionInfo ? Promise.resolve(this._sessionManager.sessionInfo) : this._sessionManager.startSession();
+	        return this._sessionManager.startSession();
 	    };
 	    NetworkManager.prototype.ensureSocket = function () {
 	        return this._webSocketManager.hasSocket() ? Promise.resolve(true) : this._webSocketManager.connect();
@@ -6806,7 +6850,11 @@ var COMAPI =
 	        if (useEtag === void 0) { useEtag = true; }
 	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
-	            return _this._profileManager.updateProfile(sessionInfo.session.profileId, profile, useEtag ? _this._localStorage.getString("MyProfileETag") : undefined);
+	            return Promise.all([sessionInfo, _this.getMyProfileETag(useEtag)]);
+	        })
+	            .then(function (_a) {
+	            var sessionInfo = _a[0], eTag = _a[1];
+	            return _this._profileManager.updateProfile(sessionInfo.session.profileId, profile, eTag);
 	        })
 	            .then(function (result) {
 	            if (useEtag) {
@@ -6819,7 +6867,11 @@ var COMAPI =
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
 	            .then(function (sessionInfo) {
-	            return _this._profileManager.patchProfile(sessionInfo.session.profileId, profile, useEtag ? _this._localStorage.getString("MyProfileETag") : undefined);
+	            return Promise.all([sessionInfo, _this.getMyProfileETag(useEtag)]);
+	        })
+	            .then(function (_a) {
+	            var sessionInfo = _a[0], eTag = _a[1];
+	            return _this._profileManager.patchProfile(sessionInfo.session.profileId, profile, eTag);
 	        })
 	            .then(function (result) {
 	            if (useEtag) {
@@ -6827,6 +6879,14 @@ var COMAPI =
 	            }
 	            return Promise.resolve(result.response);
 	        });
+	    };
+	    Profile.prototype.getMyProfileETag = function (useEtag) {
+	        if (useEtag) {
+	            return this._localStorage.getString("MyProfileETag");
+	        }
+	        else {
+	            return Promise.resolve(undefined);
+	        }
 	    };
 	    return Profile;
 	}());

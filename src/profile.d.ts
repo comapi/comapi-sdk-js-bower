@@ -11,4 +11,5 @@ export declare class Profile implements IProfile {
     getMyProfile(useEtag?: boolean): Promise<any>;
     updateMyProfile(profile: any, useEtag?: boolean): Promise<any>;
     patchMyProfile(profile: any, useEtag: boolean): Promise<any>;
+    private getMyProfileETag(useEtag);
 }

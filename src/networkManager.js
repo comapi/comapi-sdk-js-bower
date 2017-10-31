@@ -25,10 +25,14 @@ var NetworkManager = (function () {
         var _this = this;
         return this._sessionManager.startSession()
             .then(function (sessionInfo) {
-            return _this._webSocketManager.connect();
+            return Promise.all([sessionInfo, _this._webSocketManager.connect()]);
         })
-            .then(function (connected) {
-            return _this._sessionManager.sessionInfo;
+            .then(function (_a) {
+            var sessionInfo = _a[0], connected = _a[1];
+            if (!connected) {
+                console.error("Failed to connect web socket");
+            }
+            return sessionInfo;
         });
     };
     NetworkManager.prototype.restartSession = function () {
@@ -38,19 +42,16 @@ var NetworkManager = (function () {
             return _this._sessionManager.startSession();
         })
             .then(function (sessionInfo) {
-            return _this._webSocketManager.connect();
+            return Promise.all([sessionInfo, _this._webSocketManager.connect()]);
         })
-            .then(function (connected) {
-            return _this._sessionManager.sessionInfo;
+            .then(function (_a) {
+            var sessionInfo = _a[0], connected = _a[1];
+            if (!connected) {
+                console.error("Failed to connect web socket");
+            }
+            return sessionInfo;
         });
     };
-    Object.defineProperty(NetworkManager.prototype, "session", {
-        get: function () {
-            return this._sessionManager.sessionInfo ? this._sessionManager.sessionInfo.session : null;
-        },
-        enumerable: true,
-        configurable: true
-    });
     NetworkManager.prototype.endSession = function () {
         var _this = this;
         return this._webSocketManager.disconnect()
@@ -66,15 +67,19 @@ var NetworkManager = (function () {
         return this._mutex.runExclusive(function () {
             return _this.ensureSession()
                 .then(function (sessionInfo) {
-                return _this.ensureSocket();
+                return Promise.all([sessionInfo, _this.ensureSocket()]);
             })
-                .then(function (connected) {
-                return _this._sessionManager.sessionInfo;
+                .then(function (_a) {
+                var sessionInfo = _a[0], connected = _a[1];
+                if (!connected) {
+                    console.error("Failed to connect web socket");
+                }
+                return sessionInfo;
             });
         });
     };
     NetworkManager.prototype.ensureSession = function () {
-        return this._sessionManager.sessionInfo ? Promise.resolve(this._sessionManager.sessionInfo) : this._sessionManager.startSession();
+        return this._sessionManager.startSession();
     };
     NetworkManager.prototype.ensureSocket = function () {
         return this._webSocketManager.hasSocket() ? Promise.resolve(true) : this._webSocketManager.connect();
