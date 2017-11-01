@@ -1,7 +1,8 @@
 import { IOrphanedEventManager, IConversationMessageEvent, ILocalStorageData } from "./interfaces";
 export declare class LocalStorageOrphanedEventManager implements IOrphanedEventManager {
     private _localStorage;
-    private _orphanedEevnts;
+    private _initialised;
+    private _orphanedEvents;
     constructor(_localStorage: ILocalStorageData);
     clearAll(): Promise<boolean>;
     clear(conversationId: string): Promise<boolean>;
@@ -10,4 +11,6 @@ export declare class LocalStorageOrphanedEventManager implements IOrphanedEventM
     addOrphanedEvent(event: IConversationMessageEvent): Promise<boolean>;
     removeOrphanedEvent(event: IConversationMessageEvent): Promise<boolean>;
     getOrphanedEvents(conversationId: string): Promise<IConversationMessageEvent[]>;
+    private ensureInitialised();
+    private initialise();
 }
