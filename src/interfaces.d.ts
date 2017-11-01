@@ -445,6 +445,7 @@ export interface IFoundation {
     services: IServices;
     device: IDevice;
     channels: IChannels;
+    session: ISession;
     logger: ILogger;
     startSession(): Promise<ISession>;
     endSession(): Promise<boolean>;

@@ -127,7 +127,7 @@ var SessionManager = (function () {
                 platform: "javascript",
                 platformVersion: browserInfo.version,
                 sdkType: "native",
-                sdkVersion: "1.0.3.237"
+                sdkVersion: "1.0.3.239"
             };
             return _this._restClient.post(url, {}, data);
         })
