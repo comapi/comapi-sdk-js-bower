@@ -1445,7 +1445,11 @@ var COMAPI =
 	        if (doSingleton) {
 	            Foundation._foundation = foundation;
 	        }
-	        return Promise.resolve(foundation);
+	        var sessionManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager);
+	        return sessionManager.initialise()
+	            .then(function (result) {
+	            return Promise.resolve(foundation);
+	        });
 	    };
 	    Foundation.prototype.startSession = function () {
 	        return this._networkManager.startSession()
@@ -1473,6 +1477,13 @@ var COMAPI =
 	    Object.defineProperty(Foundation.prototype, "channels", {
 	        get: function () {
 	            return this._channels;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(Foundation.prototype, "session", {
+	        get: function () {
+	            return this._networkManager.session;
 	        },
 	        enumerable: true,
 	        configurable: true
@@ -4929,6 +4940,27 @@ var COMAPI =
 	        this._localStorageData = _localStorageData;
 	        this._comapiConfig = _comapiConfig;
 	    }
+	    SessionManager.prototype.initialise = function () {
+	        var _this = this;
+	        return this._localStorageData.getObject("session")
+	            .then(function (sessionInfo) {
+	            if (sessionInfo) {
+	                if (_this.isSessionValid(sessionInfo)) {
+	                    _this._sessionInfo = sessionInfo;
+	                    return true;
+	                }
+	                else {
+	                    return _this._localStorageData.remove("session")
+	                        .then(function () {
+	                        return false;
+	                    });
+	                }
+	            }
+	            else {
+	                return false;
+	            }
+	        });
+	    };
 	    Object.defineProperty(SessionManager.prototype, "sessionInfo", {
 	        get: function () {
 	            return this._sessionInfo;
@@ -4946,41 +4978,37 @@ var COMAPI =
 	        var _this = this;
 	        var self = this;
 	        return new Promise(function (resolve, reject) {
-	            return _this._getCachedSession()
-	                .then(function (cachedSessionInfo) {
-	                if (cachedSessionInfo) {
-	                    self._logger.log("startSession() found an existing session: ");
-	                    resolve(cachedSessionInfo);
-	                }
-	                else {
-	                    _this._startAuth().then(function (sessionStartResponse) {
-	                        var authChallengeOptions = {
-	                            nonce: sessionStartResponse.nonce
-	                        };
-	                        self._comapiConfig.authChallenge(authChallengeOptions, function (jwt) {
-	                            if (jwt) {
-	                                self._createAuthenticatedSession(jwt, sessionStartResponse.authenticationId, {})
-	                                    .then(function (sessionInfo) {
-	                                    return Promise.all([sessionInfo, self._setSession(sessionInfo)]);
-	                                })
-	                                    .then(function (_a) {
-	                                    var sessionInfo = _a[0], result = _a[1];
-	                                    if (!result) {
-	                                        console.error("_setSession() failed");
-	                                    }
-	                                    resolve(sessionInfo);
-	                                })
-	                                    .catch(function (error) {
-	                                    reject(error);
-	                                });
-	                            }
-	                            else {
-	                                reject({ message: "Failed to get a JWT from authChallenge", statusCode: 401 });
-	                            }
-	                        });
-	                    }).catch(function (error) { return reject(error); });
-	                }
-	            });
+	            if (_this._sessionInfo && _this.isSessionValid(_this._sessionInfo)) {
+	                resolve(_this._sessionInfo);
+	            }
+	            else {
+	                _this._startAuth().then(function (sessionStartResponse) {
+	                    var authChallengeOptions = {
+	                        nonce: sessionStartResponse.nonce
+	                    };
+	                    self._comapiConfig.authChallenge(authChallengeOptions, function (jwt) {
+	                        if (jwt) {
+	                            self._createAuthenticatedSession(jwt, sessionStartResponse.authenticationId, {})
+	                                .then(function (sessionInfo) {
+	                                return Promise.all([sessionInfo, self._setSession(sessionInfo)]);
+	                            })
+	                                .then(function (_a) {
+	                                var sessionInfo = _a[0], result = _a[1];
+	                                if (!result) {
+	                                    console.error("_setSession() failed");
+	                                }
+	                                resolve(sessionInfo);
+	                            })
+	                                .catch(function (error) {
+	                                reject(error);
+	                            });
+	                        }
+	                        else {
+	                            reject({ message: "Failed to get a JWT from authChallenge", statusCode: 401 });
+	                        }
+	                    });
+	                }).catch(function (error) { return reject(error); });
+	            }
 	        });
 	    };
 	    SessionManager.prototype.endSession = function () {
@@ -5017,7 +5045,7 @@ var COMAPI =
 	                platform: "javascript",
 	                platformVersion: browserInfo.version,
 	                sdkType: "native",
-	                sdkVersion: "1.0.3.229"
+	                sdkVersion: "1.0.3.237"
 	            };
 	            return _this._restClient.post(url, {}, data);
 	        })
@@ -5048,51 +5076,6 @@ var COMAPI =
 	        return this._restClient.delete(url, headers)
 	            .then(function (result) {
 	            return Promise.resolve(true);
-	        });
-	    };
-	    SessionManager.prototype._getSessionInfo = function () {
-	        if (this._sessionInfo) {
-	            return Promise.resolve(this._sessionInfo);
-	        }
-	        else {
-	            return this._localStorageData.getObject("session");
-	        }
-	    };
-	    SessionManager.prototype._getCachedSession = function () {
-	        var _this = this;
-	        return this._getSessionInfo()
-	            .then(function (sessionInfo) {
-	            if (sessionInfo) {
-	                if (!_this.hasExpired(sessionInfo.session.expiresOn)) {
-	                    if (sessionInfo.token) {
-	                        var bits = sessionInfo.token.split(".");
-	                        if (bits.length === 3) {
-	                            var payload = JSON.parse(atob(bits[1]));
-	                            if (payload.apiSpaceId === _this._comapiConfig.apiSpaceId) {
-	                                _this._sessionInfo = sessionInfo;
-	                            }
-	                            else {
-	                                _this._sessionInfo = null;
-	                            }
-	                        }
-	                    }
-	                }
-	                else {
-	                    _this._sessionInfo = null;
-	                }
-	                if (!_this._sessionInfo) {
-	                    _this._localStorageData.remove("session")
-	                        .then(function () {
-	                        return null;
-	                    });
-	                }
-	                else {
-	                    return _this._sessionInfo;
-	                }
-	            }
-	            else {
-	                return null;
-	            }
 	        });
 	    };
 	    SessionManager.prototype._setSession = function (sessionInfo) {
@@ -5139,6 +5122,21 @@ var COMAPI =
 	        var now = new Date();
 	        var expiry = new Date(expiresOn);
 	        return now > expiry;
+	    };
+	    SessionManager.prototype.isSessionValid = function (sessionInfo) {
+	        var valid = false;
+	        if (!this.hasExpired(sessionInfo.session.expiresOn)) {
+	            if (sessionInfo.token) {
+	                var bits = sessionInfo.token.split(".");
+	                if (bits.length === 3) {
+	                    var payload = JSON.parse(atob(bits[1]));
+	                    if (payload.apiSpaceId === this._comapiConfig.apiSpaceId) {
+	                        valid = true;
+	                    }
+	                }
+	            }
+	        }
+	        return valid;
 	    };
 	    return SessionManager;
 	}());
@@ -5479,6 +5477,13 @@ var COMAPI =
 	            return sessionInfo;
 	        });
 	    };
+	    Object.defineProperty(NetworkManager.prototype, "session", {
+	        get: function () {
+	            return this._sessionManager.sessionInfo ? this._sessionManager.sessionInfo.session : null;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
 	    NetworkManager.prototype.endSession = function () {
 	        var _this = this;
 	        return this._webSocketManager.disconnect()

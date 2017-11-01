@@ -104,11 +104,14 @@ export declare enum Environment {
     production = 1,
 }
 export interface ISessionManager {
+    sessionInfo: ISessionInfo;
+    initialise(): Promise<boolean>;
     getValidToken(): Promise<string>;
     startSession(): Promise<ISessionInfo>;
     endSession(): Promise<boolean>;
 }
 export interface INetworkManager {
+    session: ISession;
     getValidToken(): Promise<string>;
     startSession(): Promise<ISessionInfo>;
     restartSession(): Promise<ISessionInfo>;

@@ -52,6 +52,13 @@ var NetworkManager = (function () {
             return sessionInfo;
         });
     };
+    Object.defineProperty(NetworkManager.prototype, "session", {
+        get: function () {
+            return this._sessionManager.sessionInfo ? this._sessionManager.sessionInfo.session : null;
+        },
+        enumerable: true,
+        configurable: true
+    });
     NetworkManager.prototype.endSession = function () {
         var _this = this;
         return this._webSocketManager.disconnect()

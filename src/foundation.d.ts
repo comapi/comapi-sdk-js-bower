@@ -23,6 +23,7 @@ export declare class Foundation implements IFoundation {
     readonly services: IServices;
     readonly device: IDevice;
     readonly channels: IChannels;
+    readonly session: ISession;
     readonly logger: ILogger;
     on(eventType: string, handler: Function): void;
     off(eventType: string, handler?: Function): void;

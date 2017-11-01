@@ -69,7 +69,11 @@ var Foundation = (function () {
         if (doSingleton) {
             Foundation._foundation = foundation;
         }
-        return Promise.resolve(foundation);
+        var sessionManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager);
+        return sessionManager.initialise()
+            .then(function (result) {
+            return Promise.resolve(foundation);
+        });
     };
     Foundation.prototype.startSession = function () {
         return this._networkManager.startSession()
@@ -97,6 +101,13 @@ var Foundation = (function () {
     Object.defineProperty(Foundation.prototype, "channels", {
         get: function () {
             return this._channels;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Foundation.prototype, "session", {
+        get: function () {
+            return this._networkManager.session;
         },
         enumerable: true,
         configurable: true
