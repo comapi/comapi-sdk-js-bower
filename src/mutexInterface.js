@@ -1,4 +1,5 @@
 "use strict";
+// https://github.com/DirtyHairy/async-mutex
 Object.defineProperty(exports, "__esModule", { value: true });
 var IMutexInterface;
 (function (IMutexInterface) {

@@ -16,6 +16,17 @@ var inversify_1 = require("inversify");
 var utils_1 = require("./utils");
 var interfaceSymbols_1 = require("./interfaceSymbols");
 var MessageManager = (function () {
+    /**
+     * MessagesManager class constructor.
+     * @class MessagesManager
+     * @ignore
+     * @classdesc Class that implements Messages Management.
+     * @parameter {ILogger} logger
+     * @parameter {IRestClient} restClient
+     * @parameter {ILocalStorageData} localStorageData
+     * @parameter {IComapiConfig} comapiConfig
+     * @parameter {ISessionManager} sessionManager
+     */
     function MessageManager(_logger, _restClient, _localStorageData, _comapiConfig, _sessionManager) {
         this._logger = _logger;
         this._restClient = _restClient;
@@ -23,6 +34,13 @@ var MessageManager = (function () {
         this._comapiConfig = _comapiConfig;
         this._sessionManager = _sessionManager;
     }
+    /**
+     * @method MessagesManager#getConversationEvents
+     * @param {string} conversationId
+     * @param {number} from
+     * @param {number} limit
+     * @returns {Promise}
+     */
     MessageManager.prototype.getConversationEvents = function (conversationId, from, limit) {
         var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.events, {
             apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -36,6 +54,13 @@ var MessageManager = (function () {
             return Promise.resolve(result.response);
         });
     };
+    /**
+     * @method MessagesManager#getConversationMessages
+     * @param {string} conversationId
+     * @param {number} limit
+     * @param {number} [from]
+     * @returns {Promise}
+     */
     MessageManager.prototype.getConversationMessages = function (conversationId, limit, from) {
         var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.messages, {
             apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -51,6 +76,15 @@ var MessageManager = (function () {
             return Promise.resolve(result.response);
         });
     };
+    /**
+     * @deprecated - use methd that uses IConversationDetails / ConversationBuilder
+     * @method MessagesManager#sendMessageToConversation
+     * @parameter {String} conversationId
+     * @parameter {Object} metadata
+     * @parameter {IMessagePart[]} parts
+     * @parameter {IMessageAlert} alert
+     * @returns {Promise}
+     */
     MessageManager.prototype._sendMessageToConversation = function (conversationId, metadata, parts, alert) {
         var request = {
             alert: alert,
@@ -67,6 +101,11 @@ var MessageManager = (function () {
             return Promise.resolve(result.response);
         });
     };
+    /**
+     * @method MessagesManager#sendMessageToConversation2
+     * @parameter {string} conversationId
+     * @parameter {IConversationMessage} message
+     */
     MessageManager.prototype.sendMessageToConversation = function (conversationId, message) {
         var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.messages, {
             apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -78,6 +117,12 @@ var MessageManager = (function () {
             return Promise.resolve(result.response);
         });
     };
+    /**
+     * @method MessagesManager#sendMessageStatusUpdates
+     * @param {string} conversationId
+     * @param {IMessageStatus[]} statuses
+     * @returns {Promise}
+     */
     MessageManager.prototype.sendMessageStatusUpdates = function (conversationId, statuses) {
         var headers = {
             "Content-Type": "application/json",

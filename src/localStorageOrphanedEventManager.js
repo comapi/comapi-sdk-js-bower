@@ -16,10 +16,16 @@ var inversify_1 = require("inversify");
 var interfaceSymbols_1 = require("./interfaceSymbols");
 ;
 var LocalStorageOrphanedEventManager = (function () {
+    /**
+     *
+     */
     function LocalStorageOrphanedEventManager(_localStorage) {
         this._localStorage = _localStorage;
         this._orphanedEvents = {};
     }
+    /**
+     *
+     */
     LocalStorageOrphanedEventManager.prototype.clearAll = function () {
         var _this = this;
         return this.ensureInitialised()
@@ -28,6 +34,9 @@ var LocalStorageOrphanedEventManager = (function () {
             return _this._localStorage.setObject("orphanedEvents", _this._orphanedEvents);
         });
     };
+    /**
+     *
+     */
     LocalStorageOrphanedEventManager.prototype.clear = function (conversationId) {
         var _this = this;
         return this.ensureInitialised()
@@ -38,6 +47,9 @@ var LocalStorageOrphanedEventManager = (function () {
             return _this._localStorage.setObject("orphanedEvents", _this._orphanedEvents);
         });
     };
+    /**
+     *
+     */
     LocalStorageOrphanedEventManager.prototype.getContinuationToken = function (conversationId) {
         var _this = this;
         return this.ensureInitialised()
@@ -46,6 +58,9 @@ var LocalStorageOrphanedEventManager = (function () {
             return Promise.resolve(container ? container.continuationToken : null);
         });
     };
+    /**
+     *
+     */
     LocalStorageOrphanedEventManager.prototype.setContinuationToken = function (conversationId, continuationToken) {
         var _this = this;
         return this.ensureInitialised()
@@ -63,15 +78,21 @@ var LocalStorageOrphanedEventManager = (function () {
             return Promise.resolve(true);
         });
     };
+    /**
+     *
+     */
     LocalStorageOrphanedEventManager.prototype.addOrphanedEvent = function (event) {
         var _this = this;
         return this.ensureInitialised()
             .then(function (initialised) {
             var info = _this._orphanedEvents[event.conversationId];
             if (info) {
+                // check for dupe 
                 var found = info.orphanedEvents.filter(function (e) { return e.eventId === event.eventId; });
                 if (found.length === 0) {
+                    // insert
                     info.orphanedEvents.unshift(event);
+                    // sort
                     info.orphanedEvents = info.orphanedEvents.sort(function (e1, e2) {
                         if (e1.conversationEventId > e2.conversationEventId) {
                             return 1;
@@ -83,6 +104,7 @@ var LocalStorageOrphanedEventManager = (function () {
                             return 0;
                         }
                     });
+                    // save
                     return _this._localStorage.setObject("orphanedEvents", _this._orphanedEvents);
                 }
                 else {
@@ -94,6 +116,9 @@ var LocalStorageOrphanedEventManager = (function () {
             }
         });
     };
+    /**
+     *
+     */
     LocalStorageOrphanedEventManager.prototype.removeOrphanedEvent = function (event) {
         var _this = this;
         return this.ensureInitialised()
@@ -107,6 +132,7 @@ var LocalStorageOrphanedEventManager = (function () {
                         break;
                     }
                 }
+                // save
                 return _this._localStorage.setObject("orphanedEvents", _this._orphanedEvents);
             }
             else {
@@ -114,6 +140,9 @@ var LocalStorageOrphanedEventManager = (function () {
             }
         });
     };
+    /**
+     *
+     */
     LocalStorageOrphanedEventManager.prototype.getOrphanedEvents = function (conversationId) {
         var _this = this;
         return this.ensureInitialised()
@@ -124,10 +153,14 @@ var LocalStorageOrphanedEventManager = (function () {
     };
     LocalStorageOrphanedEventManager.prototype.ensureInitialised = function () {
         if (!this._initialised) {
+            // this is a promise instance to ensure it's only called once
             this._initialised = this.initialise();
         }
         return this._initialised;
     };
+    /**
+     *
+     */
     LocalStorageOrphanedEventManager.prototype.initialise = function () {
         var _this = this;
         return this._localStorage.getObject("orphanedEvents")

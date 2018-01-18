@@ -27,6 +27,7 @@ var EventMapper = (function () {
     EventMapper.prototype.conversationUpdated = function (event) {
         return {
             conversationId: event.conversationId,
+            // the user who updated the conversation
             createdBy: event.context.createdBy,
             description: event.payload.description,
             eTag: event.etag,

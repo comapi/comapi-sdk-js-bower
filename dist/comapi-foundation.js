@@ -1391,27 +1391,54 @@ var COMAPI =
 	var contentData_1 = __webpack_require__(77);
 	exports.ContentData = contentData_1.ContentData;
 	var Foundation = (function () {
+	    /**
+	     * Foundation class constructor.
+	     * @class Foundation
+	     * @classdesc Class that implements Comapi foundation functionality.
+	     */
 	    function Foundation(_eventManager, _logger, _networkManager, services, device, channels) {
 	        this._eventManager = _eventManager;
 	        this._logger = _logger;
 	        this._networkManager = _networkManager;
+	        // initialising like this for sake of JSDoc ...
 	        this._services = services;
 	        this._device = device;
 	        this._channels = channels;
 	    }
+	    /**
+	     * Factory method to create a singleton instance of Foundation
+	     * @method Foundation#initialise
+	     * @param {IComapiConfig} comapiConfig - the app config (use `ComapiConfig` to create)
+	     * @returns {Promise} - returns promise
+	     */
 	    Foundation.initialiseShared = function (comapiConfig) {
 	        return Foundation._initialise(comapiConfig, true);
 	    };
+	    /**
+	     * Factory method to create an instance of Foundation
+	     * @method Foundation#initialise
+	     * @param {IComapiConfig} comapiConfig - the app config (use `ComapiConfig` to create)
+	     * @returns {Promise} - returns promise
+	     */
 	    Foundation.initialise = function (comapiConfig) {
 	        return Foundation._initialise(comapiConfig, false);
 	    };
 	    Object.defineProperty(Foundation, "version", {
+	        /**
+	         * Property to get the SDK version
+	         * @method Foundation#version
+	         */
 	        get: function () {
 	            return "1.0.2.121";
 	        },
 	        enumerable: true,
 	        configurable: true
 	    });
+	    /**
+	     * Private initialisation method
+	     * @param comapiConfig
+	     * @param indexedDBLogger
+	     */
 	    Foundation._initialise = function (comapiConfig, doSingleton) {
 	        if (doSingleton && Foundation._foundation) {
 	            return Promise.resolve(Foundation._foundation);
@@ -1445,22 +1472,38 @@ var COMAPI =
 	        if (doSingleton) {
 	            Foundation._foundation = foundation;
 	        }
+	        // adopt a cached session if there is one
 	        var sessionManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager);
 	        return sessionManager.initialise()
 	            .then(function (result) {
 	            return Promise.resolve(foundation);
 	        });
 	    };
+	    /**
+	     * Method to start a new authenticated session
+	     * @method Foundation#startSession
+	     * @returns {Promise} - Returns a promise
+	     */
 	    Foundation.prototype.startSession = function () {
 	        return this._networkManager.startSession()
 	            .then(function (sessionInfo) {
 	            return sessionInfo.session;
 	        });
 	    };
+	    /**
+	     * Method to end an existing authenticated session
+	     * @method Foundation#endSession
+	     * @returns {Promise} - Returns a promise
+	     */
 	    Foundation.prototype.endSession = function () {
 	        return this._networkManager.endSession();
 	    };
 	    Object.defineProperty(Foundation.prototype, "services", {
+	        /**
+	         * Method to get Services interface
+	         * @method Foundation#services
+	         * @returns {Services} - Returns Services
+	         */
 	        get: function () {
 	            return this._services;
 	        },
@@ -1468,6 +1511,11 @@ var COMAPI =
 	        configurable: true
 	    });
 	    Object.defineProperty(Foundation.prototype, "device", {
+	        /**
+	         * Method to get Device interface
+	         * @method Foundation#device
+	         * @returns {Device} - Returns Device
+	         */
 	        get: function () {
 	            return this._device;
 	        },
@@ -1475,6 +1523,11 @@ var COMAPI =
 	        configurable: true
 	    });
 	    Object.defineProperty(Foundation.prototype, "channels", {
+	        /**
+	         * Method to get Channels interface
+	         * @method Foundation#channels
+	         * @returns {Channels} - Returns Channels
+	         */
 	        get: function () {
 	            return this._channels;
 	        },
@@ -1482,6 +1535,11 @@ var COMAPI =
 	        configurable: true
 	    });
 	    Object.defineProperty(Foundation.prototype, "session", {
+	        /**
+	         * Method to get current session
+	         * @method Foundation#session
+	         * @returns {ISession} - Returns an ISession interface
+	         */
 	        get: function () {
 	            return this._networkManager.session;
 	        },
@@ -1489,18 +1547,40 @@ var COMAPI =
 	        configurable: true
 	    });
 	    Object.defineProperty(Foundation.prototype, "logger", {
+	        /**
+	         * Method to get the logger
+	         * @method Foundation#logger
+	         * @returns {ILogger} - Returns an ILogger interface
+	         */
 	        get: function () {
 	            return this._logger;
 	        },
 	        enumerable: true,
 	        configurable: true
 	    });
+	    /**
+	     * Subscribes the caller to a comapi event.
+	     * @method Foundation#on
+	     * @param {string} eventType - The type of event to subscribe to
+	     * @param {Function} handler - The callback
+	     */
 	    Foundation.prototype.on = function (eventType, handler) {
 	        this._eventManager.subscribeToLocalEvent(eventType, handler);
 	    };
+	    /**
+	     * Unsubscribes the caller to a comapi event.
+	     * @method Foundation#off
+	     * @param {string} eventType - The type of event to subscribe to
+	     * @param {Function} [handler] - The callback (optional - if not specified, all associated callbacks will be unregistered)
+	     */
 	    Foundation.prototype.off = function (eventType, handler) {
 	        this._eventManager.unsubscribeFromLocalEvent(eventType, handler);
 	    };
+	    /**
+	     * Method to retrieve the current debug log as a string
+	     * @method Foundation#getLogs
+	     * @returns {Promise} - Returns a promise
+	     */
 	    Foundation.prototype.getLogs = function () {
 	        return this._logger.getLog();
 	    };
@@ -1515,6 +1595,9 @@ var COMAPI =
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	/**
+	 * Log level enum
+	 */
 	var LogLevels;
 	(function (LogLevels) {
 	    LogLevels[LogLevels["None"] = 0] = "None";
@@ -1523,6 +1606,9 @@ var COMAPI =
 	    LogLevels[LogLevels["Debug"] = 3] = "Debug";
 	})(LogLevels = exports.LogLevels || (exports.LogLevels = {}));
 	;
+	/**
+	 * Log persistence enum
+	 */
 	var LogPersistences;
 	(function (LogPersistences) {
 	    LogPersistences[LogPersistences["None"] = 0] = "None";
@@ -1530,16 +1616,22 @@ var COMAPI =
 	    LogPersistences[LogPersistences["LocalStorage"] = 2] = "LocalStorage";
 	})(LogPersistences = exports.LogPersistences || (exports.LogPersistences = {}));
 	;
+	/**
+	 * Log persistence enum
+	 */
 	var OrphanedEventPersistences;
 	(function (OrphanedEventPersistences) {
 	    OrphanedEventPersistences[OrphanedEventPersistences["None"] = 0] = "None";
 	    OrphanedEventPersistences[OrphanedEventPersistences["IndexedDbIfSupported"] = 1] = "IndexedDbIfSupported";
-	    OrphanedEventPersistences[OrphanedEventPersistences["LocalStorage"] = 2] = "LocalStorage";
+	    OrphanedEventPersistences[OrphanedEventPersistences["LocalStorage"] = 2] = "LocalStorage"; // force local storage
 	})(OrphanedEventPersistences = exports.OrphanedEventPersistences || (exports.OrphanedEventPersistences = {}));
 	;
 	;
 	;
 	;
+	/**
+	 * Environment enum
+	 */
 	var Environment;
 	(function (Environment) {
 	    Environment[Environment["development"] = 0] = "development";
@@ -1549,6 +1641,9 @@ var COMAPI =
 	;
 	;
 	;
+	/**
+	 * Log level enum
+	 */
 	var ConversationScope;
 	(function (ConversationScope) {
 	    ConversationScope[ConversationScope["public"] = 0] = "public";
@@ -1565,8 +1660,20 @@ var COMAPI =
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var utils_1 = __webpack_require__(6);
 	var ConversationBuilder = (function () {
+	    /**
+	     * ConversationBuilder class constructor.
+	     * initialises the id with a guid
+	     * @class ConversationBuilder
+	     * @classdesc Class that implements ConversationBuilder
+	     */
 	    function ConversationBuilder() {
+	        /**
+	         * The conversation description
+	         */
 	        this.description = undefined;
+	        /**
+	         * The conversation roles
+	         */
 	        this.roles = {
 	            "owner": {
 	                "canSend": true,
@@ -1579,22 +1686,52 @@ var COMAPI =
 	                "canRemoveParticipants": true
 	            }
 	        };
+	        /**
+	         * The isPublic field
+	         */
 	        this.isPublic = false;
+	        /**
+	         * The participants
+	         */
 	        this.participants = undefined;
 	        this.id = utils_1.Utils.uuid();
 	    }
+	    /**
+	     * Method to specify the conversationId (defaults to a new guid if not used)
+	     * @method ConversationBuilder#withId
+	     * @param {string} id
+	     * @returns {ConversationBuilder} - Returns reference to itself so methods can be chained
+	     */
 	    ConversationBuilder.prototype.withId = function (id) {
 	        this.id = id;
 	        return this;
 	    };
+	    /**
+	     * Method to specify the conversation name
+	     * @method ConversationBuilder#withName
+	     * @param {string} name
+	     * @returns {ConversationBuilder} - Returns reference to itself so methods can be chained
+	     */
 	    ConversationBuilder.prototype.withName = function (name) {
 	        this.name = name;
 	        return this;
 	    };
+	    /**
+	     * Method to specify the conversation description
+	     * @method ConversationBuilder#withDescription
+	     * @param {string} description
+	     * @returns {ConversationBuilder} - Returns reference to itself so methods can be chained
+	     */
 	    ConversationBuilder.prototype.withDescription = function (description) {
 	        this.description = description;
 	        return this;
 	    };
+	    /**
+	     * Method to specify initial participant list (will all be members)
+	     * @method ConversationBuilder#withUsers
+	     * @param {string[]} users
+	     * @returns {ConversationBuilder} - Returns reference to itself so methods can be chained
+	     */
 	    ConversationBuilder.prototype.withUsers = function (users) {
 	        this.participants = [];
 	        for (var _i = 0, users_1 = users; _i < users_1.length; _i++) {
@@ -1603,18 +1740,43 @@ var COMAPI =
 	        }
 	        return this;
 	    };
+	    /**
+	     * Method to specify initial participant (will be a member)
+	     * @method ConversationBuilder#withUser
+	     * @param {string} user
+	     * @returns {ConversationBuilder} - Returns reference to itself so methods can be chained
+	     */
 	    ConversationBuilder.prototype.withUser = function (user) {
 	        this.participants = [{ id: user }];
 	        return this;
 	    };
+	    /**
+	     * Method to specify initial participants -  takes an array of IConversationParticipant objects which enables individual
+	     * roles to be specified for each user.
+	     * @method ConversationBuilder#withParticipants
+	     * @param {IConversationParticipant[]} participants
+	     * @returns {ConversationBuilder} - Returns reference to itself so methods can be chained
+	     */
 	    ConversationBuilder.prototype.withParticipants = function (participants) {
 	        this.participants = participants;
 	        return this;
 	    };
+	    /**
+	     * Method to set owner privelages for the conversation
+	     * @method ConversationBuilder#withOwnerPrivelages
+	     * @param {IConversationPrivelages} privelages
+	     * @returns {ConversationBuilder} - Returns reference to itself so methods can be chained
+	     */
 	    ConversationBuilder.prototype.withOwnerPrivelages = function (privelages) {
 	        this.roles.owner = privelages;
 	        return this;
 	    };
+	    /**
+	     * Method to set participant privelages for the conversation
+	     * @method ConversationBuilder#withParticipantPrivelages
+	     * @param {IConversationPrivelages} privelages
+	     * @returns {ConversationBuilder} - Returns reference to itself so methods can be chained
+	     */
 	    ConversationBuilder.prototype.withParticipantPrivelages = function (privelages) {
 	        this.roles.participant = privelages;
 	        return this;
@@ -1630,13 +1792,32 @@ var COMAPI =
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	/*
+	 * Utility class
+	 */
 	var Utils = (function () {
+	    /**
+	     * Utils class constructor.
+	     * @class Utils
+	     * @classdesc Class that implements a Utils.
+	     */
 	    function Utils() {
 	        throw new Error("Cannot new this class");
 	    }
+	    /**
+	     * Static method to clone an object
+	     * @method Utils#clone
+	     * @param {any} obj - the object to clone
+	     * @returns {any} - returns a clone of the object
+	     */
 	    Utils.clone = function (obj) {
 	        return JSON.parse(JSON.stringify(obj));
 	    };
+	    /**
+	     * Static method to generate a uuid (simulated)
+	     * @method Utils#uuid
+	     * @returns {string} - returns a uuid
+	     */
 	    Utils.uuid = function () {
 	        var d = new Date().getTime();
 	        var uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
@@ -1646,6 +1827,12 @@ var COMAPI =
 	        });
 	        return uuid;
 	    };
+	    /**
+	     * Static method to get current browser info
+	     * @method Utils#getBrowserInfo
+	     * @param {string} [userAgent] - user agent string (optional - for unit tsting)
+	     * @returns {IBrowserInfo} - returns an IBrowserInfo interface
+	     */
 	    Utils.getBrowserInfo = function (userAgent) {
 	        var ua = userAgent !== undefined ? userAgent : navigator.userAgent, tem, M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
 	        if (/trident/i.test(M[1])) {
@@ -1674,6 +1861,13 @@ var COMAPI =
 	            version: M[1]
 	        };
 	    };
+	    /**
+	     * Static method to call some async function on an array of data and you want them called sequentially
+	     * @method Utils#eachSeries
+	     * @param {any[]} arr
+	     * @param {Function} iteratorFn
+	     * @returns {Promise} - returns a Promise
+	     */
 	    Utils.eachSeries = function (arr, iteratorFn) {
 	        return arr.reduce(function (p, item) {
 	            return p.then(function () {
@@ -1681,12 +1875,25 @@ var COMAPI =
 	            });
 	        }, Promise.resolve());
 	    };
+	    /**
+	     * Static method to encapsulate repeatdly calling an async method until a condition is met (tyoes defined at top)
+	     * @method Utils#doUntil
+	     * @param {DoUntilOperationFunction} operation - the operation to perform
+	     * @param {DoUntilTestFunction} test - the condition that stops the repeats
+	     * @param {any} data - the data
+	     */
 	    Utils.doUntil = function (operation, test, data) {
 	        return operation(data)
 	            .then(function (rslt) {
 	            return test(rslt) ? Utils.doUntil(operation, test, rslt) : rslt;
 	        });
 	    };
+	    /**
+	     * Static method to provide Mustache/handlebars style formatting ...
+	     * @method Utils#format
+	     * @param {string} content
+	     * @param {Object} tags
+	     */
 	    Utils.format = function (content, tags) {
 	        return content.replace(/{{(.*?)}}/g, function (tag, key) {
 	            var replacement;
@@ -1696,6 +1903,12 @@ var COMAPI =
 	            return typeof replacement === "string" ? replacement : "";
 	        });
 	    };
+	    /**
+	     * Static method to het a header value from a headers collection in a case insensitive fashion
+	     * @method Utils#getHeaderValue
+	     * @param headers Helper function to deal with potential case issues accessing http headers collection
+	     * @param key
+	     */
 	    Utils.getHeaderValue = function (headers, key) {
 	        return headers[key] || headers[key.toLowerCase()];
 	    };
@@ -1711,6 +1924,10 @@ var COMAPI =
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	/**
+	 * @class MessageBuilder
+	 * @classdesc Class that implements MessageBuilder
+	 */
 	var MessageBuilder = (function () {
 	    function MessageBuilder() {
 	        this.id = undefined;
@@ -1721,6 +1938,12 @@ var COMAPI =
 	        this.sentEventId = undefined;
 	        this.statusUpdates = undefined;
 	    }
+	    /**
+	     * Method to create a simple text based message
+	     * @method MessageBuilder#withText
+	     * @param {String} text - the text of the message
+	     * @returns {MessageBuilder}  - Returns reference to itself so methods can be chained
+	     */
 	    MessageBuilder.prototype.withText = function (text) {
 	        this.parts.push({
 	            data: text,
@@ -1729,6 +1952,13 @@ var COMAPI =
 	        });
 	        return this;
 	    };
+	    /**
+	     * Method to create a message containing a single data part
+	     * @method MessageBuilder#withData
+	     * @param {String} type - the type of the data i.e. `image/png`
+	     * @param {String} data - the data (if you want to pass binary data, then base64 encode it first)
+	     * @returns {MessageBuilder}  - Returns reference to itself so methods can be chained
+	     */
 	    MessageBuilder.prototype.withData = function (type, data) {
 	        this.parts.push({
 	            data: data,
@@ -1737,6 +1967,15 @@ var COMAPI =
 	        });
 	        return this;
 	    };
+	    /**
+	     * Method to create a message containing a single data part
+	     * @method MessageBuilder#withData
+	     * @param {String} type - the type of the data i.e. `image/png`
+	     * @param {String} url - the url
+	     * @param {Number} [size] - the size of the resource the URL is pointing to
+	     * @param {String} [name] - the teh name of the original file
+	     * @returns {MessageBuilder}  - Returns reference to itself so methods can be chained
+	     */
 	    MessageBuilder.prototype.withURL = function (type, url, size, name) {
 	        this.parts.push({
 	            name: name,
@@ -1746,10 +1985,22 @@ var COMAPI =
 	        });
 	        return this;
 	    };
+	    /**
+	     * Method to add a message part to the message. This can be called multiple times
+	     * @method MessageBuilder#withPart
+	     * @param {IMessagePart} part - the message part to add
+	     * @returns {MessageBuilder}  - Returns reference to itself so methods can be chained
+	     */
 	    MessageBuilder.prototype.withPart = function (part) {
 	        this.parts.push(part);
 	        return this;
 	    };
+	    /**
+	     * Method to set the generic title for a push message. It also allocates placeholders for apns and fcm info
+	     * @method MessageBuilder#withPush
+	     * @param {String} text - The title of the push message. Note call this method BEFORE `withApnsAlert()` and `withFcmAlert()`
+	     * @returns {MessageBuilder}  - Returns reference to itself so methods can be chained
+	     */
 	    MessageBuilder.prototype.withPush = function (text) {
 	        this.alert = {
 	            "text": text,
@@ -1760,14 +2011,34 @@ var COMAPI =
 	        };
 	        return this;
 	    };
+	    /**
+	     * Method to specify APNS specific push info - Note: must call `withPush()` first.
+	     * @method MessageBuilder#withApnsAlert
+	     * @param {IApnsAlert} info - the APNS speific push info
+	     * @returns {MessageBuilder}  - Returns reference to itself so methods can be chained
+	     */
 	    MessageBuilder.prototype.withApnsAlert = function (info) {
+	        // TODO: cater for incorrect usage
 	        this.alert.platforms.apns = info;
 	        return this;
 	    };
+	    /**
+	     * Method to specify FCM specific push info - Note: must call `withPush()` first.
+	     * @method MessageBuilder#withFcmAlert
+	     * @param {IFcmAlert} info - the FCM speific push info
+	     * @returns {MessageBuilder}  - Returns reference to itself so methods can be chained
+	     */
 	    MessageBuilder.prototype.withFcmAlert = function (info) {
+	        // TODO: cater for incorrect usage        
 	        this.alert.platforms.fcm = info;
 	        return this;
 	    };
+	    /**
+	     * Method to specify additional metadata to accompany the message
+	     * @method MessageBuilder#withMetadata
+	     * @param {any} metadata - the metadata.
+	     * @returns {MessageBuilder}  - Returns reference to itself so methods can be chained
+	     */
 	    MessageBuilder.prototype.withMetadata = function (metadata) {
 	        this.metadata = metadata;
 	        return this;
@@ -1783,9 +2054,18 @@ var COMAPI =
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	/**
+	 * @class MessageStatusBuilder
+	 * @classdesc Class that implements MessageStatusBuilder
+	 */
 	var MessageStatusBuilder = (function () {
 	    function MessageStatusBuilder() {
 	    }
+	    /**
+	     * @method MessageStatusBuilder#deliveredStatusUpdate
+	     * @param {String} messageId
+	     * @returns {IMessageStatus} - Returns Mesage status object
+	     */
 	    MessageStatusBuilder.prototype.deliveredStatusUpdate = function (messageId) {
 	        return {
 	            messageIds: [messageId],
@@ -1793,6 +2073,11 @@ var COMAPI =
 	            timestamp: new Date().toISOString()
 	        };
 	    };
+	    /**
+	     * @method MessageStatusBuilder#deliveredStatusUpdates
+	     * @param {String[]} messageIds
+	     * @returns {IMessageStatus} - Returns Mesage status object
+	     */
 	    MessageStatusBuilder.prototype.deliveredStatusUpdates = function (messageIds) {
 	        return {
 	            messageIds: messageIds,
@@ -1800,6 +2085,11 @@ var COMAPI =
 	            timestamp: new Date().toISOString()
 	        };
 	    };
+	    /**
+	     * @method MessageStatusBuilder#readStatusUpdate
+	     * @param {String} messageId
+	     * @returns {IMessageStatus} - Returns Mesage status object
+	     */
 	    MessageStatusBuilder.prototype.readStatusUpdate = function (messageId) {
 	        return {
 	            messageIds: [messageId],
@@ -1807,6 +2097,11 @@ var COMAPI =
 	            timestamp: new Date().toISOString()
 	        };
 	    };
+	    /**
+	     * @method MessageStatusBuilder#readStatusUpdates
+	     * @param {String[]} messageIds
+	     * @returns {IMessageStatus} - Returns Mesage status object
+	     */
 	    MessageStatusBuilder.prototype.readStatusUpdates = function (messageIds) {
 	        return {
 	            messageIds: messageIds,
@@ -1828,6 +2123,11 @@ var COMAPI =
 	var interfaces_1 = __webpack_require__(4);
 	var urlConfig_1 = __webpack_require__(10);
 	var ComapiConfig = (function () {
+	    /**
+	     * ComapiConfig class constructor.
+	     * @class ComapiConfig
+	     * @classdesc Class that implements IComapiConfig
+	     */
 	    function ComapiConfig() {
 	        this.logRetentionHours = 24;
 	        this.urlBase = "https://api.comapi.com";
@@ -1840,46 +2140,112 @@ var COMAPI =
 	        this.orphanedEventPersistence = interfaces_1.OrphanedEventPersistences.IndexedDbIfSupported;
 	        this.apiSpaceId = undefined;
 	    }
+	    /**
+	     * Function to set apiSpaceId
+	     * @method ComapiConfig#withApiSpace
+	     * @param {string} id - the api space id
+	     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+	     */
 	    ComapiConfig.prototype.withApiSpace = function (id) {
 	        this.apiSpaceId = id;
 	        return this;
 	    };
+	    /**
+	     * Function to set Logfile Retention Time in hours (Defaouts to `24`)
+	     * @method ComapiConfig#withLogRetentionTime
+	     * @param {number} hours - the log retention time in hours
+	     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+	     */
 	    ComapiConfig.prototype.withLogRetentionTime = function (hours) {
 	        this.logRetentionHours = hours;
 	        return this;
 	    };
+	    /**
+	     * Function to set the authentication Challenge
+	     * @method ComapiConfig#withAuthChallenge
+	     * @param {IAuthChallenge} authChallenge - the authentication challenge
+	     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+	     */
 	    ComapiConfig.prototype.withAuthChallenge = function (authChallenge) {
 	        this.authChallenge = authChallenge;
 	        return this;
 	    };
+	    /**
+	     * Function to set urlBase (Defaults to production)
+	     * @method ComapiConfig#withUrlBase
+	     * @param {string} urlBase - the url base
+	     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+	     */
 	    ComapiConfig.prototype.withUrlBase = function (urlBase) {
 	        this.urlBase = urlBase;
 	        return this;
 	    };
+	    /**
+	     * Function to set webSocketBase (Defaults to production)
+	     * @method ComapiConfig#withWebSocketBase
+	     * @param {string} webSocketBase - the web socket base
+	     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+	     */
 	    ComapiConfig.prototype.withWebSocketBase = function (webSocketBase) {
 	        this.webSocketBase = webSocketBase;
 	        return this;
 	    };
+	    /**
+	     * Function to set logLevel  (Defaults to errors only)
+	     * @method ComapiConfig#withLogLevel
+	     * @param {LogLevels} withLogLevel - the logLevel
+	     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+	     */
 	    ComapiConfig.prototype.withLogLevel = function (logLevel) {
 	        this.logLevel = logLevel;
 	        return this;
 	    };
+	    /**
+	     * Function to set logPersistence
+	     * @method ComapiConfig#withLogPersistence
+	     * @param {LogPersistences} logPersistence - the logPersistence
+	     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+	     */
 	    ComapiConfig.prototype.withLogPersistence = function (logPersistence) {
 	        this.logPersistence = logPersistence;
 	        return this;
 	    };
+	    /**
+	     * Function to override foundationRestUrls
+	     * @method ComapiConfig#withFoundationRestUrls
+	     * @param {IFoundationRestUrls} foundationRestUrls - the foundationRestUrls
+	     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+	     */
 	    ComapiConfig.prototype.withFoundationRestUrls = function (foundationRestUrls) {
 	        this.foundationRestUrls = foundationRestUrls;
 	        return this;
 	    };
+	    /**
+	     * Function to override eventMapping
+	     * @method ComapiConfig#withEventMapping
+	     * @param {IEventMapping} eventMapping - the eventMapping
+	     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+	     */
 	    ComapiConfig.prototype.withEventMapping = function (eventMapping) {
 	        this.eventMapping = eventMapping;
 	        return this;
 	    };
+	    /**
+	     * Function to override localStoragePrefix
+	     * @method ComapiConfig#withLocalStoragePrefix
+	     * @param {string} localStoragePrefix - the localStoragePrefix
+	     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+	     */
 	    ComapiConfig.prototype.withLocalStoragePrefix = function (localStoragePrefix) {
 	        this.localStoragePrefix = localStoragePrefix;
 	        return this;
 	    };
+	    /**
+	     * Function to override orphanedEventPersistence
+	     * @method ComapiConfig#withOrphanedEventPersistence
+	     * @param {string} orphanedEventPersistence - the orphanedEventPersistence
+	     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+	     */
 	    ComapiConfig.prototype.withOrphanedEventPersistence = function (orphanedEventPersistence) {
 	        this.orphanedEventPersistence = orphanedEventPersistence;
 	        return this;
@@ -1897,18 +2263,25 @@ var COMAPI =
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var FoundationRestUrls = (function () {
 	    function FoundationRestUrls() {
+	        // Content
 	        this.content = "{{urlBase}}/apispaces/{{apiSpaceId}}/content";
+	        // Conversations
 	        this.conversations = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations";
 	        this.conversation = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}";
 	        this.participants = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/participants";
 	        this.typing = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/typing";
+	        // DEVICES
 	        this.push = "{{urlBase}}/apispaces/{{apiSpaceId}}/sessions/{{sessionId}}/push";
+	        // FACEBOOK
 	        this.facebook = "{{urlBase}}/apispaces/{{apiSpaceId}}/channels/facebook/state";
+	        // Messages
 	        this.events = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/events";
 	        this.messages = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/messages";
 	        this.statusUpdates = "{{urlBase}}/apispaces/{{apiSpaceId}}/conversations/{{conversationId}}/messages/statusupdates";
+	        // Profile
 	        this.profiles = "{{urlBase}}/apispaces/{{apiSpaceId}}/profiles";
 	        this.profile = "{{urlBase}}/apispaces/{{apiSpaceId}}/profiles/{{profileId}}";
+	        // session
 	        this.sessions = "{{urlBase}}/apispaces/{{apiSpaceId}}/sessions";
 	        this.sessionStart = "{{urlBase}}/apispaces/{{apiSpaceId}}/sessions/start";
 	        this.session = "{{urlBase}}/apispaces/{{apiSpaceId}}/sessions/{{sessionId}}";
@@ -1992,6 +2365,9 @@ var COMAPI =
 	        this._overriddenInterfaces = {};
 	        this._container = new inversify_1.Container();
 	    }
+	    /**
+	     *
+	     */
 	    InterfaceContainer.prototype.initialise = function (comapiConfig) {
 	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager).to(eventManager_1.EventManager).inSingletonScope();
 	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData).to(localStorageData_1.LocalStorageData).inSingletonScope();
@@ -2037,9 +2413,15 @@ var COMAPI =
 	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels).to(channels_1.Channels).inSingletonScope();
 	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ContentManager).to(contentManager_1.ContentManager).inSingletonScope();
 	    };
+	    /**
+	     *
+	     */
 	    InterfaceContainer.prototype.uninitialise = function () {
 	        this._container.unbindAll();
 	    };
+	    /**
+	     *
+	     */
 	    InterfaceContainer.prototype.bindIndexedDBLogger = function () {
 	        if (this._container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)) {
 	            this._container.rebind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger).to(indexedDBLogger_1.IndexedDBLogger).inSingletonScope();
@@ -2048,31 +2430,51 @@ var COMAPI =
 	            this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger).to(indexedDBLogger_1.IndexedDBLogger).inSingletonScope();
 	        }
 	    };
+	    /**
+	     *
+	     */
 	    InterfaceContainer.prototype.unbindIndexedDBLogger = function () {
 	        if (this._container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)) {
 	            this._container.unbind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger);
 	        }
 	    };
+	    /**
+	     *
+	     */
 	    InterfaceContainer.prototype.bindComapiConfig = function (comapiConfig) {
 	        var _comapiConfig = comapiConfig;
 	        if (this._container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)) {
+	            // console.log("unbinding old ComapiConfig: ", JSON.stringify(_comapiConfig));
 	            this._container.unbind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig);
 	        }
 	        else {
+	            // console.log("first bind of ComapiConfig: ", JSON.stringify(_comapiConfig));
 	        }
 	        this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig).toDynamicValue(function (context) {
+	            // console.log("serving up ComapiConfig: ", JSON.stringify(_comapiConfig));
 	            return _comapiConfig;
 	        });
 	    };
+	    /**
+	     *
+	     * @param serviceIdentifier
+	     */
 	    InterfaceContainer.prototype.getInterface = function (serviceIdentifier) {
 	        return this._container.get(serviceIdentifier);
 	    };
+	    /**
+	     *
+	     * @param serviceIdentifier
+	     */
 	    InterfaceContainer.prototype.setInterface = function (serviceIdentifier, instance) {
 	        var _this = this;
+	        // unbind existing interface
 	        if (this._container.isBound(serviceIdentifier)) {
 	            this._container.unbind(serviceIdentifier);
 	        }
+	        // cache this one
 	        this._overriddenInterfaces[serviceIdentifier.toString()] = instance;
+	        // bind this new one
 	        this._container.bind(serviceIdentifier).toDynamicValue(function (context) {
 	            return _this._overriddenInterfaces[serviceIdentifier.toString()];
 	        });
@@ -4037,15 +4439,32 @@ var COMAPI =
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
 	var EventManager = (function () {
+	    /**
+	     * EventManager class constructor.
+	     * @class EventManager
+	     * @ignore
+	     * @classdesc Class that implements all local event management.
+	     */
 	    function EventManager() {
 	        this.eventSubscribers = [];
 	    }
+	    /**
+	     * Subscribes the caller to a local event type.
+	     * @method EventManager#subscribeToLocalEvent
+	     * @param {string} eventType - The type of event to subscribe to
+	     * @param {Function} handler - The callback
+	     */
 	    EventManager.prototype.subscribeToLocalEvent = function (eventType, handler) {
 	        this.eventSubscribers.push({
 	            eventType: eventType,
 	            handler: handler,
 	        });
 	    };
+	    /**
+	     * Checks for an event subscriptionfor a local event type.
+	     * @method EventManager#isSubscribedToLocalEvent
+	     * @param {string} eventType - The type of event to check
+	     */
 	    EventManager.prototype.isSubscribedToLocalEvent = function (eventType) {
 	        var isSubscribed = false;
 	        for (var _i = 0, _a = this.eventSubscribers; _i < _a.length; _i++) {
@@ -4057,6 +4476,12 @@ var COMAPI =
 	        }
 	        return isSubscribed;
 	    };
+	    /**
+	     * Removes a subscription for a local event type.
+	     * @method EventManager#unsubscribeFromLocalEvent
+	     * @param {string} eventType - The type of event to subscribe to
+	     * @param {Function} [handler] - The callback (optional - if not specified, all associated callbacks will be unregistered)
+	     */
 	    EventManager.prototype.unsubscribeFromLocalEvent = function (eventType, handler) {
 	        for (var i = this.eventSubscribers.length - 1; i >= 0; i--) {
 	            var subscriber = this.eventSubscribers[i];
@@ -4068,13 +4493,25 @@ var COMAPI =
 	            }
 	        }
 	    };
+	    /**
+	     * Publishes a LocalEvent.
+	     * @method EventManager#publishLocalEvent
+	     * @param {string} eventType - The type of event to publish
+	     * @param {Object} data - The data associated with the event
+	     */
 	    EventManager.prototype.publishLocalEvent = function (eventType, data) {
 	        var _this = this;
 	        setTimeout(function () {
 	            for (var _i = 0, _a = _this.eventSubscribers; _i < _a.length; _i++) {
 	                var subscriber = _a[_i];
 	                if (subscriber.eventType === eventType) {
+	                    // call the handler
+	                    // TODO: configurably wrap this ...
+	                    // try {
 	                    subscriber.handler(data);
+	                    // } catch (e) {
+	                    //    console.error("caught exception publishing event: " + e);
+	                    // }
 	                }
 	            }
 	        });
@@ -4109,6 +4546,13 @@ var COMAPI =
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var LocalStorageData = (function () {
+	    /**
+	     * LocalStorageData class constructor.
+	     * @class LocalStorageData
+	     * @ignore
+	     * @classdesc Class that implements Local storage access.
+	     * @param  {string} [prefix]
+	     */
 	    function LocalStorageData(_comapiConfig) {
 	        this._comapiConfig = _comapiConfig;
 	        if (_comapiConfig && _comapiConfig.localStoragePrefix) {
@@ -4119,19 +4563,42 @@ var COMAPI =
 	        }
 	    }
 	    Object.defineProperty(LocalStorageData.prototype, "prefix", {
+	        /**
+	         * Setter to set the prefix
+	         * @method LocalStorageData#prefix
+	         * @param {string} prefix - the prefix
+	         */
 	        set: function (prefix) {
 	            this._prefix = prefix;
 	        },
 	        enumerable: true,
 	        configurable: true
 	    });
+	    /**
+	     * Get raw value as string from local storage.
+	     * @method LocalStorageData#getString
+	     * @param {String} key - the key
+	     * @returns (String) - the raw string value
+	     */
 	    LocalStorageData.prototype.getString = function (key) {
 	        return Promise.resolve(localStorage.getItem(this._prefix + key));
 	    };
+	    /**
+	     * Set raw value as string to local storage.
+	     * @method LocalStorageData#setString
+	     * @param {String} key - the key
+	     * @param {String} value - the value
+	     */
 	    LocalStorageData.prototype.setString = function (key, value) {
 	        localStorage.setItem(this._prefix + key, value);
 	        return Promise.resolve(true);
 	    };
+	    /**
+	     * Get value as object .
+	     * @method LocalStorageData#getObject
+	     * @param  {string} key
+	     * @returns {Object} - the value Object
+	     */
 	    LocalStorageData.prototype.getObject = function (key) {
 	        return this.getString(key)
 	            .then(function (raw) {
@@ -4145,6 +4612,13 @@ var COMAPI =
 	            return Promise.resolve(obj);
 	        });
 	    };
+	    /**
+	     * Set value as object.
+	     * @method LocalStorageData#setObject
+	     * @param  {string} key
+	     * @param  {Object} data
+	     * @returns {boolean} - returns boolean value representing success
+	     */
 	    LocalStorageData.prototype.setObject = function (key, data) {
 	        var succeeded = true;
 	        try {
@@ -4157,6 +4631,11 @@ var COMAPI =
 	        }
 	        return Promise.resolve(succeeded);
 	    };
+	    /**
+	     * Remove a value from local storage.
+	     * @method LocalStorageData#remove
+	     * @param  {string} key
+	     */
 	    LocalStorageData.prototype.remove = function (key) {
 	        try {
 	            localStorage.removeItem(this._prefix + key);
@@ -4199,34 +4678,80 @@ var COMAPI =
 	var indexedDBLogger_1 = __webpack_require__(55);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var Logger = (function () {
+	    /**
+	     * Logger class constructor.
+	     * @class Logger
+	     * @ignore
+	     * @classdesc Class that implements all the Logger functionality.
+	     * @param {IEventManager} [eventManager] - event manager interface - for publishing log events
+	     * @param {ILocalStorageData} [localStorageData] - local storage interface  - for publishing log events
+	     * @param {IndexedDB} [indexedDB] - indexedDB interface - assumed to be open and ready to go
+	     */
 	    function Logger(_eventManager, _localStorageData, _indexedDB) {
 	        this._eventManager = _eventManager;
 	        this._localStorageData = _localStorageData;
 	        this._indexedDB = _indexedDB;
 	        this._logLevel = interfaces_1.LogLevels.Debug;
+	        // used as an id to identify each "session" - it will change on page reload and if 2 windows are open you can identify each log entry for diagnostics
 	        this._uid = ("0000" + (Math.random() * Math.pow(36, 4) << 0).toString(36)).slice(-4);
 	        this._maxLocalStorageLogSize = 1024;
 	        this._localStorageKey = "rollingLogfile";
 	    }
 	    Object.defineProperty(Logger.prototype, "logLevel", {
+	        /**
+	         * Getter to get the log level
+	         * @method Logger#logLevel
+	         * @returns {LogLevels} - returns the current log level
+	         */
 	        get: function () {
 	            return this._logLevel;
 	        },
+	        /**
+	         * Setter to set the log level
+	         * @method Logger#logLevel
+	         * @param {LogLevels} theLogLevel - the log level
+	         */
 	        set: function (theLogLevel) {
 	            this._logLevel = theLogLevel;
 	        },
 	        enumerable: true,
 	        configurable: true
 	    });
+	    /**
+	     * Write custon content to the diagnostic log of type info.
+	     * @method Logger#log
+	     * @param  {String} message
+	     * @param  {Object} [data]
+	     * @returns {Promise} - returns promise
+	     */
 	    Logger.prototype.log = function (message, data) {
 	        return this._log(interfaces_1.LogLevels.Debug, message, data);
 	    };
+	    /**
+	     * Write custon content to the diagnostic log of type warning.
+	     * @method Logger#warn
+	     * @param  {String} message
+	     * @param  {Object} [data]
+	     * @returns {Promise} - returns promise
+	     */
 	    Logger.prototype.warn = function (message, data) {
 	        return this._log(interfaces_1.LogLevels.Warn, message, data);
 	    };
+	    /**
+	     * Write custon content to the diagnostic log of type error.
+	     * @method Logger#error
+	     * @param  {String} message
+	     * @param  {Object} [data]
+	     * @returns {Promise} - returns promise
+	     */
 	    Logger.prototype.error = function (message, data) {
 	        return this._log(interfaces_1.LogLevels.Error, message, data);
 	    };
+	    /**
+	     * Method to get the current logfile
+	     * @method Logger#getLog
+	     * @returns {Promise} - returns promise
+	     */
 	    Logger.prototype.getLog = function () {
 	        var _this = this;
 	        return new Promise(function (resolve, reject) {
@@ -4245,6 +4770,11 @@ var COMAPI =
 	            }
 	        });
 	    };
+	    /**
+	     * Method to clear the current logfile.
+	     * @method Logger#clearLog
+	     * @returns {Promise} - returns promise
+	     */
 	    Logger.prototype.clearLog = function () {
 	        var _this = this;
 	        return new Promise(function (resolve, reject) {
@@ -4265,6 +4795,11 @@ var COMAPI =
 	            }
 	        });
 	    };
+	    /**
+	     * Private method to get a string representation of a log level
+	     * @param {LogLevels} level
+	     * @returns {String}
+	     */
 	    Logger.prototype._stringForLogLevel = function (level) {
 	        switch (level) {
 	            case interfaces_1.LogLevels.Debug:
@@ -4277,6 +4812,13 @@ var COMAPI =
 	                return "?";
 	        }
 	    };
+	    /**
+	     * Private method to log a message
+	     * @param  {LogLevels} level
+	     * @param  {string} message
+	     * @param  {Object} [data]
+	     * @returns Promise
+	     */
 	    Logger.prototype._log = function (level, message, data) {
 	        var _this = this;
 	        return new Promise(function (resolve, reject) {
@@ -4312,6 +4854,7 @@ var COMAPI =
 	                    });
 	                }
 	                else if (_this._localStorageData) {
+	                    // fall back to using local storage
 	                    _this._localStorageData.getString(_this._localStorageKey)
 	                        .then(function (log) {
 	                        if (log !== null) {
@@ -4371,7 +4914,18 @@ var COMAPI =
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var mutex_1 = __webpack_require__(56);
+	/*
+	 * http://blog.vanamco.com/indexeddb-fundamentals-plus-a-indexeddb-example-tutorial/
+	 * http://code.tutsplus.com/tutorials/working-with-indexeddb--net-34673
+	 */
 	var IndexedDBLogger = (function () {
+	    /**
+	     * IndexedDBLogger class constructor.
+	     * @class IndexedDBLogger
+	     * @ignore
+	     * @classdesc Class that implements an IndexedDBLogger.
+	     * @param {string} name - database name (for overriding in unit tests)
+	     */
 	    function IndexedDBLogger(_comapiConfig) {
 	        this._comapiConfig = _comapiConfig;
 	        this.idbSupported = "indexedDB" in window;
@@ -4381,12 +4935,23 @@ var COMAPI =
 	        this._name = "Comapi";
 	    }
 	    Object.defineProperty(IndexedDBLogger.prototype, "name", {
+	        /**
+	         * Setter to set the name
+	         * @method IndexedDBLogger#name
+	         * @param {string} name - the name
+	         */
 	        set: function (name) {
 	            this._name = name;
 	        },
 	        enumerable: true,
 	        configurable: true
 	    });
+	    /**
+	     * Removes all records older than specified date
+	     * @method IndexedDBLogger#purge
+	     * @param {Date} date threshold (messages older than this will be deleted)
+	     * @returns {Promise} - returns a promise
+	     */
 	    IndexedDBLogger.prototype.purge = function (when) {
 	        var _this = this;
 	        return this._mutex.runExclusive(function () {
@@ -4396,6 +4961,7 @@ var COMAPI =
 	                    var transaction = _this._database.transaction([_this._store], "readwrite");
 	                    var objectStore = transaction.objectStore(_this._store);
 	                    var index = objectStore.index("created");
+	                    // we want all keys less than this date
 	                    var keyRangeValue = IDBKeyRange.upperBound(when.valueOf());
 	                    index.openCursor(keyRangeValue).onsuccess = function (event) {
 	                        var cursor = event.target.result;
@@ -4404,13 +4970,19 @@ var COMAPI =
 	                            cursor["continue"]();
 	                        }
 	                        else {
+	                            // should be all deleted 
 	                            resolve(true);
 	                        }
 	                    };
 	                });
 	            });
-	        });
+	        }, "purge");
 	    };
+	    /**
+	     * Method to delete a database
+	     * @method IndexedDBLogger#deleteDatabase
+	     * @returns {Promise} - returns a promise
+	     */
 	    IndexedDBLogger.prototype.deleteDatabase = function () {
 	        var _this = this;
 	        return this._mutex.runExclusive(function () {
@@ -4431,19 +5003,27 @@ var COMAPI =
 	                    };
 	                });
 	            });
-	        });
+	        }, "deleteDatabase");
 	    };
+	    /**
+	     * Method to clear the data in an object store
+	     * @method IndexedDBLogger#clearData
+	     * @returns {Promise} - returns a promise
+	     */
 	    IndexedDBLogger.prototype.clearData = function () {
 	        var _this = this;
 	        return this._mutex.runExclusive(function () {
 	            return _this.ensureInitialised()
 	                .then(function (initialised) {
 	                return new Promise(function (resolve, reject) {
+	                    // open a read/write db transaction, ready for clearing the data
 	                    var transaction = _this._database.transaction([_this._store], "readwrite");
 	                    transaction.onerror = function (event) {
 	                        console.error("Transaction not opened due to error: " + transaction.error);
 	                    };
+	                    // create an object store on the transaction
 	                    var objectStore = transaction.objectStore(_this._store);
+	                    // clear all the data out of the object store
 	                    var objectStoreRequest = objectStore.clear();
 	                    objectStoreRequest.onsuccess = function (event) {
 	                        resolve(true);
@@ -4453,8 +5033,15 @@ var COMAPI =
 	                    };
 	                });
 	            });
-	        });
+	        }, "clearData");
 	    };
+	    /**
+	     * Method to get all or the first n objects in an object store
+	     * @method IndexedDBLogger#getData
+	     * @param {number} [count] - number of records to query - retrieves all if not specified
+	     * @param {boolean} [getIndexes] - whether to add the key into the returned record - doesn'tadd by default
+	     * @returns {Promise} - returns a promise
+	     */
 	    IndexedDBLogger.prototype.getData = function (count, getIndexes) {
 	        var _this = this;
 	        return this._mutex.runExclusive(function () {
@@ -4491,8 +5078,13 @@ var COMAPI =
 	                    };
 	                });
 	            });
-	        });
+	        }, "getData");
 	    };
+	    /**
+	     * Method to get the count of objects in the object store
+	     * @method IndexedDBLogger#getCount
+	     * @returns {Promise} - returns a promise
+	     */
 	    IndexedDBLogger.prototype.getCount = function () {
 	        var _this = this;
 	        return this._mutex.runExclusive(function () {
@@ -4510,13 +5102,23 @@ var COMAPI =
 	                    };
 	                });
 	            });
-	        });
+	        }, "getCount");
 	    };
+	    /**
+	     * Method to close a database connection
+	     * @method IndexedDBLogger#closeDatabase
+	     */
 	    IndexedDBLogger.prototype.closeDatabase = function () {
 	        if (this._database) {
 	            this._database.close();
 	        }
 	    };
+	    /**
+	     * Method to add a record to a previously opened indexed database
+	     * @method IndexedDBLogger#addRecord
+	     * @param {Object} entity - The entity
+	     * @returns {Promise} - returns a promise
+	     */
 	    IndexedDBLogger.prototype.addRecord = function (entity) {
 	        var _this = this;
 	        return this._mutex.runExclusive(function () {
@@ -4525,21 +5127,28 @@ var COMAPI =
 	                return new Promise(function (resolve, reject) {
 	                    var transaction = _this._database.transaction([_this._store], "readwrite");
 	                    var store = transaction.objectStore(_this._store);
+	                    // Perform the add
 	                    var request = store.add(entity);
 	                    request.onerror = function (e) {
 	                        console.error("Error", e.target.error.name);
 	                        reject({ message: "add failed: " + e.target.error.name });
 	                    };
 	                    request.onsuccess = function (e) {
+	                        // http://stackoverflow.com/questions/12502830/how-to-return-auto-increment-id-from-objectstore-put-in-an-indexeddb
+	                        // returns auto incremented id ...
 	                        resolve(e.target.result);
 	                    };
 	                });
 	            });
-	        });
+	        }, "addRecord");
 	    };
+	    /**
+	     *
+	     */
 	    IndexedDBLogger.prototype.ensureInitialised = function () {
 	        var _this = this;
 	        if (!this._initialised) {
+	            // this is a promise instance to ensure it's only called once
 	            this._initialised = this.initialise()
 	                .then(function (result) {
 	                if (_this._comapiConfig) {
@@ -4554,6 +5163,11 @@ var COMAPI =
 	        }
 	        return this._initialised;
 	    };
+	    /**
+	     * Method to open a connection to the database
+	     * @method IndexedDBLogger#initialise
+	     * @returns {Promise} - returns a promise
+	     */
 	    IndexedDBLogger.prototype.initialise = function () {
 	        var _this = this;
 	        return new Promise(function (resolve, reject) {
@@ -4602,15 +5216,15 @@ var COMAPI =
 	        this._queue = [];
 	        this._pending = false;
 	    }
-	    Mutex.prototype.acquire = function () {
+	    Mutex.prototype.acquire = function (name) {
 	        var _this = this;
-	        var ticket = new Promise(function (resolve) { return _this._queue.push(resolve); });
+	        var ticket = new Promise(function (resolve) { return _this._queue.push({ method: resolve, name: name }); });
 	        if (!this._pending) {
 	            this._dispatchNext();
 	        }
 	        return ticket;
 	    };
-	    Mutex.prototype.runExclusive = function (callback) {
+	    Mutex.prototype.runExclusive = function (callback, name) {
 	        return this
 	            .acquire()
 	            .then(function (release) {
@@ -4633,7 +5247,7 @@ var COMAPI =
 	    Mutex.prototype._dispatchNext = function () {
 	        if (this._queue.length > 0) {
 	            this._pending = true;
-	            this._queue.shift()(this._dispatchNext.bind(this));
+	            this._queue.shift().method(this._dispatchNext.bind(this));
 	        }
 	        else {
 	            this._pending = false;
@@ -4665,6 +5279,14 @@ var COMAPI =
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var RestClient = (function () {
+	    /**
+	     * RestClient class constructor.
+	     * @class RestClient
+	     * @ignore
+	     * @classdesc Class that implements a RestClient.
+	     * @param {ILogger} [logger] - the logger
+	     * @param {INetworkManager} [networkManager] - the network Manager
+	     */
 	    function RestClient(logger) {
 	        this.logger = logger;
 	        this._readyStates = [
@@ -4675,21 +5297,63 @@ var COMAPI =
 	            "request finished and response is ready"
 	        ];
 	    }
+	    /**
+	     * Method to make a GET request
+	     * @method RestClient#get
+	     * @param  {string} url
+	     * @param  {any} [headers]
+	     * @returns {Promise} - returns a promise
+	     */
 	    RestClient.prototype.get = function (url, headers) {
 	        return this.makeRequest("GET", url, headers);
 	    };
+	    /**
+	     * Method to make a POST request
+	     * @method RestClient#post
+	     * @param  {string} url
+	     * @param  {any} data
+	     * @param  {any} headers
+	     * @returns {Promise} - returns a promise
+	     */
 	    RestClient.prototype.post = function (url, headers, data) {
 	        return this.makeRequest("POST", url, headers, data);
 	    };
+	    /**
+	     * Method to make a PUT request
+	     * @method RestClient#put
+	     * @param  {string} url
+	     * @param  {any} headers
+	     * @param  {any} data
+	     * @returns {Promise} - returns a promise
+	     */
 	    RestClient.prototype.put = function (url, headers, data) {
 	        return this.makeRequest("PUT", url, headers, data);
 	    };
+	    /**
+	     * Method to make a PATCH request
+	     * @method RestClient#patch
+	     * @param  {string} url
+	     * @param  {any} headers
+	     * @param  {any} data
+	     * @returns {Promise} - returns a promise
+	     */
 	    RestClient.prototype.patch = function (url, headers, data) {
 	        return this.makeRequest("PATCH", url, headers, data);
 	    };
+	    /**
+	     * Method to make a DELETE request
+	     * @method RestClient#delete
+	     * @param  {string} url
+	     * @param  {any} headers
+	     * @returns {Promise} - returns a promise
+	     */
 	    RestClient.prototype.delete = function (url, headers) {
 	        return this.makeRequest("DELETE", url, headers);
 	    };
+	    /**
+	     * @param  {XMLHttpRequest} request
+	     * @param  {any} headers
+	     */
 	    RestClient.prototype.addHeaders = function (request, headers) {
 	        for (var prop in headers) {
 	            if (headers.hasOwnProperty(prop)) {
@@ -4697,6 +5361,9 @@ var COMAPI =
 	            }
 	        }
 	    };
+	    /**
+	     *
+	     */
 	    RestClient.prototype.getResponseHeaders = function (xhr) {
 	        var headers = {};
 	        var headerStr = xhr.getAllResponseHeaders();
@@ -4704,6 +5371,8 @@ var COMAPI =
 	            var headerPairs = headerStr.split("\u000d\u000a");
 	            for (var i = 0; i < headerPairs.length; i++) {
 	                var headerPair = headerPairs[i];
+	                // Can't use split() here because it does the wrong thing
+	                // if the header value has the string ": " in it.
 	                var index = headerPair.indexOf("\u003a\u0020");
 	                if (index > 0) {
 	                    var key = headerPair.substring(0, index);
@@ -4714,20 +5383,46 @@ var COMAPI =
 	        }
 	        return headers;
 	    };
+	    /**
+	     *
+	     */
 	    RestClient.prototype.createCORSRequest = function (method, url) {
 	        var xhr = new XMLHttpRequest();
 	        if ("withCredentials" in xhr) {
+	            // Check if the XMLHttpRequest object has a "withCredentials" property.
+	            // "withCredentials" only exists on XMLHTTPRequest2 objects.
 	            xhr.open(method, url, true);
-	        }
+	        } /*else if (typeof XDomainRequest != "undefined") {
+
+	                // Otherwise, check if XDomainRequest.
+	                // XDomainRequest only exists in IE, and is IE's way of making CORS requests.
+	                xhr = new XDomainRequest();
+	                xhr.open(method, url);
+
+	            } else {
+
+	                // Otherwise, CORS is not supported by the browser.
+	                xhr = null;
+
+	            }*/
 	        return xhr;
 	    };
+	    /**
+	     * @param  {string} method (GET,POST,PUT,DELETE)
+	     * @param  {string} url
+	     * @param  {any} [headers]
+	     * @param  {any} [data]
+	     * @returns {Promise} - returns a promise
+	     */
 	    RestClient.prototype.makeRequest = function (method, url, headers, data) {
 	        var _this = this;
 	        return new Promise(function (resolve, reject) {
 	            headers = headers || {};
+	            // We want this as a default default ...
 	            if (!headers["Content-Type"]) {
 	                headers["Content-Type"] = "application/json";
 	            }
+	            // Edge wants to cache requests by default ...
 	            if (!headers["Cache-Control"]) {
 	                headers["Cache-Control"] = "no-cache";
 	            }
@@ -4776,6 +5471,7 @@ var COMAPI =
 	                }
 	            };
 	            xhr.onerror = function () {
+	                // There was a connection error of some sort
 	                if (_this.logger) {
 	                    _this.logger.log("xhr.onerror", xhr.responseText);
 	                }
@@ -4836,12 +5532,28 @@ var COMAPI =
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var AuthenticatedRestClient = (function () {
+	    /**
+	     * AuthenticatedRestClient class constructor.
+	     * @class AuthenticatedRestClient
+	     * @ignore
+	     * @classdesc Class that implements an Authenticated RestClient.
+	     * @param {ILogger} logger - the logger
+	     * @param {IRestClient} restClient - the restClient
+	     * @param {INetworkManager} networkManager - the Network Manager
+	     */
 	    function AuthenticatedRestClient(logger, restClient, networkManager) {
 	        this.logger = logger;
 	        this.restClient = restClient;
 	        this.networkManager = networkManager;
 	        this.retryCount = 3;
 	    }
+	    /**
+	     * Method to make a GET request
+	     * @method AuthenticatedRestClient#get
+	     * @param  {string} url
+	     * @param  {any} [headers]
+	     * @returns {Promise} - returns a promise
+	     */
 	    AuthenticatedRestClient.prototype.get = function (url, headers) {
 	        var _this = this;
 	        headers = headers || {};
@@ -4851,6 +5563,14 @@ var COMAPI =
 	            return _this.makeRequestWithRetry(0, _this.restClient.get.bind(_this.restClient), url, headers);
 	        });
 	    };
+	    /**
+	     * Method to make a POST request
+	     * @method AuthenticatedRestClient#post
+	     * @param  {string} url
+	     * @param  {any} data
+	     * @param  {any} headers
+	     * @returns {Promise} - returns a promise
+	     */
 	    AuthenticatedRestClient.prototype.post = function (url, headers, data) {
 	        var _this = this;
 	        return this.networkManager.getValidToken()
@@ -4859,6 +5579,14 @@ var COMAPI =
 	            return _this.makeRequestWithRetry(0, _this.restClient.post.bind(_this.restClient), url, headers, data);
 	        });
 	    };
+	    /**
+	     * Method to make a PATCH request
+	     * @method AuthenticatedRestClient#patch
+	     * @param  {string} url
+	     * @param  {any} data
+	     * @param  {any} headers
+	     * @returns {Promise} - returns a promise
+	     */
 	    AuthenticatedRestClient.prototype.patch = function (url, headers, data) {
 	        var _this = this;
 	        return this.networkManager.getValidToken()
@@ -4867,6 +5595,14 @@ var COMAPI =
 	            return _this.makeRequestWithRetry(0, _this.restClient.patch.bind(_this.restClient), url, headers, data);
 	        });
 	    };
+	    /**
+	     * Method to make a PUT request
+	     * @method AuthenticatedRestClient#put
+	     * @param  {string} url
+	     * @param  {any} headers
+	     * @param  {any} data
+	     * @returns {Promise} - returns a promise
+	     */
 	    AuthenticatedRestClient.prototype.put = function (url, headers, data) {
 	        var _this = this;
 	        return this.networkManager.getValidToken()
@@ -4875,6 +5611,13 @@ var COMAPI =
 	            return _this.makeRequestWithRetry(0, _this.restClient.put.bind(_this.restClient), url, headers, data);
 	        });
 	    };
+	    /**
+	     * Method to make a DELETE request
+	     * @method AuthenticatedRestClient#delete
+	     * @param  {string} url
+	     * @param  {any} headers
+	     * @returns {Promise} - returns a promise
+	     */
 	    AuthenticatedRestClient.prototype.delete = function (url, headers) {
 	        var _this = this;
 	        return this.networkManager.getValidToken()
@@ -4883,6 +5626,14 @@ var COMAPI =
 	            return _this.makeRequestWithRetry(0, _this.restClient.delete.bind(_this.restClient), url, headers);
 	        });
 	    };
+	    /**
+	     * Method to check token prior to making a rest call and retry on 401 if necessary ...
+	     * @param {number} count - The number of retries (this function is called recursively)
+	     * @param {Function} verb  - The actual rest method to call
+	     * @param {string} url  - The url
+	     * @param {any} [headers] - The headers
+	     * @param {any} [data]  - The data
+	     */
 	    AuthenticatedRestClient.prototype.makeRequestWithRetry = function (count, verb, url, headers, data) {
 	        var _this = this;
 	        return verb(url, headers, data)
@@ -4897,6 +5648,12 @@ var COMAPI =
 	            throw result;
 	        });
 	    };
+	    /**
+	     * Method to create an auth header from a token
+	     * @method AuthenticatedRestClient#constructAUthHeader
+	     * @param {string} token
+	     * @returns {string} - returns the auth header
+	     */
 	    AuthenticatedRestClient.prototype.constructAUthHeader = function (token) {
 	        return "Bearer " + token;
 	    };
@@ -4934,12 +5691,25 @@ var COMAPI =
 	var utils_1 = __webpack_require__(6);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var SessionManager = (function () {
+	    /**
+	     * SessionManager class constructor.
+	     * @class SessionManager
+	     * @ignore
+	     * @classdesc Class that implements all the SessionManager functionality.
+	     * @parameter {ILogger} logger
+	     * @parameter {IRestClient} restClient
+	     * @parameter {ILocalStorageData} localStorageData
+	     * @parameter {IComapiConfig} comapiConfig
+	     */
 	    function SessionManager(_logger, _restClient, _localStorageData, _comapiConfig) {
 	        this._logger = _logger;
 	        this._restClient = _restClient;
 	        this._localStorageData = _localStorageData;
 	        this._comapiConfig = _comapiConfig;
 	    }
+	    /**
+	     * Retrieve a cached session if there is one
+	     */
 	    SessionManager.prototype.initialise = function () {
 	        var _this = this;
 	        return this._localStorageData.getObject("session")
@@ -4962,18 +5732,34 @@ var COMAPI =
 	        });
 	    };
 	    Object.defineProperty(SessionManager.prototype, "sessionInfo", {
+	        /**
+	         * Getter to get the current sessionInfo
+	         * @method SessionManager#sessionInfo
+	         * @returns {ISessionInfo}
+	         */
 	        get: function () {
 	            return this._sessionInfo;
 	        },
 	        enumerable: true,
 	        configurable: true
 	    });
+	    /**
+	     * Function to get auth token
+	     * @method SessionManager#token
+	     * @returns {Promise} - returns the auth token via a promise
+	     */
 	    SessionManager.prototype.getValidToken = function () {
 	        return this.startSession()
 	            .then(function (sessionInfo) {
 	            return Promise.resolve(sessionInfo.token);
 	        });
 	    };
+	    /**
+	     * Function to start a new session or return an existing session
+	     * @method SessionManager#startSession
+	     * @param {any} userDefined -  Additional client-specific information
+	     * @returns {Promise} - Returns a promise
+	     */
 	    SessionManager.prototype.startSession = function () {
 	        var _this = this;
 	        var self = this;
@@ -4982,10 +5768,12 @@ var COMAPI =
 	                resolve(_this._sessionInfo);
 	            }
 	            else {
+	                // call comapi service startAuth                
 	                _this._startAuth().then(function (sessionStartResponse) {
 	                    var authChallengeOptions = {
 	                        nonce: sessionStartResponse.nonce
 	                    };
+	                    // call integrators auth challenge method
 	                    self._comapiConfig.authChallenge(authChallengeOptions, function (jwt) {
 	                        if (jwt) {
 	                            self._createAuthenticatedSession(jwt, sessionStartResponse.authenticationId, {})
@@ -4997,6 +5785,7 @@ var COMAPI =
 	                                if (!result) {
 	                                    console.error("_setSession() failed");
 	                                }
+	                                // pass back to client
 	                                resolve(sessionInfo);
 	                            })
 	                                .catch(function (error) {
@@ -5004,6 +5793,7 @@ var COMAPI =
 	                            });
 	                        }
 	                        else {
+	                            // client failed to fulfil the auth challenge for some reason ...
 	                            reject({ message: "Failed to get a JWT from authChallenge", statusCode: 401 });
 	                        }
 	                    });
@@ -5011,6 +5801,11 @@ var COMAPI =
 	            }
 	        });
 	    };
+	    /**
+	     * Function to end the current session
+	     * @method SessionManager#endSession
+	     * @returns {Promise} - Returns a promise
+	     */
 	    SessionManager.prototype.endSession = function () {
 	        var _this = this;
 	        return new Promise(function (resolve, reject) {
@@ -5029,6 +5824,13 @@ var COMAPI =
 	            }
 	        });
 	    };
+	    /**
+	     * Internal function to create an authenticated session
+	     * @param (String) jwt - the jwt retrieved from the integrator
+	     * @param (String) authenticationId - the authenticationId given by comapi back end
+	     * @param (Object) deviceInfo - the deviceInfo
+	     * @returns {Promise} - Returns a promise
+	     */
 	    SessionManager.prototype._createAuthenticatedSession = function (jwt, authenticationId, deviceInfo) {
 	        var _this = this;
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
@@ -5042,10 +5844,10 @@ var COMAPI =
 	                authenticationId: authenticationId,
 	                authenticationToken: jwt,
 	                deviceId: _this._deviceId,
-	                platform: "javascript",
+	                platform: /*browserInfo.name*/ "javascript",
 	                platformVersion: browserInfo.version,
-	                sdkType: "native",
-	                sdkVersion: "1.0.3.241"
+	                sdkType: /*"javascript"*/ "native",
+	                sdkVersion: "1.0.3.259"
 	            };
 	            return _this._restClient.post(url, {}, data);
 	        })
@@ -5053,6 +5855,10 @@ var COMAPI =
 	            return Promise.resolve(result.response);
 	        });
 	    };
+	    /**
+	     * Internal function to start an authenticated session
+	     * @returns {Promise} - Returns a promise
+	     */
 	    SessionManager.prototype._startAuth = function () {
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessionStart, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -5063,6 +5869,10 @@ var COMAPI =
 	            return Promise.resolve(result.response);
 	        });
 	    };
+	    /**
+	     * Internal function to end an authenticated session
+	     * @returns {Promise} - Returns a promise
+	     */
 	    SessionManager.prototype._endAuth = function () {
 	        var headers = {
 	            "Content-Type": "application/json",
@@ -5078,6 +5888,10 @@ var COMAPI =
 	            return Promise.resolve(true);
 	        });
 	    };
+	    /**
+	     * Internal function to load in an existing session if available
+	     * @returns {boolean} - returns boolean reault
+	     */
 	    SessionManager.prototype._setSession = function (sessionInfo) {
 	        if (this.hasExpired(sessionInfo.session.expiresOn)) {
 	            this._logger.error("Was given an expired token ;-(");
@@ -5085,6 +5899,10 @@ var COMAPI =
 	        this._sessionInfo = sessionInfo;
 	        return this._localStorageData.setObject("session", sessionInfo);
 	    };
+	    /**
+	     * Internal function to remove an existing session
+	     * @returns {boolean} - returns boolean reault
+	     */
 	    SessionManager.prototype._removeSession = function () {
 	        var _this = this;
 	        return this._localStorageData.remove("session")
@@ -5093,9 +5911,15 @@ var COMAPI =
 	            return result;
 	        });
 	    };
+	    /**
+	     *
+	     */
 	    SessionManager.prototype.getAuthHeader = function () {
 	        return "Bearer " + this.sessionInfo.token;
 	    };
+	    /**
+	     * Create one if not available ...
+	     */
 	    SessionManager.prototype.getDeviceId = function () {
 	        var _this = this;
 	        if (this._deviceId) {
@@ -5118,14 +5942,23 @@ var COMAPI =
 	            });
 	        }
 	    };
+	    /**
+	     * Check an iso date is not in the past ...
+	     * @param expiresOn
+	     */
 	    SessionManager.prototype.hasExpired = function (expiresOn) {
 	        var now = new Date();
 	        var expiry = new Date(expiresOn);
 	        return now > expiry;
 	    };
+	    /**
+	     * Checks validity of session based on expiry and matching apiSpace
+	     * @param sessionInfo
+	     */
 	    SessionManager.prototype.isSessionValid = function (sessionInfo) {
 	        var valid = false;
 	        if (!this.hasExpired(sessionInfo.session.expiresOn)) {
+	            // check that the token matches 
 	            if (sessionInfo.token) {
 	                var bits = sessionInfo.token.split(".");
 	                if (bits.length === 3) {
@@ -5171,7 +6004,19 @@ var COMAPI =
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
+	// https://gist.github.com/strife25/9310539
 	var WebSocketManager = (function () {
+	    /**
+	     * WebSocketManager class constructor.
+	     * @class  WebSocketManager
+	     * @ignore
+	     * @classdesc Class that implements WebSocketManager
+	     * @param {ILogger} _logger
+	     * @param {ILocalStorageData} _localStorageData
+	     * @param {IComapiConfig} _comapiConfig
+	     * @param {ISessionManager} _sessionManager
+	     * @param {IEventManager} _eventManager
+	     */
 	    function WebSocketManager(_logger, _localStorageData, _comapiConfig, _sessionManager, _eventManager, _eventMapper) {
 	        this._logger = _logger;
 	        this._localStorageData = _localStorageData;
@@ -5179,18 +6024,27 @@ var COMAPI =
 	        this._sessionManager = _sessionManager;
 	        this._eventManager = _eventManager;
 	        this._eventMapper = _eventMapper;
+	        // ready state code mapping ...
 	        this.readystates = [
 	            "Connecting",
 	            "Open",
 	            "Closing",
-	            "Closed"
+	            "Closed" // 3
 	        ];
 	        this.manuallyClosed = false;
+	        // current state of socket connection
 	        this.connected = false;
+	        // whether socket ever connected - set to true on first connect and used to determine whether to reconnect on close if not a manual close
 	        this.didConnect = false;
 	        this.attempts = 1;
-	        this.echoIntervalTimeout = 1000 * 60 * 3;
+	        // TODO: make configurable ...
+	        this.echoIntervalTimeout = 1000 * 60 / 3; // 30 seconds
 	    }
+	    /**
+	     * Function to connect websocket
+	     * @method WebSocketManager#connect
+	     * @returns {Promise}
+	     */
 	    WebSocketManager.prototype.connect = function () {
 	        var _this = this;
 	        this._logger.log("WebSocketManager.connect();");
@@ -5200,6 +6054,7 @@ var COMAPI =
 	                _this._sessionManager.getValidToken()
 	                    .then(function (token) {
 	                    _this._logger.log("WebSocketManager.connect() - got auth token", token);
+	                    // reset this in case someone is opening / closing
 	                    _this.manuallyClosed = false;
 	                    var url = _this._comapiConfig.webSocketBase + "/apispaces/" + _this._comapiConfig.apiSpaceId + "/socket";
 	                    var queryString = "?token=" + token;
@@ -5207,6 +6062,9 @@ var COMAPI =
 	                    _this._logger.log("connecting ...", fullUrl);
 	                    _this.webSocket = new WebSocket(fullUrl);
 	                    _this.echoIntervalId = setInterval(function () { return _this.echo(); }, _this.echoIntervalTimeout);
+	                    /**
+	                     *
+	                     */
 	                    _this.webSocket.onopen = function () {
 	                        _this._logger.log("websocket onopen");
 	                        _this.connected = true;
@@ -5244,11 +6102,14 @@ var COMAPI =
 	                                message: "Failed to connect webSocket",
 	                            });
 	                        }
+	                        // only retry if we didng manually close it and it actually connected in the first place
 	                        if (!_this.manuallyClosed && _this.didConnect) {
 	                            _this._logger.log("socket not manually closed, reconnecting ...");
 	                            var time = _this.generateInterval(_this.attempts);
 	                            setTimeout(function () {
+	                                // We've tried to reconnect so increment the attempts by 1
 	                                _this.attempts++;
+	                                // Connection has closed so try to reconnect every 10 seconds.
 	                                _this._logger.log("reconnecting ...");
 	                                _this.connect();
 	                            }, time);
@@ -5266,26 +6127,49 @@ var COMAPI =
 	            }
 	        });
 	    };
+	    /**
+	     * Function to send some data from the client down the websocket
+	     * @method WebSocketManager#send
+	     * @param {any} data -  the data to send
+	     * @returns {Promise}
+	     */
 	    WebSocketManager.prototype.send = function (data) {
 	        if (this.webSocket) {
 	            this.webSocket.send(JSON.stringify(data));
 	        }
 	    };
+	    /**
+	     * Function to determine te connection state of the websocket - rturns hether ther socket `did` connect rather than the current status as there is reconnection logic running.
+	     * @method WebSocketManager#isConnected
+	     * @returns {boolean}
+	     */
 	    WebSocketManager.prototype.isConnected = function () {
 	        return this.didConnect;
 	    };
+	    /**
+	     * Function to determine te whether there is an ative socket or not (connected or disconnected)
+	     * @method WebSocketManager#hasSocket
+	     * @returns {boolean}
+	     */
 	    WebSocketManager.prototype.hasSocket = function () {
 	        return this.webSocket ? true : false;
 	    };
+	    /**
+	     * Function to disconnect websocket
+	     * @method WebSocketManager#disconnect
+	     * @returns {Promise}
+	     */
 	    WebSocketManager.prototype.disconnect = function () {
 	        var _this = this;
 	        this._logger.log("WebSocketManager.disconnect();");
 	        return new Promise(function (resolve, reject) {
 	            if (_this.webSocket) {
+	                // overwrite the onclose callback so we can use it ... 
 	                _this.webSocket.onclose = function () {
 	                    _this.connected = false;
 	                    _this.didConnect = false;
 	                    _this._logger.log("socket closed.");
+	                    // TODO: will this crater it ?
 	                    _this.webSocket = undefined;
 	                    resolve(true);
 	                };
@@ -5298,15 +6182,25 @@ var COMAPI =
 	            }
 	        });
 	    };
+	    /**
+	     * Function to generate an interval for reconnecton purposes
+	     * @method WebSocketManager#generateInterval
+	     * @param {number} k
+	     * @returns {Promise}
+	     */
 	    WebSocketManager.prototype.generateInterval = function (k) {
 	        var maxInterval = (Math.pow(2, k) - 1) * 1000;
 	        if (maxInterval > 30 * 1000) {
-	            maxInterval = 30 * 1000;
+	            maxInterval = 30 * 1000; // If the generated interval is more than 30 seconds, truncate it down to 30 seconds.
 	        }
+	        // generate the interval to a random number between 0 and the maxInterval determined from above
 	        var interval = Math.random() * maxInterval;
 	        this._logger.log("generateInterval() => " + interval);
 	        return interval;
 	    };
+	    /**
+	     *
+	     */
 	    WebSocketManager.prototype.echo = function () {
 	        if (this.connected) {
 	            this.send({
@@ -5316,15 +6210,29 @@ var COMAPI =
 	            });
 	        }
 	    };
+	    /**
+	     *
+	     * @param name
+	     */
 	    WebSocketManager.prototype.mapEventName = function (name) {
+	        // // TODO: make this configurable
+	        // let eventAliasInfo: IEventMapping = {
+	        //     conversation: ["conversation", "chat"],
+	        //     conversationMessage: ["conversationMessage", "chatMessage"],
+	        //     profile: ["profile"]
+	        // };
 	        if (this._comapiConfig.eventMapping) {
 	            if (name) {
 	                var split = name.split(".");
+	                // for conversation.delete, category is conversation, type is delete
 	                var category = split[0];
 	                var type = split[1];
 	                for (var eventCategory in this._comapiConfig.eventMapping) {
 	                    if (this._comapiConfig.eventMapping.hasOwnProperty(eventCategory)) {
+	                        // propertyName is what you want
+	                        // you can get the value like this: myObject[propertyName]
 	                        var aliases = this._comapiConfig.eventMapping[eventCategory];
+	                        // go through the
 	                        for (var _i = 0, aliases_1 = aliases; _i < aliases_1.length; _i++) {
 	                            var val = aliases_1[_i];
 	                            if (val === category) {
@@ -5337,6 +6245,9 @@ var COMAPI =
 	        }
 	        return name;
 	    };
+	    /**
+	     * Map internal event structure to a defined interface ...
+	     */
 	    WebSocketManager.prototype.publishWebsocketEvent = function (event) {
 	        var mappedName = this.mapEventName(event.name);
 	        switch (mappedName) {
@@ -5441,11 +6352,24 @@ var COMAPI =
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var mutex_1 = __webpack_require__(56);
 	var NetworkManager = (function () {
+	    /**
+	     * NetworkManager class constructor.
+	     * @class NetworkManager
+	     * @ignore
+	     * @classdesc Class that implements Session And Socket Resolution.
+	     * @parameter {ISessionManager} _sessionManager
+	     * @parameter {IWebSocketManager} _webSocketManager
+	     */
 	    function NetworkManager(_sessionManager, _webSocketManager) {
 	        this._sessionManager = _sessionManager;
 	        this._webSocketManager = _webSocketManager;
 	        this._mutex = new mutex_1.Mutex();
 	    }
+	    /**
+	     * Method to start a new authenticated session AND connect up the websocket
+	     * @method Foundation#startSession
+	     * @returns {Promise} - Returns a promise
+	     */
 	    NetworkManager.prototype.startSession = function () {
 	        var _this = this;
 	        return this._sessionManager.startSession()
@@ -5460,6 +6384,11 @@ var COMAPI =
 	            return sessionInfo;
 	        });
 	    };
+	    /**
+	     * Method to restart an expired authenticated session
+	     * @method Foundation#restartSession
+	     * @returns {Promise} - Returns a promise
+	     */
 	    NetworkManager.prototype.restartSession = function () {
 	        var _this = this;
 	        return this._webSocketManager.disconnect()
@@ -5478,12 +6407,22 @@ var COMAPI =
 	        });
 	    };
 	    Object.defineProperty(NetworkManager.prototype, "session", {
+	        /**
+	         * Method to get current session
+	         * @method Foundation#session
+	         * @returns {ISession} - Returns an ISession interface
+	         */
 	        get: function () {
 	            return this._sessionManager.sessionInfo ? this._sessionManager.sessionInfo.session : null;
 	        },
 	        enumerable: true,
 	        configurable: true
 	    });
+	    /**
+	     * Method to end an existing authenticated session
+	     * @method Foundation#endSession
+	     * @returns {Promise} - Returns a promise
+	     */
 	    NetworkManager.prototype.endSession = function () {
 	        var _this = this;
 	        return this._webSocketManager.disconnect()
@@ -5494,6 +6433,12 @@ var COMAPI =
 	    NetworkManager.prototype.getValidToken = function () {
 	        return this._sessionManager.getValidToken();
 	    };
+	    /**
+	     * Ensure we have an active session and the websocket has been started
+	     * Socket may have disconected and be reconnecting. We just want to know that it was started
+	     * @method NetworkManager#ensureSessionAndSocket
+	     * @returns {Promise} - returns a Promise
+	     */
 	    NetworkManager.prototype.ensureSessionAndSocket = function () {
 	        var _this = this;
 	        return this._mutex.runExclusive(function () {
@@ -5508,11 +6453,22 @@ var COMAPI =
 	                }
 	                return sessionInfo;
 	            });
-	        });
+	        }, "ensureSessionAndSocket");
 	    };
+	    /**
+	     * Create a session if we don't have one already ...
+	     * @method NetworkManager#ensureSession
+	     * @returns {Promise} - returns a Promise
+	     */
 	    NetworkManager.prototype.ensureSession = function () {
+	        // return this._sessionManager.sessionInfo ? Promise.resolve(this._sessionManager.sessionInfo) : this._sessionManager.startSession();
 	        return this._sessionManager.startSession();
 	    };
+	    /**
+	     * Ensure the web socket has been started
+	     * @method NetworkManager#ensureSocket
+	     * @returns {Promise} - returns a Promise
+	     */
 	    NetworkManager.prototype.ensureSocket = function () {
 	        return this._webSocketManager.hasSocket() ? Promise.resolve(true) : this._webSocketManager.connect();
 	    };
@@ -5550,12 +6506,36 @@ var COMAPI =
 	var utils_1 = __webpack_require__(6);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var DeviceManager = (function () {
+	    // private _deviceId: string;
+	    /**
+	     * DeviceManager class constructor.
+	     * @class DeviceManager
+	     * @ignore
+	     * @classdesc Class that implements all the DeviceManager functionality.
+	     * @parameter {ILogger} logger
+	     * @parameter {IRestClient} restClient
+	     * @parameter {ILocalStorageData} localStorageData
+	     * @parameter {IComapiConfig} ComapiConfig
+	     */
 	    function DeviceManager(_logger, _restClient, _localStorageData, _comapiConfig) {
+	        // this._deviceId = _localStorageData.getString("deviceId");
 	        this._logger = _logger;
 	        this._restClient = _restClient;
 	        this._localStorageData = _localStorageData;
 	        this._comapiConfig = _comapiConfig;
+	        // if (!this._deviceId) {
+	        //     this._deviceId = Utils.uuid();
+	        //     _localStorageData.setString("deviceId", this._deviceId);
+	        // }
 	    }
+	    /**
+	     * Function to set FCM push details for the current session
+	     * @method DeviceManager#setFCMPushDetails
+	     * @param {string} sessionId
+	     * @param {string} packageName
+	     * @param {string} registrationId
+	     * @returns {Promise} - Returns a promise
+	     */
 	    DeviceManager.prototype.setFCMPushDetails = function (sessionId, packageName, registrationId) {
 	        var data = {
 	            "fcm": {
@@ -5568,6 +6548,15 @@ var COMAPI =
 	            return Promise.resolve(true);
 	        });
 	    };
+	    /**
+	     * Function to set APNS push details for the current session
+	     * @method DeviceManager#setAPNSPushDetails
+	     * @param {string} sessionId
+	     * @param {string} bundleId
+	     * @param {Environment} environment
+	     * @param {string} token
+	     * @returns {Promise} - Returns a promise
+	     */
 	    DeviceManager.prototype.setAPNSPushDetails = function (sessionId, bundleId, environment, token) {
 	        var data = {
 	            "apns": {
@@ -5581,12 +6570,23 @@ var COMAPI =
 	            return Promise.resolve(true);
 	        });
 	    };
+	    /**
+	     * Function to remove push details for the current session
+	     * @method DeviceManager#removePushDetails
+	     * @param {string} sessionId
+	     * @returns {Promise} - Returns a promise
+	     */
 	    DeviceManager.prototype.removePushDetails = function (sessionId) {
 	        return this._restClient.delete(this.getPushUrl(sessionId), {})
 	            .then(function (result) {
 	            return Promise.resolve(true);
 	        });
 	    };
+	    /**
+	     * Getter to get the current push Url
+	     * @method DeviceManager#pushUrl
+	     * @returns {string}
+	     */
 	    DeviceManager.prototype.getPushUrl = function (sessionId) {
 	        return utils_1.Utils.format(this._comapiConfig.foundationRestUrls.push, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -5629,10 +6629,21 @@ var COMAPI =
 	var utils_1 = __webpack_require__(6);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var FacebookManager = (function () {
+	    /**
+	     * FacebookManager class constructor.
+	     * @class FacebookManager
+	     * @ignore
+	     * @classdesc Class that implements all the FacebookManager functionality.
+	     * @parameter {IRestClient} restClient
+	     * @parameter {IComapiConfig} comapiConfig
+	     */
 	    function FacebookManager(_restClient, _comapiConfig) {
 	        this._restClient = _restClient;
 	        this._comapiConfig = _comapiConfig;
 	    }
+	    /**
+	     * @param {any} [data] - the data to post
+	     */
 	    FacebookManager.prototype.createSendToMessengerState = function (data) {
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.facebook, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -5674,15 +6685,35 @@ var COMAPI =
 	var utils_1 = __webpack_require__(6);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var ConversationManager = (function () {
+	    /**
+	     * ConversationManager class constructor.
+	     * @class ConversationManager
+	     * @ignore
+	     * @classdesc Class that implements Conversation Management.
+	     * @parameter {ILogger} logger
+	     * @parameter {IRestClient} restClient
+	     * @parameter {ILocalStorageData} localStorageData
+	     * @parameter {IComapiConfig} ComapiConfig
+	     * @parameter {ISessionManager} sessionManager
+	     */
 	    function ConversationManager(_logger, _restClient, _localStorageData, _comapiConfig, _sessionManager) {
 	        this._logger = _logger;
 	        this._restClient = _restClient;
 	        this._localStorageData = _localStorageData;
 	        this._comapiConfig = _comapiConfig;
 	        this._sessionManager = _sessionManager;
+	        //  This object is an in-memory dictionary of last sent timestamps (conversationId: timestamp) ...
+	        //  "FA93AA1B-DEA5-4182-BE67-3DEAF4021040": "2017-02-28T14:48:21.634Z"
 	        this.isTypingInfo = {};
+	        // same for typing off 
 	        this.isTypingOffInfo = {};
 	    }
+	    /**
+	     * Function to create a conversation
+	     * @method ConversationManager#createConversation
+	     * @param {IConversationDetails} conversationDetails
+	     * @returns {Promise}
+	     */
 	    ConversationManager.prototype.createConversation = function (conversationDetails) {
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.conversations, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -5694,6 +6725,13 @@ var COMAPI =
 	            return Promise.resolve(result.response);
 	        });
 	    };
+	    /**
+	     * Function to update a conversation
+	     * @method ConversationManager#updateConversation
+	     * @param {IConversationDetails} conversationDetails
+	     * @param {string} [eTag] - the eTag
+	     * @returns {Promise}
+	     */
 	    ConversationManager.prototype.updateConversation = function (conversationDetails, eTag) {
 	        var headers = {};
 	        if (eTag) {
@@ -5716,6 +6754,12 @@ var COMAPI =
 	            return Promise.resolve(result.response);
 	        });
 	    };
+	    /**
+	     * Function to get a conversation
+	     * @method ConversationManager#getConversation
+	     * @param {string} conversationId
+	     * @returns {Promise}
+	     */
 	    ConversationManager.prototype.getConversation = function (conversationId) {
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.conversation, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -5728,6 +6772,12 @@ var COMAPI =
 	            return Promise.resolve(result.response);
 	        });
 	    };
+	    /**
+	     * Function to delete a conversation
+	     * @method ConversationManager#deleteConversation
+	     * @param {string} conversationId
+	     * @returns {Promise}
+	     */
 	    ConversationManager.prototype.deleteConversation = function (conversationId) {
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.conversation, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -5739,6 +6789,13 @@ var COMAPI =
 	            return Promise.resolve(true);
 	        });
 	    };
+	    /**
+	     * Function to add participants to a conversation
+	     * @method ConversationManager#addParticipantsToConversation
+	     * @param {string} conversationId
+	     * @param {IConversationParticipant[]} participants
+	     * @returns {Promise}
+	     */
 	    ConversationManager.prototype.addParticipantsToConversation = function (conversationId, participants) {
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.participants, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -5750,6 +6807,13 @@ var COMAPI =
 	            return Promise.resolve(true);
 	        });
 	    };
+	    /**
+	     * Function to remove participants to a conversation
+	     * @method ConversationManager#deleteParticipantsFromConversation
+	     * @param {string} conversationId
+	     * @param {string[]} participants
+	     * @returns {Promise}
+	     */
 	    ConversationManager.prototype.deleteParticipantsFromConversation = function (conversationId, participants) {
 	        var query = "";
 	        for (var i = 0; i < participants.length; i++) {
@@ -5765,6 +6829,12 @@ var COMAPI =
 	            return Promise.resolve(true);
 	        });
 	    };
+	    /**
+	     * Function to get participantss in a conversation
+	     * @method ConversationManager#getParticipantsInConversation
+	     * @param {string} conversationId
+	     * @returns {Promise}
+	     */
 	    ConversationManager.prototype.getParticipantsInConversation = function (conversationId) {
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.participants, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -5776,6 +6846,12 @@ var COMAPI =
 	            return Promise.resolve(result.response);
 	        });
 	    };
+	    /**
+	     * @method ConversationManager#getConversations
+	     * @param {ConversationScope} [scope]
+	     * @param {string} [profileId]
+	     * @returns {Promise}
+	     */
 	    ConversationManager.prototype.getConversations = function (scope, profileId) {
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.conversations, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -5795,8 +6871,15 @@ var COMAPI =
 	            return Promise.resolve(result.response);
 	        });
 	    };
+	    /**
+	     * Function to send an is-typing event
+	     * @method ConversationManager#sendIsTyping
+	     * @param {string} conversationId
+	     * @returns {Promise}
+	     */
 	    ConversationManager.prototype.sendIsTyping = function (conversationId) {
 	        var _this = this;
+	        // we only want to call this once every n seconds (10?)
 	        if (this.isTypingInfo[conversationId]) {
 	            var lastSentTime = new Date(this.isTypingInfo[conversationId]);
 	            var now = new Date();
@@ -5816,8 +6899,15 @@ var COMAPI =
 	            return Promise.resolve(true);
 	        });
 	    };
+	    /**
+	     * Function to send an is-typing off event
+	     * @method ConversationManager#sendIsTyping
+	     * @param {string} conversationId
+	     * @returns {Promise}
+	     */
 	    ConversationManager.prototype.sendIsTypingOff = function (conversationId) {
 	        var _this = this;
+	        // we only want to call this once every n seconds (10?)
 	        if (this.isTypingOffInfo[conversationId]) {
 	            var lastSentTime = new Date(this.isTypingOffInfo[conversationId]);
 	            var now = new Date();
@@ -5873,6 +6963,17 @@ var COMAPI =
 	var utils_1 = __webpack_require__(6);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var ProfileManager = (function () {
+	    /**
+	     * ProfileManager class constructor.
+	     * @class ProfileManager
+	     * @ignore
+	     * @classdesc Class that implements Profile Management.
+	     * @parameter {ILogger} logger
+	     * @parameter {IRestClient} restClient
+	     * @parameter {ILocalStorageData} localStorageData
+	     * @parameter {IComapiConfig} comapiConfig
+	     * @parameter {ISessionManager} sessionManager
+	     */
 	    function ProfileManager(_logger, _restClient, _localStorageData, _comapiConfig, _sessionManager) {
 	        this._logger = _logger;
 	        this._restClient = _restClient;
@@ -5880,6 +6981,12 @@ var COMAPI =
 	        this._comapiConfig = _comapiConfig;
 	        this._sessionManager = _sessionManager;
 	    }
+	    /**
+	     * Function to retrieve a user's profile
+	     * @method ProfileManager#getProfile
+	     * @param {string} id
+	     * @returns {Promise}
+	     */
 	    ProfileManager.prototype.getProfile = function (id) {
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.profile, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -5888,6 +6995,12 @@ var COMAPI =
 	        });
 	        return this._restClient.get(url);
 	    };
+	    /**
+	     * Function to query for a list of profiles matching the search criteria
+	     * @method ProfileManager#getProfile
+	     * @param {string} [query] - See https://www.npmjs.com/package/mongo-querystring for query syntax.
+	     * @returns {Promise}
+	     */
 	    ProfileManager.prototype.queryProfiles = function (query) {
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.profiles, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -5898,11 +7011,20 @@ var COMAPI =
 	        }
 	        return this._restClient.get(url);
 	    };
+	    /**
+	     * Function to update a profile
+	     * @method ProfileManager#updateProfile
+	     * @param {string} id
+	     * @param {Object} profile
+	     * @param {string} [eTag]
+	     * @returns {Promise}
+	     */
 	    ProfileManager.prototype.updateProfile = function (id, profile, eTag) {
 	        var headers = {};
 	        if (eTag) {
 	            headers["If-Match"] = eTag;
 	        }
+	        // take a copy of it prior to messing with it ...
 	        var data = utils_1.Utils.clone(profile);
 	        if (data.id === undefined) {
 	            data.id = id;
@@ -5914,11 +7036,20 @@ var COMAPI =
 	        });
 	        return this._restClient.put(url, headers, data);
 	    };
+	    /**
+	     * Function to patch a profile
+	     * @method ProfileManager#updateProfile
+	     * @param {string} id
+	     * @param {Object} profile
+	     * @param {string} [eTag]
+	     * @returns {Promise}
+	     */
 	    ProfileManager.prototype.patchProfile = function (id, profile, eTag) {
 	        var headers = {};
 	        if (eTag) {
 	            headers["If-Match"] = eTag;
 	        }
+	        // take a copy of it prior to messing with it ...
 	        var data = utils_1.Utils.clone(profile);
 	        if (data.id === undefined) {
 	            data.id = id;
@@ -5966,6 +7097,17 @@ var COMAPI =
 	var utils_1 = __webpack_require__(6);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var MessageManager = (function () {
+	    /**
+	     * MessagesManager class constructor.
+	     * @class MessagesManager
+	     * @ignore
+	     * @classdesc Class that implements Messages Management.
+	     * @parameter {ILogger} logger
+	     * @parameter {IRestClient} restClient
+	     * @parameter {ILocalStorageData} localStorageData
+	     * @parameter {IComapiConfig} comapiConfig
+	     * @parameter {ISessionManager} sessionManager
+	     */
 	    function MessageManager(_logger, _restClient, _localStorageData, _comapiConfig, _sessionManager) {
 	        this._logger = _logger;
 	        this._restClient = _restClient;
@@ -5973,6 +7115,13 @@ var COMAPI =
 	        this._comapiConfig = _comapiConfig;
 	        this._sessionManager = _sessionManager;
 	    }
+	    /**
+	     * @method MessagesManager#getConversationEvents
+	     * @param {string} conversationId
+	     * @param {number} from
+	     * @param {number} limit
+	     * @returns {Promise}
+	     */
 	    MessageManager.prototype.getConversationEvents = function (conversationId, from, limit) {
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.events, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -5986,6 +7135,13 @@ var COMAPI =
 	            return Promise.resolve(result.response);
 	        });
 	    };
+	    /**
+	     * @method MessagesManager#getConversationMessages
+	     * @param {string} conversationId
+	     * @param {number} limit
+	     * @param {number} [from]
+	     * @returns {Promise}
+	     */
 	    MessageManager.prototype.getConversationMessages = function (conversationId, limit, from) {
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.messages, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -6001,6 +7157,15 @@ var COMAPI =
 	            return Promise.resolve(result.response);
 	        });
 	    };
+	    /**
+	     * @deprecated - use methd that uses IConversationDetails / ConversationBuilder
+	     * @method MessagesManager#sendMessageToConversation
+	     * @parameter {String} conversationId
+	     * @parameter {Object} metadata
+	     * @parameter {IMessagePart[]} parts
+	     * @parameter {IMessageAlert} alert
+	     * @returns {Promise}
+	     */
 	    MessageManager.prototype._sendMessageToConversation = function (conversationId, metadata, parts, alert) {
 	        var request = {
 	            alert: alert,
@@ -6017,6 +7182,11 @@ var COMAPI =
 	            return Promise.resolve(result.response);
 	        });
 	    };
+	    /**
+	     * @method MessagesManager#sendMessageToConversation2
+	     * @parameter {string} conversationId
+	     * @parameter {IConversationMessage} message
+	     */
 	    MessageManager.prototype.sendMessageToConversation = function (conversationId, message) {
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.messages, {
 	            apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -6028,6 +7198,12 @@ var COMAPI =
 	            return Promise.resolve(result.response);
 	        });
 	    };
+	    /**
+	     * @method MessagesManager#sendMessageStatusUpdates
+	     * @param {string} conversationId
+	     * @param {IMessageStatus[]} statuses
+	     * @returns {Promise}
+	     */
 	    MessageManager.prototype.sendMessageStatusUpdates = function (conversationId, statuses) {
 	        var headers = {
 	            "Content-Type": "application/json",
@@ -6078,6 +7254,9 @@ var COMAPI =
 	        this._continuationTokenStore = "ContinuationTokens";
 	        this._orphanedEventStore = "OrphanedEvents";
 	    }
+	    /**
+	     *
+	     */
 	    IndexedDBOrphanedEventManager.prototype.clearAll = function () {
 	        var _this = this;
 	        return this.ensureInitialised()
@@ -6088,6 +7267,9 @@ var COMAPI =
 	            return _this.clearObjectStore(_this._orphanedEventStore);
 	        });
 	    };
+	    /**
+	     *
+	     */
 	    IndexedDBOrphanedEventManager.prototype.clear = function (conversationId) {
 	        var _this = this;
 	        return this.ensureInitialised()
@@ -6098,6 +7280,9 @@ var COMAPI =
 	            return _this.deleteEvents(conversationId);
 	        });
 	    };
+	    /**
+	     *
+	     */
 	    IndexedDBOrphanedEventManager.prototype.getContinuationToken = function (conversationId) {
 	        var _this = this;
 	        return this.ensureInitialised()
@@ -6105,10 +7290,13 @@ var COMAPI =
 	            return new Promise(function (resolve, reject) {
 	                var transaction = _this._database.transaction([_this._continuationTokenStore], "readonly");
 	                var objectStore = transaction.objectStore(_this._continuationTokenStore);
+	                // we want all the messages from this conversation ...
+	                // using a keyrange to encapsulate just the specified conversationId and all the dates
 	                var keyRange = IDBKeyRange.only(conversationId);
 	                var cursorRequest = objectStore.openCursor(keyRange);
 	                cursorRequest.onsuccess = function (event) {
 	                    var cursor = event.target.result;
+	                    // only one record ...
 	                    if (cursor) {
 	                        var info = cursor.value;
 	                        resolve(info.continuationToken);
@@ -6123,6 +7311,9 @@ var COMAPI =
 	            });
 	        });
 	    };
+	    /**
+	     *
+	     */
 	    IndexedDBOrphanedEventManager.prototype.setContinuationToken = function (conversationId, continuationToken) {
 	        var _this = this;
 	        return this.ensureInitialised()
@@ -6138,11 +7329,17 @@ var COMAPI =
 	                    reject({ message: "add failed: " + event.target.error.name });
 	                };
 	                request.onsuccess = function (event) {
+	                    // http://stackoverflow.com/questions/12502830/how-to-return-auto-increment-id-from-objectstore-put-in-an-indexeddb
+	                    // returns auto incremented id ...
+	                    // resolve((<IDBRequest>event.target).result);
 	                    resolve(true);
 	                };
 	            });
 	        });
 	    };
+	    /**
+	     *
+	     */
 	    IndexedDBOrphanedEventManager.prototype.addOrphanedEvent = function (event) {
 	        var _this = this;
 	        return this.ensureInitialised()
@@ -6156,11 +7353,17 @@ var COMAPI =
 	                    reject({ message: "add failed: " + e.target.error.name });
 	                };
 	                request.onsuccess = function (e) {
+	                    // http://stackoverflow.com/questions/12502830/how-to-return-auto-increment-id-from-objectstore-put-in-an-indexeddb
+	                    // returns auto incremented id ...
+	                    // resolve((<IDBRequest>event.target).result);
 	                    resolve(true);
 	                };
 	            });
 	        });
 	    };
+	    /**
+	     *
+	     */
 	    IndexedDBOrphanedEventManager.prototype.removeOrphanedEvent = function (event) {
 	        var _this = this;
 	        return this.ensureInitialised()
@@ -6179,6 +7382,9 @@ var COMAPI =
 	            });
 	        });
 	    };
+	    /**
+	     *
+	     */
 	    IndexedDBOrphanedEventManager.prototype.getOrphanedEvents = function (conversationId) {
 	        var _this = this;
 	        return this.ensureInitialised()
@@ -6210,10 +7416,14 @@ var COMAPI =
 	    };
 	    IndexedDBOrphanedEventManager.prototype.ensureInitialised = function () {
 	        if (!this._initialised) {
+	            // this is a promise instance to ensure it's only called once
 	            this._initialised = this.initialise();
 	        }
 	        return this._initialised;
 	    };
+	    /**
+	     *
+	     */
 	    IndexedDBOrphanedEventManager.prototype.initialise = function () {
 	        var _this = this;
 	        return new Promise(function (resolve, reject) {
@@ -6222,9 +7432,15 @@ var COMAPI =
 	                var openRequest = indexedDB.open(_this._name, _this._version);
 	                openRequest.onupgradeneeded = function (event) {
 	                    var thisDB = event.target.result;
+	                    /**
+	                     * will be an array of IOrphanedEventContainer objects
+	                     */
 	                    if (!thisDB.objectStoreNames.contains(self_1._continuationTokenStore)) {
 	                        thisDB.createObjectStore(self_1._continuationTokenStore, { keyPath: "conversationId" });
 	                    }
+	                    /**
+	                     * Will be an array of IConversationMessageEvent objects
+	                     */
 	                    if (!thisDB.objectStoreNames.contains(self_1._orphanedEventStore)) {
 	                        var os = thisDB.createObjectStore(self_1._orphanedEventStore, { keyPath: "eventId" });
 	                        os.createIndex("conversationId", "conversationId", { unique: false });
@@ -6243,10 +7459,18 @@ var COMAPI =
 	            }
 	        });
 	    };
+	    /**
+	     * Method to clear the data in an object store
+	     * @method ConversationStore#clearObjectStore
+	     * @param {string} objectStore : the object store to clear
+	     * @returns {Promise} - returns a promise
+	     */
 	    IndexedDBOrphanedEventManager.prototype.clearObjectStore = function (objectStoreName) {
 	        var _this = this;
+	        // can't reference objectStore in the promise without this ...
 	        var _objectStoreName = objectStoreName;
 	        return new Promise(function (resolve, reject) {
+	            // open a read/write db transaction, ready for clearing the data
 	            var transaction = _this._database.transaction([_objectStoreName], "readwrite");
 	            transaction.onerror = function (event) {
 	                console.error("Transaction not opened due to error: " + transaction.error);
@@ -6261,6 +7485,9 @@ var COMAPI =
 	            };
 	        });
 	    };
+	    /**
+	     *
+	     */
 	    IndexedDBOrphanedEventManager.prototype.deleteTokenInfo = function (conversationId) {
 	        var _this = this;
 	        return new Promise(function (resolve, reject) {
@@ -6276,6 +7503,9 @@ var COMAPI =
 	            };
 	        });
 	    };
+	    /**
+	     *
+	     */
 	    IndexedDBOrphanedEventManager.prototype.deleteEvents = function (conversationId) {
 	        var _this = this;
 	        return new Promise(function (resolve, reject) {
@@ -6283,6 +7513,8 @@ var COMAPI =
 	            var objectStore = transaction.objectStore(_this._orphanedEventStore);
 	            var index = objectStore.index("conversationId");
 	            var keyRange = IDBKeyRange.only(conversationId);
+	            // we want all the messages from this conversation ...
+	            // using a keyrange to encapsulate just the specified conversationId and all the dates
 	            var cursorRequest = index.openCursor(keyRange, "next");
 	            cursorRequest.onsuccess = function (event) {
 	                var cursor = event.target.result;
@@ -6329,10 +7561,16 @@ var COMAPI =
 	var interfaceSymbols_1 = __webpack_require__(11);
 	;
 	var LocalStorageOrphanedEventManager = (function () {
+	    /**
+	     *
+	     */
 	    function LocalStorageOrphanedEventManager(_localStorage) {
 	        this._localStorage = _localStorage;
 	        this._orphanedEvents = {};
 	    }
+	    /**
+	     *
+	     */
 	    LocalStorageOrphanedEventManager.prototype.clearAll = function () {
 	        var _this = this;
 	        return this.ensureInitialised()
@@ -6341,6 +7579,9 @@ var COMAPI =
 	            return _this._localStorage.setObject("orphanedEvents", _this._orphanedEvents);
 	        });
 	    };
+	    /**
+	     *
+	     */
 	    LocalStorageOrphanedEventManager.prototype.clear = function (conversationId) {
 	        var _this = this;
 	        return this.ensureInitialised()
@@ -6351,6 +7592,9 @@ var COMAPI =
 	            return _this._localStorage.setObject("orphanedEvents", _this._orphanedEvents);
 	        });
 	    };
+	    /**
+	     *
+	     */
 	    LocalStorageOrphanedEventManager.prototype.getContinuationToken = function (conversationId) {
 	        var _this = this;
 	        return this.ensureInitialised()
@@ -6359,6 +7603,9 @@ var COMAPI =
 	            return Promise.resolve(container ? container.continuationToken : null);
 	        });
 	    };
+	    /**
+	     *
+	     */
 	    LocalStorageOrphanedEventManager.prototype.setContinuationToken = function (conversationId, continuationToken) {
 	        var _this = this;
 	        return this.ensureInitialised()
@@ -6376,15 +7623,21 @@ var COMAPI =
 	            return Promise.resolve(true);
 	        });
 	    };
+	    /**
+	     *
+	     */
 	    LocalStorageOrphanedEventManager.prototype.addOrphanedEvent = function (event) {
 	        var _this = this;
 	        return this.ensureInitialised()
 	            .then(function (initialised) {
 	            var info = _this._orphanedEvents[event.conversationId];
 	            if (info) {
+	                // check for dupe 
 	                var found = info.orphanedEvents.filter(function (e) { return e.eventId === event.eventId; });
 	                if (found.length === 0) {
+	                    // insert
 	                    info.orphanedEvents.unshift(event);
+	                    // sort
 	                    info.orphanedEvents = info.orphanedEvents.sort(function (e1, e2) {
 	                        if (e1.conversationEventId > e2.conversationEventId) {
 	                            return 1;
@@ -6396,6 +7649,7 @@ var COMAPI =
 	                            return 0;
 	                        }
 	                    });
+	                    // save
 	                    return _this._localStorage.setObject("orphanedEvents", _this._orphanedEvents);
 	                }
 	                else {
@@ -6407,6 +7661,9 @@ var COMAPI =
 	            }
 	        });
 	    };
+	    /**
+	     *
+	     */
 	    LocalStorageOrphanedEventManager.prototype.removeOrphanedEvent = function (event) {
 	        var _this = this;
 	        return this.ensureInitialised()
@@ -6420,6 +7677,7 @@ var COMAPI =
 	                        break;
 	                    }
 	                }
+	                // save
 	                return _this._localStorage.setObject("orphanedEvents", _this._orphanedEvents);
 	            }
 	            else {
@@ -6427,6 +7685,9 @@ var COMAPI =
 	            }
 	        });
 	    };
+	    /**
+	     *
+	     */
 	    LocalStorageOrphanedEventManager.prototype.getOrphanedEvents = function (conversationId) {
 	        var _this = this;
 	        return this.ensureInitialised()
@@ -6437,10 +7698,14 @@ var COMAPI =
 	    };
 	    LocalStorageOrphanedEventManager.prototype.ensureInitialised = function () {
 	        if (!this._initialised) {
+	            // this is a promise instance to ensure it's only called once
 	            this._initialised = this.initialise();
 	        }
 	        return this._initialised;
 	    };
+	    /**
+	     *
+	     */
 	    LocalStorageOrphanedEventManager.prototype.initialise = function () {
 	        var _this = this;
 	        return this._localStorage.getObject("orphanedEvents")
@@ -6481,12 +7746,29 @@ var COMAPI =
 	var utils_1 = __webpack_require__(6);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var MessagePager = (function () {
+	    /**
+	     * MessagePager class constructor.
+	     * @class MessagePager
+	     * @ignore
+	     * @classdesc Class that implements Conversation Message Pagination.
+	     * @parameter {ILogger} _logger
+	     * @parameter {ILocalStorageData} _localStorage
+	     * @parameter {IMessageManager} _messageManager
+	     */
 	    function MessagePager(_logger, _localStorage, _messageManager, _orphanedEventManager) {
 	        this._logger = _logger;
 	        this._localStorage = _localStorage;
 	        this._messageManager = _messageManager;
 	        this._orphanedEventManager = _orphanedEventManager;
 	    }
+	    /**
+	     * Get a page of messages, internally deal with orphaned events etc ...
+	     * @method MessagePager#getMessages
+	     * @param {string} id - the conversationId
+	     * @param {number} pageSize - the page size
+	     * @param {number} [continuationToken] - the continuation token (optional - if not specified then retrieve from the end)
+	     * @returns {Promise<any>} - TODO: incorporate continuationToken into respose
+	     */
 	    MessagePager.prototype.getMessages = function (conversationId, pageSize, continuationToken) {
 	        var _this = this;
 	        if (continuationToken <= 0) {
@@ -6494,18 +7776,25 @@ var COMAPI =
 	        }
 	        var _continuationToken = null;
 	        var _conversationMessagesResult;
+	        // 1) get info & Validate
 	        return this._orphanedEventManager.getContinuationToken(conversationId)
 	            .then(function (token) {
 	            _continuationToken = token;
 	            if (continuationToken !== undefined) {
+	                // check the continuationToken is correct
 	                if (_continuationToken !== continuationToken) {
+	                    // get rid of our cached events as they are now useless
+	                    // return this._orphanedEventManager.clear(conversationId)
+	                    // .then(() => {
 	                    return Promise.reject({ message: "Invalid continuation token: " + continuationToken + " for " + conversationId + ", you nust start from the end" });
+	                    // });
 	                }
 	                else {
 	                    return Promise.resolve(true);
 	                }
 	            }
 	            else {
+	                // reset the store as they want to go from the beginning 
 	                return _this._orphanedEventManager.clear(conversationId);
 	            }
 	        })
@@ -6519,11 +7808,13 @@ var COMAPI =
 	                return Promise.resolve({ messages: [] });
 	            }
 	            else {
+	                // merge any events we got from the call to getConversationMessages with whats in the store
 	                return _this.getOrphanedEvents(conversationId, _conversationMessagesResult.orphanedEvents)
 	                    .then(function (orphanedEvents) {
 	                    return _this.applyOrphanedEvents(_conversationMessagesResult.messages, orphanedEvents);
 	                })
 	                    .then(function () {
+	                    // update continuation token for this conv 
 	                    _continuationToken = _conversationMessagesResult.earliestEventId - 1;
 	                    return _this._orphanedEventManager.setContinuationToken(conversationId, _continuationToken);
 	                })
@@ -6538,23 +7829,41 @@ var COMAPI =
 	            }
 	        });
 	    };
+	    /**
+	     * Method to append a new batch of orphaned events to the store and then return them all ..
+	     * @param {string} conversationId
+	     * @param {any[]} orphanedEvents
+	     * @returns {Promise<IConversationMessageEvent[]>}
+	     */
 	    MessagePager.prototype.getOrphanedEvents = function (conversationId, orphanedEvents) {
 	        var _this = this;
 	        var mapped = orphanedEvents.map(function (e) { return _this.mapOrphanedEvent(e); });
+	        // add them into the store 
 	        return utils_1.Utils.eachSeries(mapped, function (event) {
 	            return _this._orphanedEventManager.addOrphanedEvent(event);
 	        })
 	            .then(function (done) {
+	            // get the store 
 	            return _this._orphanedEventManager.getOrphanedEvents(conversationId);
 	        });
 	    };
+	    /**
+	     * Function to iterate through a bunch of messages and mark as delivered as appropriate - NOTE: this is automatically called by  AppMessaging.getMessages()
+	     * @method MessagePager#markMessagesAsDelivered
+	     * @param {string} id - the conversationId
+	     * @param {Object[]} messages - the messages to check
+	     * @param {string} uerId - the userId
+	     * @returns {Promise}
+	     */
 	    MessagePager.prototype.markMessagesAsDelivered = function (id, messages, userId) {
 	        var messageIds = [];
 	        for (var _i = 0, messages_1 = messages; _i < messages_1.length; _i++) {
 	            var message = messages_1[_i];
+	            // only look at messages that I haven't sent ...
 	            if (message.context && message.context.from && message.context.from.id !== userId) {
 	                var alreadyDelivered = false;
 	                if (message.statusUpdates && message.statusUpdates[userId]) {
+	                    // status will be delivered then read i.e. if read, it was delivered
 	                    if (message.statusUpdates[userId].status === "delivered" ||
 	                        message.statusUpdates[userId].status === "read") {
 	                        alreadyDelivered = true;
@@ -6574,12 +7883,20 @@ var COMAPI =
 	            return this._messageManager.sendMessageStatusUpdates(id, [statusUpdate]);
 	        }
 	        else {
+	            // TODO: status update response id currently "OK" ROFL ...
 	            return Promise.resolve("OK");
 	        }
 	    };
+	    /**
+	     * Method to reset any cached info abut a conversation
+	     */
 	    MessagePager.prototype.resetConversation = function (conversationId) {
 	        return this._orphanedEventManager.clear(conversationId);
 	    };
+	    /**
+	     * Orphaned events must be applied in ascending order, so if we want to loop backwards through these they need to be sorted
+	     * by id descending
+	     */
 	    MessagePager.prototype.applyOrphanedEvents = function (messages, orphanedEvents) {
 	        var _this = this;
 	        return utils_1.Utils.eachSeries(orphanedEvents, function (event) {
@@ -6593,8 +7910,12 @@ var COMAPI =
 	            }
 	        });
 	    };
+	    /**
+	     *
+	     */
 	    MessagePager.prototype.playEvent = function (event, messages) {
 	        var played = false;
+	        // find message in array
 	        var found = messages.filter(function (message) { return message.id === event.payload.messageId; });
 	        var message;
 	        if (found.length === 1) {
@@ -6611,6 +7932,7 @@ var COMAPI =
 	            case "conversationMessage.read":
 	                {
 	                    if (message) {
+	                        // apply status update - read overwrites delivered
 	                        message.statusUpdates[event.payload.profileId] = {
 	                            "status": "read",
 	                            "on": event.payload.timestamp
@@ -6621,6 +7943,7 @@ var COMAPI =
 	            case "conversationMessage.delivered":
 	                {
 	                    if (message) {
+	                        // apply status update - read overwrites delivered
 	                        var updateForProfileId = message.statusUpdates[event.payload.profileId];
 	                        if (updateForProfileId && updateForProfileId.status === "read") {
 	                            this._logger.log("Message already marked as read, not marking as delivered");
@@ -6640,6 +7963,42 @@ var COMAPI =
 	        }
 	        return played;
 	    };
+	    /*
+	        An event from the websocket / event api ...
+	        ============================================
+	        {
+	            "eventId": "4ea0489c-5bab-42e2-883c-5545f8444b80",
+	            "name": "conversationMessage.delivered",
+	            "conversationId": "7489e390-62b4-4812-a866-ea9499f7e28e",
+	            "conversationEventId": 3,
+	            "payload": {
+	                "messageId": "4a0fbb0f-7693-47a8-9628-18bef4c69f10",
+	                "conversationId": "7489e390-62b4-4812-a866-ea9499f7e28e",
+	                "isPublicConversation": false,
+	                "profileId": "alex",
+	                "timestamp": "2016-11-08T12:25:24.774Z"
+	            }
+	        }
+
+
+	        An orphaned event ...
+	        ======================
+	        {
+	            "id": 54,
+	            "data": {
+	                "name": "delivered",
+	                "payload": {
+	                    "messageId": "3008c899-c18d-410a-884e-c10a51632d3b",
+	                    "conversationId": "bc24d5b0-b03c-4594-872b-510c4af81dfe",
+	                    "isPublicConversation": false,
+	                    "profileId": "alex",
+	                    "timestamp": "2016-11-08T12:48:53.088Z"
+	                },
+	                "eventId": "8605dbd1-6a10-4405-8966-1eb7dfaefea4",
+	                "profileId": "alex"
+	            }
+	        }
+	     */
 	    MessagePager.prototype.mapOrphanedEvent = function (event) {
 	        var mapped = {};
 	        mapped.conversationEventId = event.id;
@@ -6683,6 +8042,14 @@ var COMAPI =
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var AppMessaging = (function () {
+	    /**
+	     * AppMessaging class constructor.
+	     * @class  AppMessaging
+	     * @classdesc Class that implements AppMessaging
+	     * @param {INetworkManager} networkManager
+	     * @param {IConversationManager} conversationManager
+	     * @param {IMessageManager} messageManager
+	     */
 	    function AppMessaging(_networkManager, _conversationManager, _messageManager, _messagePager, _contentManager) {
 	        this._networkManager = _networkManager;
 	        this._conversationManager = _conversationManager;
@@ -6690,6 +8057,12 @@ var COMAPI =
 	        this._messagePager = _messagePager;
 	        this._contentManager = _contentManager;
 	    }
+	    /**
+	     * Function to create a conversation
+	     * @method AppMessaging#createConversation
+	     * @param {IConversationDetails} conversationDetails - the conversation details (use `ConversationBuilder` to create this)
+	     * @returns {Promise}
+	     */
 	    AppMessaging.prototype.createConversation = function (conversationDetails) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -6697,6 +8070,13 @@ var COMAPI =
 	            return _this._conversationManager.createConversation(conversationDetails);
 	        });
 	    };
+	    /**
+	     * Function to update a conversation
+	     * @method AppMessaging#updateConversation
+	     * @param {IConversationDetails} conversationDetails - the conversation details (use `ConversationBuilder` to create this)
+	     * @param {string} [eTag] - the eTag
+	     * @returns {Promise}
+	     */
 	    AppMessaging.prototype.updateConversation = function (conversationDetails, eTag) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -6704,6 +8084,12 @@ var COMAPI =
 	            return _this._conversationManager.updateConversation(conversationDetails, eTag);
 	        });
 	    };
+	    /**
+	     * Function to get a conversation
+	     * @method AppMessaging#getConversation
+	     * @param {string} conversationId
+	     * @returns {Promise}
+	     */
 	    AppMessaging.prototype.getConversation = function (conversationId) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -6711,6 +8097,12 @@ var COMAPI =
 	            return _this._conversationManager.getConversation(conversationId);
 	        });
 	    };
+	    /**
+	     * Function to delete a conversation
+	     * @method AppMessaging#deleteConversation
+	     * @param {string} conversationId
+	     * @returns {Promise}
+	     */
 	    AppMessaging.prototype.deleteConversation = function (conversationId) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -6721,6 +8113,13 @@ var COMAPI =
 	            return _this._messagePager.resetConversation(conversationId);
 	        });
 	    };
+	    /**
+	     * Function to add participants to a conversation
+	     * @method AppMessaging#addParticipantsToConversation
+	     * @param {string} conversationId
+	     * @param {IConversationParticipant[]} participants
+	     * @returns {Promise}
+	     */
 	    AppMessaging.prototype.addParticipantsToConversation = function (conversationId, participants) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -6728,6 +8127,13 @@ var COMAPI =
 	            return _this._conversationManager.addParticipantsToConversation(conversationId, participants);
 	        });
 	    };
+	    /**
+	     * Function to remove participants to a conversation
+	     * @method AppMessaging#deleteParticipantsFromConversation
+	     * @param {string} conversationId
+	     * @param {string[]} participants
+	     * @returns {Promise}
+	     */
 	    AppMessaging.prototype.deleteParticipantsFromConversation = function (conversationId, participants) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -6735,6 +8141,12 @@ var COMAPI =
 	            return _this._conversationManager.deleteParticipantsFromConversation(conversationId, participants);
 	        });
 	    };
+	    /**
+	     * Function to get participantss in a conversation
+	     * @method AppMessaging#getParticipantsInConversation
+	     * @param {string} conversationId
+	     * @returns {Promise}
+	     */
 	    AppMessaging.prototype.getParticipantsInConversation = function (conversationId) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -6742,6 +8154,13 @@ var COMAPI =
 	            return _this._conversationManager.getParticipantsInConversation(conversationId);
 	        });
 	    };
+	    /**
+	     * Function to get all conversations  the user is a participant in
+	     * @method AppMessaging#getConversations
+	     * @param {ConversationScope} [scope] - the conversation scope ["`public`"|"`participant`"]
+	     * @param {string} [profileId] - The profileId to search with
+	     * @returns {Promise}
+	     */
 	    AppMessaging.prototype.getConversations = function (scope, profileId) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -6749,6 +8168,14 @@ var COMAPI =
 	            return _this._conversationManager.getConversations(scope, profileId);
 	        });
 	    };
+	    /**
+	     * Function to get events from a conversation
+	     * @method AppMessaging#getConversationEvents
+	     * @param {string} conversationId - the conversation Id
+	     * @param {number} from - the event Id to start from
+	     * @param {number} limit - the maximum number of events to retrievee
+	     * @returns {Promise}
+	     */
 	    AppMessaging.prototype.getConversationEvents = function (conversationId, from, limit) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -6756,6 +8183,13 @@ var COMAPI =
 	            return _this._messageManager.getConversationEvents(conversationId, from, limit);
 	        });
 	    };
+	    /**
+	     * Function to send a message to a conversation
+	     * @method AppMessaging#sendMessageToConversation
+	     * @param {string} conversationId  - the conversation Id
+	     * @param {IConversationMessage} - the message to send (Use `MessageBuilder` to create a message)
+	     * @returns {Promise}
+	     */
 	    AppMessaging.prototype.sendMessageToConversation = function (conversationId, message) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -6763,6 +8197,13 @@ var COMAPI =
 	            return _this._messageManager.sendMessageToConversation(conversationId, message);
 	        });
 	    };
+	    /**
+	     * Function to sent message status udates for messages in a conversation
+	     * @method AppMessaging#sendMessageStatusUpdates
+	     * @param {string} conversationId  - the conversation Id
+	     * @param {IMessageStatus[]} statuses -  the message statuses (Use `MessageStatusBuilder` to create the status objects)
+	     * @returns {Promise}
+	     */
 	    AppMessaging.prototype.sendMessageStatusUpdates = function (conversationId, statuses) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -6770,6 +8211,14 @@ var COMAPI =
 	            return _this._messageManager.sendMessageStatusUpdates(conversationId, statuses);
 	        });
 	    };
+	    /**
+	     * Get a page of messages, internally deal with orphaned events etc ...
+	     * @method AppMessaging#getMessages
+	     * @param {string} id - the conversationId
+	     * @param {number} pageSize - the page size
+	     * @param {number} [continuationToken] - the continuation token (optional - if not specified then retrieve from the end)
+	     * @returns {Promise<IGetMessagesResponse>}
+	     */
 	    AppMessaging.prototype.getMessages = function (conversationId, pageSize, continuationToken) {
 	        var _this = this;
 	        var profileId;
@@ -6787,6 +8236,12 @@ var COMAPI =
 	            return Promise.resolve(_getMessagesResponse);
 	        });
 	    };
+	    /**
+	     * Function to send typing event to a conversation
+	     * @method AppMessaging#sendIsTyping
+	     * @param {string} conversationId - the conversation Id
+	     * @returns {Promise}
+	     */
 	    AppMessaging.prototype.sendIsTyping = function (conversationId) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -6794,6 +8249,12 @@ var COMAPI =
 	            return _this._conversationManager.sendIsTyping(conversationId);
 	        });
 	    };
+	    /**
+	     * Function to send typing off event to a conversation
+	     * @method AppMessaging#sendIsTypingOff
+	     * @param {string} conversationId - the conversation Id
+	     * @returns {Promise}
+	     */
 	    AppMessaging.prototype.sendIsTypingOff = function (conversationId) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -6801,6 +8262,12 @@ var COMAPI =
 	            return _this._conversationManager.sendIsTypingOff(conversationId);
 	        });
 	    };
+	    /**
+	     * Method to upload content data
+	     * @method AppMessaging#uploadContent
+	     * @param {ContentData} content - the content
+	     * @returns {IUploadContentResult} - the result
+	     */
 	    AppMessaging.prototype.uploadContent = function (content, folder) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -6844,11 +8311,25 @@ var COMAPI =
 	var utils_1 = __webpack_require__(6);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var Profile = (function () {
+	    /**
+	     * Profile class constructor.
+	     * @class Profile
+	     * @classdesc Class that implements Profile.
+	     * @parameter {INetworkManager} _networkManager
+	     * @parameter {ILocalStorageData} localStorageData
+	     * @parameter {IProfileManager} profileManager
+	     */
 	    function Profile(_networkManager, _localStorage, _profileManager) {
 	        this._networkManager = _networkManager;
 	        this._localStorage = _localStorage;
 	        this._profileManager = _profileManager;
 	    }
+	    /**
+	     * Get a profile
+	     * @method Profile#getProfile
+	     * @param {string} profileId - The id of the profile  to get
+	     * @returns {Promise} - returns a Promise
+	     */
 	    Profile.prototype.getProfile = function (profileId) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -6856,6 +8337,12 @@ var COMAPI =
 	            return _this._profileManager.getProfile(profileId);
 	        });
 	    };
+	    /**
+	     * Function to query for a list of profiles matching the search criteria
+	     * @method Profile#queryProfiles
+	     * @param {string} [query] - See <a href="https://www.npmjs.com/package/mongo-querystring">mongo-querystring</a> for query syntax.
+	     * @returns {Promise}
+	     */
 	    Profile.prototype.queryProfiles = function (query) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -6863,6 +8350,14 @@ var COMAPI =
 	            return _this._profileManager.queryProfiles(query);
 	        });
 	    };
+	    /**
+	     * Function to update a profile
+	     * @method Profile#updateProfile
+	     * @param {string} profileId - the id of the profile to update
+	     * @param {any} profile - the profile to update
+	     * @param {string} [eTag] - the eTag (returned in headers from getProfile())
+	     * @returns {Promise}
+	     */
 	    Profile.prototype.updateProfile = function (profileId, profile, eTag) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -6870,6 +8365,14 @@ var COMAPI =
 	            return _this._profileManager.updateProfile(profileId, profile, eTag);
 	        });
 	    };
+	    /**
+	     * Function to patch a profile
+	     * @method Profile#updateProfile
+	     * @param {string} profileId - the id of the profile to update
+	     * @param {any} profile - the profile to patch
+	     * @param {string} [eTag] - the eTag (returned in headers from getProfile())
+	     * @returns {Promise}
+	     */
 	    Profile.prototype.patchProfile = function (profileId, profile, eTag) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -6877,6 +8380,12 @@ var COMAPI =
 	            return _this._profileManager.patchProfile(profileId, profile, eTag);
 	        });
 	    };
+	    /**
+	     * Get current user's profile
+	     * @method Profile#getMyProfile
+	     * @param {boolean} [useEtag=true] - Whether to use eTags to maintain consistency of profile data (defaults to true)
+	     * @returns {Promise} - returns a Promise
+	     */
 	    Profile.prototype.getMyProfile = function (useEtag) {
 	        var _this = this;
 	        if (useEtag === void 0) { useEtag = true; }
@@ -6891,6 +8400,13 @@ var COMAPI =
 	            return Promise.resolve(result.response);
 	        });
 	    };
+	    /**
+	     * Update current user's profile
+	     * @method Profile#updateMyProfile
+	     * @param {any} profile - the profile of the logged in user to update
+	     * @param {boolean} [useEtag=true] - Whether to use eTags to maintain consistency of profile data (defaults to true)
+	     * @returns {Promise} - returns a Promise
+	     */
 	    Profile.prototype.updateMyProfile = function (profile, useEtag) {
 	        var _this = this;
 	        if (useEtag === void 0) { useEtag = true; }
@@ -6909,6 +8425,12 @@ var COMAPI =
 	            return Promise.resolve(result.response);
 	        });
 	    };
+	    /**
+	     * Patch current user's profile
+	     * @method Profile#patchMyProfile
+	     * @param {any} profile - the profile of the logged in user to update
+	     * @returns {Promise} - returns a Promise
+	     */
 	    Profile.prototype.patchMyProfile = function (profile, useEtag) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -6926,6 +8448,10 @@ var COMAPI =
 	            return Promise.resolve(result.response);
 	        });
 	    };
+	    /**
+	     *
+	     * @param useEtag
+	     */
 	    Profile.prototype.getMyProfileETag = function (useEtag) {
 	        if (useEtag) {
 	            return this._localStorage.getString("MyProfileETag");
@@ -6967,11 +8493,23 @@ var COMAPI =
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var Services = (function () {
+	    /**
+	     * Services class constructor.
+	     * @class Services
+	     * @classdesc Class that implements Services interface
+	     * @parameter {AppMessaging} _appMessaging
+	     * @parameter {Profile} _profile
+	     */
 	    function Services(_appMessaging, _profile) {
 	        this._appMessaging = _appMessaging;
 	        this._profile = _profile;
 	    }
 	    Object.defineProperty(Services.prototype, "appMessaging", {
+	        /**
+	         * Method to get AppMessaging interface
+	         * @method Services#appMessaging
+	         * @returns {AppMessaging} - Returns AppMessaging interface
+	         */
 	        get: function () {
 	            return this._appMessaging;
 	        },
@@ -6979,6 +8517,11 @@ var COMAPI =
 	        configurable: true
 	    });
 	    Object.defineProperty(Services.prototype, "profile", {
+	        /**
+	         * Method to get Profile interface
+	         * @method Services#profile
+	         * @returns {Profile} - Returns Profile interface
+	         */
 	        get: function () {
 	            return this._profile;
 	        },
@@ -7017,10 +8560,24 @@ var COMAPI =
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var Device = (function () {
+	    /**
+	     * Device class constructor.
+	     * @class Device
+	     * @classdesc Class that implements Device related functionality.
+	     * @parameter {INetworkManager} _networkManager
+	     * @parameter {IDeviceManager} deviceManager
+	     */
 	    function Device(_networkManager, _deviceManager) {
 	        this._networkManager = _networkManager;
 	        this._deviceManager = _deviceManager;
 	    }
+	    /**
+	     * Function to set FCM push details for the current session
+	     * @method Device#setFCMPushDetails
+	     * @param {string} packageName - the andriod package name of your cordova app
+	     * @param {string} registrationId - the push registration id
+	     * @returns {Promise} - Returns a promise
+	     */
 	    Device.prototype.setFCMPushDetails = function (packageName, registrationId) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -7028,6 +8585,14 @@ var COMAPI =
 	            return _this._deviceManager.setFCMPushDetails(sessionInfo.session.id, packageName, registrationId);
 	        });
 	    };
+	    /**
+	     * Function to set APNS push details for the current session
+	     * @method Device#setAPNSPushDetails
+	     * @param {string} bundleId - the iOS bundleId of your cordova app
+	     * @param {Environment} environment - the environment ["`development`"|"`production`"]
+	     * @param {string} token
+	     * @returns {Promise} - Returns a promise
+	     */
 	    Device.prototype.setAPNSPushDetails = function (bundleId, environment, token) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -7035,6 +8600,11 @@ var COMAPI =
 	            return _this._deviceManager.setAPNSPushDetails(sessionInfo.session.id, bundleId, environment, token);
 	        });
 	    };
+	    /**
+	     * Function to remove push details for the current session
+	     * @method Device#removePushDetails
+	     * @returns {Promise} - Returns a promise
+	     */
 	    Device.prototype.removePushDetails = function () {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -7074,10 +8644,22 @@ var COMAPI =
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var Channels = (function () {
+	    /**
+	     * Channels class constructor.
+	     * @class Channels
+	     * @classdesc Class that implements Channels interface
+	     * @parameter {NetworkManager} networkManager
+	     * @parameter {IFacebookManager} facebookManager
+	     */
 	    function Channels(_networkManager, _facebookManager) {
 	        this._networkManager = _networkManager;
 	        this._facebookManager = _facebookManager;
 	    }
+	    /**
+	     * Method to create opt in state for facebook messenger
+	     * @method Channels#createFbOptInState
+	     * @param {any} [data] - the data to post
+	     */
 	    Channels.prototype.createFbOptInState = function (data) {
 	        var _this = this;
 	        return this._networkManager.ensureSessionAndSocket()
@@ -7129,6 +8711,7 @@ var COMAPI =
 	    EventMapper.prototype.conversationUpdated = function (event) {
 	        return {
 	            conversationId: event.conversationId,
+	            // the user who updated the conversation
 	            createdBy: event.context.createdBy,
 	            description: event.payload.description,
 	            eTag: event.etag,
@@ -7250,11 +8833,27 @@ var COMAPI =
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var utils_1 = __webpack_require__(6);
 	var ContentManager = (function () {
+	    /**
+	     * ContentManager class constructor.
+	     * @class ContentManager
+	     * @ignore
+	     * @classdesc Class that implements all the ContentManager functionality.
+	     * @parameter {ILogger} logger
+	     * @parameter {IRestClient} restClient
+	     * @parameter {IComapiConfig} ComapiConfig
+	     */
 	    function ContentManager(_logger, networkManager, _comapiConfig) {
 	        this._logger = _logger;
 	        this.networkManager = networkManager;
 	        this._comapiConfig = _comapiConfig;
 	    }
+	    /**
+	     * Method to upload content data
+	     * @method ContentManager#uploadContent
+	     * @param {string} folder - the folder
+	     * @param {ContentData} content - the content
+	     * @returns {IUploadContentResult} - the result
+	     */
 	    ContentManager.prototype.uploadContent = function (content, folder) {
 	        var _this = this;
 	        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.content, {
@@ -7318,6 +8917,12 @@ var COMAPI =
 	            });
 	        });
 	    };
+	    /**
+	     * Method to create an auth header from a token
+	     * @method ContentManager#constructAUthHeader
+	     * @param {string} token
+	     * @returns {string} - returns the auth header
+	     */
 	    ContentManager.prototype.constructAUthHeader = function (token) {
 	        return "Bearer " + token;
 	    };
@@ -7339,19 +8944,55 @@ var COMAPI =
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	/*
+	 * Helper class to create the content
+	 */
 	var ContentData = (function () {
+	    /**
+	     * ContentData class constructor.
+	     * @class ContentData
+	     * @classdesc Class that implements Content Data.
+	     */
+	    /* tslint:disable:no-empty */
 	    function ContentData() {
 	    }
+	    /**
+	     * Static method that creates and initialises a ContentData instance from a File object
+	     * @param {File} file - the file object
+	     * @returns {ContentData}
+	     */
 	    ContentData.createFromFile = function (file) {
 	        return new ContentData().initFromFile(file);
 	    };
+	    /**
+	     * Static method that creates and initialises a ContentData instance from raw base64 data
+	     * @param {string} data - the base64 data
+	     * @param {string} name - the name of the attachment
+	     * @param {string} type - the type of attachment
+	     * @returns {ContentData}
+	     */
 	    ContentData.createFromBase64 = function (data, name, type) {
 	        return new ContentData().initFromBase64Data(data, name, type);
 	    };
+	    /* tslint:enable:no-empty */
+	    /**
+	     * Method that initialises a ContentData instance from a File object
+	     * @method ContentData#initFromFile
+	     * @param {File} file - the file object
+	     * @returns {ContentData}
+	     */
 	    ContentData.prototype.initFromFile = function (file) {
 	        this.file = file;
 	        return this;
 	    };
+	    /**
+	     * Method that initialises a ContentData instance from raw base64 data
+	     * @method ContentData#initFromBase64Data
+	     * @param {string} data - the base64 data
+	     * @param {string} name - the name of the attachment
+	     * @param {string} type - the type of attachment
+	     * @returns {ContentData}
+	     */
 	    ContentData.prototype.initFromBase64Data = function (data, name, type) {
 	        this.data = data;
 	        this.name = name;

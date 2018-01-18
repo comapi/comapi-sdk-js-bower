@@ -14,7 +14,19 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var inversify_1 = require("inversify");
 var interfaceSymbols_1 = require("./interfaceSymbols");
+// https://gist.github.com/strife25/9310539
 var WebSocketManager = (function () {
+    /**
+     * WebSocketManager class constructor.
+     * @class  WebSocketManager
+     * @ignore
+     * @classdesc Class that implements WebSocketManager
+     * @param {ILogger} _logger
+     * @param {ILocalStorageData} _localStorageData
+     * @param {IComapiConfig} _comapiConfig
+     * @param {ISessionManager} _sessionManager
+     * @param {IEventManager} _eventManager
+     */
     function WebSocketManager(_logger, _localStorageData, _comapiConfig, _sessionManager, _eventManager, _eventMapper) {
         this._logger = _logger;
         this._localStorageData = _localStorageData;
@@ -22,18 +34,27 @@ var WebSocketManager = (function () {
         this._sessionManager = _sessionManager;
         this._eventManager = _eventManager;
         this._eventMapper = _eventMapper;
+        // ready state code mapping ...
         this.readystates = [
             "Connecting",
             "Open",
             "Closing",
-            "Closed"
+            "Closed" // 3
         ];
         this.manuallyClosed = false;
+        // current state of socket connection
         this.connected = false;
+        // whether socket ever connected - set to true on first connect and used to determine whether to reconnect on close if not a manual close
         this.didConnect = false;
         this.attempts = 1;
-        this.echoIntervalTimeout = 1000 * 60 * 3;
+        // TODO: make configurable ...
+        this.echoIntervalTimeout = 1000 * 60 / 3; // 30 seconds
     }
+    /**
+     * Function to connect websocket
+     * @method WebSocketManager#connect
+     * @returns {Promise}
+     */
     WebSocketManager.prototype.connect = function () {
         var _this = this;
         this._logger.log("WebSocketManager.connect();");
@@ -43,6 +64,7 @@ var WebSocketManager = (function () {
                 _this._sessionManager.getValidToken()
                     .then(function (token) {
                     _this._logger.log("WebSocketManager.connect() - got auth token", token);
+                    // reset this in case someone is opening / closing
                     _this.manuallyClosed = false;
                     var url = _this._comapiConfig.webSocketBase + "/apispaces/" + _this._comapiConfig.apiSpaceId + "/socket";
                     var queryString = "?token=" + token;
@@ -50,6 +72,9 @@ var WebSocketManager = (function () {
                     _this._logger.log("connecting ...", fullUrl);
                     _this.webSocket = new WebSocket(fullUrl);
                     _this.echoIntervalId = setInterval(function () { return _this.echo(); }, _this.echoIntervalTimeout);
+                    /**
+                     *
+                     */
                     _this.webSocket.onopen = function () {
                         _this._logger.log("websocket onopen");
                         _this.connected = true;
@@ -87,11 +112,14 @@ var WebSocketManager = (function () {
                                 message: "Failed to connect webSocket",
                             });
                         }
+                        // only retry if we didng manually close it and it actually connected in the first place
                         if (!_this.manuallyClosed && _this.didConnect) {
                             _this._logger.log("socket not manually closed, reconnecting ...");
                             var time = _this.generateInterval(_this.attempts);
                             setTimeout(function () {
+                                // We've tried to reconnect so increment the attempts by 1
                                 _this.attempts++;
+                                // Connection has closed so try to reconnect every 10 seconds.
                                 _this._logger.log("reconnecting ...");
                                 _this.connect();
                             }, time);
@@ -109,26 +137,49 @@ var WebSocketManager = (function () {
             }
         });
     };
+    /**
+     * Function to send some data from the client down the websocket
+     * @method WebSocketManager#send
+     * @param {any} data -  the data to send
+     * @returns {Promise}
+     */
     WebSocketManager.prototype.send = function (data) {
         if (this.webSocket) {
             this.webSocket.send(JSON.stringify(data));
         }
     };
+    /**
+     * Function to determine te connection state of the websocket - rturns hether ther socket `did` connect rather than the current status as there is reconnection logic running.
+     * @method WebSocketManager#isConnected
+     * @returns {boolean}
+     */
     WebSocketManager.prototype.isConnected = function () {
         return this.didConnect;
     };
+    /**
+     * Function to determine te whether there is an ative socket or not (connected or disconnected)
+     * @method WebSocketManager#hasSocket
+     * @returns {boolean}
+     */
     WebSocketManager.prototype.hasSocket = function () {
         return this.webSocket ? true : false;
     };
+    /**
+     * Function to disconnect websocket
+     * @method WebSocketManager#disconnect
+     * @returns {Promise}
+     */
     WebSocketManager.prototype.disconnect = function () {
         var _this = this;
         this._logger.log("WebSocketManager.disconnect();");
         return new Promise(function (resolve, reject) {
             if (_this.webSocket) {
+                // overwrite the onclose callback so we can use it ... 
                 _this.webSocket.onclose = function () {
                     _this.connected = false;
                     _this.didConnect = false;
                     _this._logger.log("socket closed.");
+                    // TODO: will this crater it ?
                     _this.webSocket = undefined;
                     resolve(true);
                 };
@@ -141,15 +192,25 @@ var WebSocketManager = (function () {
             }
         });
     };
+    /**
+     * Function to generate an interval for reconnecton purposes
+     * @method WebSocketManager#generateInterval
+     * @param {number} k
+     * @returns {Promise}
+     */
     WebSocketManager.prototype.generateInterval = function (k) {
         var maxInterval = (Math.pow(2, k) - 1) * 1000;
         if (maxInterval > 30 * 1000) {
-            maxInterval = 30 * 1000;
+            maxInterval = 30 * 1000; // If the generated interval is more than 30 seconds, truncate it down to 30 seconds.
         }
+        // generate the interval to a random number between 0 and the maxInterval determined from above
         var interval = Math.random() * maxInterval;
         this._logger.log("generateInterval() => " + interval);
         return interval;
     };
+    /**
+     *
+     */
     WebSocketManager.prototype.echo = function () {
         if (this.connected) {
             this.send({
@@ -159,15 +220,29 @@ var WebSocketManager = (function () {
             });
         }
     };
+    /**
+     *
+     * @param name
+     */
     WebSocketManager.prototype.mapEventName = function (name) {
+        // // TODO: make this configurable
+        // let eventAliasInfo: IEventMapping = {
+        //     conversation: ["conversation", "chat"],
+        //     conversationMessage: ["conversationMessage", "chatMessage"],
+        //     profile: ["profile"]
+        // };
         if (this._comapiConfig.eventMapping) {
             if (name) {
                 var split = name.split(".");
+                // for conversation.delete, category is conversation, type is delete
                 var category = split[0];
                 var type = split[1];
                 for (var eventCategory in this._comapiConfig.eventMapping) {
                     if (this._comapiConfig.eventMapping.hasOwnProperty(eventCategory)) {
+                        // propertyName is what you want
+                        // you can get the value like this: myObject[propertyName]
                         var aliases = this._comapiConfig.eventMapping[eventCategory];
+                        // go through the
                         for (var _i = 0, aliases_1 = aliases; _i < aliases_1.length; _i++) {
                             var val = aliases_1[_i];
                             if (val === category) {
@@ -180,6 +255,9 @@ var WebSocketManager = (function () {
         }
         return name;
     };
+    /**
+     * Map internal event structure to a defined interface ...
+     */
     WebSocketManager.prototype.publishWebsocketEvent = function (event) {
         var mappedName = this.mapEventName(event.name);
         switch (mappedName) {

@@ -33,6 +33,9 @@ var InterfaceContainer = (function () {
         this._overriddenInterfaces = {};
         this._container = new inversify_1.Container();
     }
+    /**
+     *
+     */
     InterfaceContainer.prototype.initialise = function (comapiConfig) {
         this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager).to(eventManager_1.EventManager).inSingletonScope();
         this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData).to(localStorageData_1.LocalStorageData).inSingletonScope();
@@ -78,9 +81,15 @@ var InterfaceContainer = (function () {
         this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels).to(channels_1.Channels).inSingletonScope();
         this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ContentManager).to(contentManager_1.ContentManager).inSingletonScope();
     };
+    /**
+     *
+     */
     InterfaceContainer.prototype.uninitialise = function () {
         this._container.unbindAll();
     };
+    /**
+     *
+     */
     InterfaceContainer.prototype.bindIndexedDBLogger = function () {
         if (this._container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)) {
             this._container.rebind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger).to(indexedDBLogger_1.IndexedDBLogger).inSingletonScope();
@@ -89,31 +98,51 @@ var InterfaceContainer = (function () {
             this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger).to(indexedDBLogger_1.IndexedDBLogger).inSingletonScope();
         }
     };
+    /**
+     *
+     */
     InterfaceContainer.prototype.unbindIndexedDBLogger = function () {
         if (this._container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)) {
             this._container.unbind(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger);
         }
     };
+    /**
+     *
+     */
     InterfaceContainer.prototype.bindComapiConfig = function (comapiConfig) {
         var _comapiConfig = comapiConfig;
         if (this._container.isBound(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)) {
+            // console.log("unbinding old ComapiConfig: ", JSON.stringify(_comapiConfig));
             this._container.unbind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig);
         }
         else {
+            // console.log("first bind of ComapiConfig: ", JSON.stringify(_comapiConfig));
         }
         this._container.bind(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig).toDynamicValue(function (context) {
+            // console.log("serving up ComapiConfig: ", JSON.stringify(_comapiConfig));
             return _comapiConfig;
         });
     };
+    /**
+     *
+     * @param serviceIdentifier
+     */
     InterfaceContainer.prototype.getInterface = function (serviceIdentifier) {
         return this._container.get(serviceIdentifier);
     };
+    /**
+     *
+     * @param serviceIdentifier
+     */
     InterfaceContainer.prototype.setInterface = function (serviceIdentifier, instance) {
         var _this = this;
+        // unbind existing interface
         if (this._container.isBound(serviceIdentifier)) {
             this._container.unbind(serviceIdentifier);
         }
+        // cache this one
         this._overriddenInterfaces[serviceIdentifier.toString()] = instance;
+        // bind this new one
         this._container.bind(serviceIdentifier).toDynamicValue(function (context) {
             return _this._overriddenInterfaces[serviceIdentifier.toString()];
         });

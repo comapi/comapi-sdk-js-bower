@@ -16,12 +16,25 @@ var inversify_1 = require("inversify");
 var utils_1 = require("./utils");
 var interfaceSymbols_1 = require("./interfaceSymbols");
 var SessionManager = (function () {
+    /**
+     * SessionManager class constructor.
+     * @class SessionManager
+     * @ignore
+     * @classdesc Class that implements all the SessionManager functionality.
+     * @parameter {ILogger} logger
+     * @parameter {IRestClient} restClient
+     * @parameter {ILocalStorageData} localStorageData
+     * @parameter {IComapiConfig} comapiConfig
+     */
     function SessionManager(_logger, _restClient, _localStorageData, _comapiConfig) {
         this._logger = _logger;
         this._restClient = _restClient;
         this._localStorageData = _localStorageData;
         this._comapiConfig = _comapiConfig;
     }
+    /**
+     * Retrieve a cached session if there is one
+     */
     SessionManager.prototype.initialise = function () {
         var _this = this;
         return this._localStorageData.getObject("session")
@@ -44,18 +57,34 @@ var SessionManager = (function () {
         });
     };
     Object.defineProperty(SessionManager.prototype, "sessionInfo", {
+        /**
+         * Getter to get the current sessionInfo
+         * @method SessionManager#sessionInfo
+         * @returns {ISessionInfo}
+         */
         get: function () {
             return this._sessionInfo;
         },
         enumerable: true,
         configurable: true
     });
+    /**
+     * Function to get auth token
+     * @method SessionManager#token
+     * @returns {Promise} - returns the auth token via a promise
+     */
     SessionManager.prototype.getValidToken = function () {
         return this.startSession()
             .then(function (sessionInfo) {
             return Promise.resolve(sessionInfo.token);
         });
     };
+    /**
+     * Function to start a new session or return an existing session
+     * @method SessionManager#startSession
+     * @param {any} userDefined -  Additional client-specific information
+     * @returns {Promise} - Returns a promise
+     */
     SessionManager.prototype.startSession = function () {
         var _this = this;
         var self = this;
@@ -64,10 +93,12 @@ var SessionManager = (function () {
                 resolve(_this._sessionInfo);
             }
             else {
+                // call comapi service startAuth                
                 _this._startAuth().then(function (sessionStartResponse) {
                     var authChallengeOptions = {
                         nonce: sessionStartResponse.nonce
                     };
+                    // call integrators auth challenge method
                     self._comapiConfig.authChallenge(authChallengeOptions, function (jwt) {
                         if (jwt) {
                             self._createAuthenticatedSession(jwt, sessionStartResponse.authenticationId, {})
@@ -79,6 +110,7 @@ var SessionManager = (function () {
                                 if (!result) {
                                     console.error("_setSession() failed");
                                 }
+                                // pass back to client
                                 resolve(sessionInfo);
                             })
                                 .catch(function (error) {
@@ -86,6 +118,7 @@ var SessionManager = (function () {
                             });
                         }
                         else {
+                            // client failed to fulfil the auth challenge for some reason ...
                             reject({ message: "Failed to get a JWT from authChallenge", statusCode: 401 });
                         }
                     });
@@ -93,6 +126,11 @@ var SessionManager = (function () {
             }
         });
     };
+    /**
+     * Function to end the current session
+     * @method SessionManager#endSession
+     * @returns {Promise} - Returns a promise
+     */
     SessionManager.prototype.endSession = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
@@ -111,6 +149,13 @@ var SessionManager = (function () {
             }
         });
     };
+    /**
+     * Internal function to create an authenticated session
+     * @param (String) jwt - the jwt retrieved from the integrator
+     * @param (String) authenticationId - the authenticationId given by comapi back end
+     * @param (Object) deviceInfo - the deviceInfo
+     * @returns {Promise} - Returns a promise
+     */
     SessionManager.prototype._createAuthenticatedSession = function (jwt, authenticationId, deviceInfo) {
         var _this = this;
         var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
@@ -124,10 +169,10 @@ var SessionManager = (function () {
                 authenticationId: authenticationId,
                 authenticationToken: jwt,
                 deviceId: _this._deviceId,
-                platform: "javascript",
+                platform: /*browserInfo.name*/ "javascript",
                 platformVersion: browserInfo.version,
-                sdkType: "native",
-                sdkVersion: "1.0.3.241"
+                sdkType: /*"javascript"*/ "native",
+                sdkVersion: "1.0.3.259"
             };
             return _this._restClient.post(url, {}, data);
         })
@@ -135,6 +180,10 @@ var SessionManager = (function () {
             return Promise.resolve(result.response);
         });
     };
+    /**
+     * Internal function to start an authenticated session
+     * @returns {Promise} - Returns a promise
+     */
     SessionManager.prototype._startAuth = function () {
         var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessionStart, {
             apiSpaceId: this._comapiConfig.apiSpaceId,
@@ -145,6 +194,10 @@ var SessionManager = (function () {
             return Promise.resolve(result.response);
         });
     };
+    /**
+     * Internal function to end an authenticated session
+     * @returns {Promise} - Returns a promise
+     */
     SessionManager.prototype._endAuth = function () {
         var headers = {
             "Content-Type": "application/json",
@@ -160,6 +213,10 @@ var SessionManager = (function () {
             return Promise.resolve(true);
         });
     };
+    /**
+     * Internal function to load in an existing session if available
+     * @returns {boolean} - returns boolean reault
+     */
     SessionManager.prototype._setSession = function (sessionInfo) {
         if (this.hasExpired(sessionInfo.session.expiresOn)) {
             this._logger.error("Was given an expired token ;-(");
@@ -167,6 +224,10 @@ var SessionManager = (function () {
         this._sessionInfo = sessionInfo;
         return this._localStorageData.setObject("session", sessionInfo);
     };
+    /**
+     * Internal function to remove an existing session
+     * @returns {boolean} - returns boolean reault
+     */
     SessionManager.prototype._removeSession = function () {
         var _this = this;
         return this._localStorageData.remove("session")
@@ -175,9 +236,15 @@ var SessionManager = (function () {
             return result;
         });
     };
+    /**
+     *
+     */
     SessionManager.prototype.getAuthHeader = function () {
         return "Bearer " + this.sessionInfo.token;
     };
+    /**
+     * Create one if not available ...
+     */
     SessionManager.prototype.getDeviceId = function () {
         var _this = this;
         if (this._deviceId) {
@@ -200,14 +267,23 @@ var SessionManager = (function () {
             });
         }
     };
+    /**
+     * Check an iso date is not in the past ...
+     * @param expiresOn
+     */
     SessionManager.prototype.hasExpired = function (expiresOn) {
         var now = new Date();
         var expiry = new Date(expiresOn);
         return now > expiry;
     };
+    /**
+     * Checks validity of session based on expiry and matching apiSpace
+     * @param sessionInfo
+     */
     SessionManager.prototype.isSessionValid = function (sessionInfo) {
         var valid = false;
         if (!this.hasExpired(sessionInfo.session.expiresOn)) {
+            // check that the token matches 
             if (sessionInfo.token) {
                 var bits = sessionInfo.token.split(".");
                 if (bits.length === 3) {

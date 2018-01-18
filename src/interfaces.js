@@ -1,5 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * Log level enum
+ */
 var LogLevels;
 (function (LogLevels) {
     LogLevels[LogLevels["None"] = 0] = "None";
@@ -8,6 +11,9 @@ var LogLevels;
     LogLevels[LogLevels["Debug"] = 3] = "Debug";
 })(LogLevels = exports.LogLevels || (exports.LogLevels = {}));
 ;
+/**
+ * Log persistence enum
+ */
 var LogPersistences;
 (function (LogPersistences) {
     LogPersistences[LogPersistences["None"] = 0] = "None";
@@ -15,16 +21,22 @@ var LogPersistences;
     LogPersistences[LogPersistences["LocalStorage"] = 2] = "LocalStorage";
 })(LogPersistences = exports.LogPersistences || (exports.LogPersistences = {}));
 ;
+/**
+ * Log persistence enum
+ */
 var OrphanedEventPersistences;
 (function (OrphanedEventPersistences) {
     OrphanedEventPersistences[OrphanedEventPersistences["None"] = 0] = "None";
     OrphanedEventPersistences[OrphanedEventPersistences["IndexedDbIfSupported"] = 1] = "IndexedDbIfSupported";
-    OrphanedEventPersistences[OrphanedEventPersistences["LocalStorage"] = 2] = "LocalStorage";
+    OrphanedEventPersistences[OrphanedEventPersistences["LocalStorage"] = 2] = "LocalStorage"; // force local storage
 })(OrphanedEventPersistences = exports.OrphanedEventPersistences || (exports.OrphanedEventPersistences = {}));
 ;
 ;
 ;
 ;
+/**
+ * Environment enum
+ */
 var Environment;
 (function (Environment) {
     Environment[Environment["development"] = 0] = "development";
@@ -34,6 +46,9 @@ var Environment;
 ;
 ;
 ;
+/**
+ * Log level enum
+ */
 var ConversationScope;
 (function (ConversationScope) {
     ConversationScope[ConversationScope["public"] = 0] = "public";

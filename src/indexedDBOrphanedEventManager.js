@@ -16,6 +16,9 @@ var IndexedDBOrphanedEventManager = (function () {
         this._continuationTokenStore = "ContinuationTokens";
         this._orphanedEventStore = "OrphanedEvents";
     }
+    /**
+     *
+     */
     IndexedDBOrphanedEventManager.prototype.clearAll = function () {
         var _this = this;
         return this.ensureInitialised()
@@ -26,6 +29,9 @@ var IndexedDBOrphanedEventManager = (function () {
             return _this.clearObjectStore(_this._orphanedEventStore);
         });
     };
+    /**
+     *
+     */
     IndexedDBOrphanedEventManager.prototype.clear = function (conversationId) {
         var _this = this;
         return this.ensureInitialised()
@@ -36,6 +42,9 @@ var IndexedDBOrphanedEventManager = (function () {
             return _this.deleteEvents(conversationId);
         });
     };
+    /**
+     *
+     */
     IndexedDBOrphanedEventManager.prototype.getContinuationToken = function (conversationId) {
         var _this = this;
         return this.ensureInitialised()
@@ -43,10 +52,13 @@ var IndexedDBOrphanedEventManager = (function () {
             return new Promise(function (resolve, reject) {
                 var transaction = _this._database.transaction([_this._continuationTokenStore], "readonly");
                 var objectStore = transaction.objectStore(_this._continuationTokenStore);
+                // we want all the messages from this conversation ...
+                // using a keyrange to encapsulate just the specified conversationId and all the dates
                 var keyRange = IDBKeyRange.only(conversationId);
                 var cursorRequest = objectStore.openCursor(keyRange);
                 cursorRequest.onsuccess = function (event) {
                     var cursor = event.target.result;
+                    // only one record ...
                     if (cursor) {
                         var info = cursor.value;
                         resolve(info.continuationToken);
@@ -61,6 +73,9 @@ var IndexedDBOrphanedEventManager = (function () {
             });
         });
     };
+    /**
+     *
+     */
     IndexedDBOrphanedEventManager.prototype.setContinuationToken = function (conversationId, continuationToken) {
         var _this = this;
         return this.ensureInitialised()
@@ -76,11 +91,17 @@ var IndexedDBOrphanedEventManager = (function () {
                     reject({ message: "add failed: " + event.target.error.name });
                 };
                 request.onsuccess = function (event) {
+                    // http://stackoverflow.com/questions/12502830/how-to-return-auto-increment-id-from-objectstore-put-in-an-indexeddb
+                    // returns auto incremented id ...
+                    // resolve((<IDBRequest>event.target).result);
                     resolve(true);
                 };
             });
         });
     };
+    /**
+     *
+     */
     IndexedDBOrphanedEventManager.prototype.addOrphanedEvent = function (event) {
         var _this = this;
         return this.ensureInitialised()
@@ -94,11 +115,17 @@ var IndexedDBOrphanedEventManager = (function () {
                     reject({ message: "add failed: " + e.target.error.name });
                 };
                 request.onsuccess = function (e) {
+                    // http://stackoverflow.com/questions/12502830/how-to-return-auto-increment-id-from-objectstore-put-in-an-indexeddb
+                    // returns auto incremented id ...
+                    // resolve((<IDBRequest>event.target).result);
                     resolve(true);
                 };
             });
         });
     };
+    /**
+     *
+     */
     IndexedDBOrphanedEventManager.prototype.removeOrphanedEvent = function (event) {
         var _this = this;
         return this.ensureInitialised()
@@ -117,6 +144,9 @@ var IndexedDBOrphanedEventManager = (function () {
             });
         });
     };
+    /**
+     *
+     */
     IndexedDBOrphanedEventManager.prototype.getOrphanedEvents = function (conversationId) {
         var _this = this;
         return this.ensureInitialised()
@@ -148,10 +178,14 @@ var IndexedDBOrphanedEventManager = (function () {
     };
     IndexedDBOrphanedEventManager.prototype.ensureInitialised = function () {
         if (!this._initialised) {
+            // this is a promise instance to ensure it's only called once
             this._initialised = this.initialise();
         }
         return this._initialised;
     };
+    /**
+     *
+     */
     IndexedDBOrphanedEventManager.prototype.initialise = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
@@ -160,9 +194,15 @@ var IndexedDBOrphanedEventManager = (function () {
                 var openRequest = indexedDB.open(_this._name, _this._version);
                 openRequest.onupgradeneeded = function (event) {
                     var thisDB = event.target.result;
+                    /**
+                     * will be an array of IOrphanedEventContainer objects
+                     */
                     if (!thisDB.objectStoreNames.contains(self_1._continuationTokenStore)) {
                         thisDB.createObjectStore(self_1._continuationTokenStore, { keyPath: "conversationId" });
                     }
+                    /**
+                     * Will be an array of IConversationMessageEvent objects
+                     */
                     if (!thisDB.objectStoreNames.contains(self_1._orphanedEventStore)) {
                         var os = thisDB.createObjectStore(self_1._orphanedEventStore, { keyPath: "eventId" });
                         os.createIndex("conversationId", "conversationId", { unique: false });
@@ -181,10 +221,18 @@ var IndexedDBOrphanedEventManager = (function () {
             }
         });
     };
+    /**
+     * Method to clear the data in an object store
+     * @method ConversationStore#clearObjectStore
+     * @param {string} objectStore : the object store to clear
+     * @returns {Promise} - returns a promise
+     */
     IndexedDBOrphanedEventManager.prototype.clearObjectStore = function (objectStoreName) {
         var _this = this;
+        // can't reference objectStore in the promise without this ...
         var _objectStoreName = objectStoreName;
         return new Promise(function (resolve, reject) {
+            // open a read/write db transaction, ready for clearing the data
             var transaction = _this._database.transaction([_objectStoreName], "readwrite");
             transaction.onerror = function (event) {
                 console.error("Transaction not opened due to error: " + transaction.error);
@@ -199,6 +247,9 @@ var IndexedDBOrphanedEventManager = (function () {
             };
         });
     };
+    /**
+     *
+     */
     IndexedDBOrphanedEventManager.prototype.deleteTokenInfo = function (conversationId) {
         var _this = this;
         return new Promise(function (resolve, reject) {
@@ -214,6 +265,9 @@ var IndexedDBOrphanedEventManager = (function () {
             };
         });
     };
+    /**
+     *
+     */
     IndexedDBOrphanedEventManager.prototype.deleteEvents = function (conversationId) {
         var _this = this;
         return new Promise(function (resolve, reject) {
@@ -221,6 +275,8 @@ var IndexedDBOrphanedEventManager = (function () {
             var objectStore = transaction.objectStore(_this._orphanedEventStore);
             var index = objectStore.index("conversationId");
             var keyRange = IDBKeyRange.only(conversationId);
+            // we want all the messages from this conversation ...
+            // using a keyrange to encapsulate just the specified conversationId and all the dates
             var cursorRequest = index.openCursor(keyRange, "next");
             cursorRequest.onsuccess = function (event) {
                 var cursor = event.target.result;

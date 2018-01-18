@@ -16,11 +16,27 @@ var inversify_1 = require("inversify");
 var interfaceSymbols_1 = require("./interfaceSymbols");
 var utils_1 = require("./utils");
 var ContentManager = (function () {
+    /**
+     * ContentManager class constructor.
+     * @class ContentManager
+     * @ignore
+     * @classdesc Class that implements all the ContentManager functionality.
+     * @parameter {ILogger} logger
+     * @parameter {IRestClient} restClient
+     * @parameter {IComapiConfig} ComapiConfig
+     */
     function ContentManager(_logger, networkManager, _comapiConfig) {
         this._logger = _logger;
         this.networkManager = networkManager;
         this._comapiConfig = _comapiConfig;
     }
+    /**
+     * Method to upload content data
+     * @method ContentManager#uploadContent
+     * @param {string} folder - the folder
+     * @param {ContentData} content - the content
+     * @returns {IUploadContentResult} - the result
+     */
     ContentManager.prototype.uploadContent = function (content, folder) {
         var _this = this;
         var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.content, {
@@ -84,6 +100,12 @@ var ContentManager = (function () {
             });
         });
     };
+    /**
+     * Method to create an auth header from a token
+     * @method ContentManager#constructAUthHeader
+     * @param {string} token
+     * @returns {string} - returns the auth header
+     */
     ContentManager.prototype.constructAUthHeader = function (token) {
         return "Bearer " + token;
     };

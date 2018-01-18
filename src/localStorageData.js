@@ -15,6 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var inversify_1 = require("inversify");
 var interfaceSymbols_1 = require("./interfaceSymbols");
 var LocalStorageData = (function () {
+    /**
+     * LocalStorageData class constructor.
+     * @class LocalStorageData
+     * @ignore
+     * @classdesc Class that implements Local storage access.
+     * @param  {string} [prefix]
+     */
     function LocalStorageData(_comapiConfig) {
         this._comapiConfig = _comapiConfig;
         if (_comapiConfig && _comapiConfig.localStoragePrefix) {
@@ -25,19 +32,42 @@ var LocalStorageData = (function () {
         }
     }
     Object.defineProperty(LocalStorageData.prototype, "prefix", {
+        /**
+         * Setter to set the prefix
+         * @method LocalStorageData#prefix
+         * @param {string} prefix - the prefix
+         */
         set: function (prefix) {
             this._prefix = prefix;
         },
         enumerable: true,
         configurable: true
     });
+    /**
+     * Get raw value as string from local storage.
+     * @method LocalStorageData#getString
+     * @param {String} key - the key
+     * @returns (String) - the raw string value
+     */
     LocalStorageData.prototype.getString = function (key) {
         return Promise.resolve(localStorage.getItem(this._prefix + key));
     };
+    /**
+     * Set raw value as string to local storage.
+     * @method LocalStorageData#setString
+     * @param {String} key - the key
+     * @param {String} value - the value
+     */
     LocalStorageData.prototype.setString = function (key, value) {
         localStorage.setItem(this._prefix + key, value);
         return Promise.resolve(true);
     };
+    /**
+     * Get value as object .
+     * @method LocalStorageData#getObject
+     * @param  {string} key
+     * @returns {Object} - the value Object
+     */
     LocalStorageData.prototype.getObject = function (key) {
         return this.getString(key)
             .then(function (raw) {
@@ -51,6 +81,13 @@ var LocalStorageData = (function () {
             return Promise.resolve(obj);
         });
     };
+    /**
+     * Set value as object.
+     * @method LocalStorageData#setObject
+     * @param  {string} key
+     * @param  {Object} data
+     * @returns {boolean} - returns boolean value representing success
+     */
     LocalStorageData.prototype.setObject = function (key, data) {
         var succeeded = true;
         try {
@@ -63,6 +100,11 @@ var LocalStorageData = (function () {
         }
         return Promise.resolve(succeeded);
     };
+    /**
+     * Remove a value from local storage.
+     * @method LocalStorageData#remove
+     * @param  {string} key
+     */
     LocalStorageData.prototype.remove = function (key) {
         try {
             localStorage.removeItem(this._prefix + key);
