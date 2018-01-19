@@ -368,12 +368,12 @@ var WebSocketManager = (function () {
      *
      */
     WebSocketManager.prototype.reconnect = function () {
+        var _this = this;
         var time = this.generateInterval(this.attempts);
         setTimeout(function () {
-            var _this = this;
-            this.attempts++;
-            this._logger.log("reconnecting (" + this.attempts + ") ...");
-            this.connect()
+            _this.attempts++;
+            _this._logger.log("reconnecting (" + _this.attempts + ") ...");
+            _this.connect()
                 .then(function () {
                 _this._logger.log("socket reconnected");
                 _this.attempts = 0;

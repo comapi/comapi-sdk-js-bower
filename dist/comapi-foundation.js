@@ -5849,7 +5849,7 @@ var COMAPI =
 	                platform: /*browserInfo.name*/ "javascript",
 	                platformVersion: browserInfo.version,
 	                sdkType: /*"javascript"*/ "native",
-	                sdkVersion: "1.0.3.275"
+	                sdkVersion: "1.0.3.276"
 	            };
 	            return _this._restClient.post(url, {}, data);
 	        })
@@ -6360,12 +6360,12 @@ var COMAPI =
 	     *
 	     */
 	    WebSocketManager.prototype.reconnect = function () {
+	        var _this = this;
 	        var time = this.generateInterval(this.attempts);
 	        setTimeout(function () {
-	            var _this = this;
-	            this.attempts++;
-	            this._logger.log("reconnecting (" + this.attempts + ") ...");
-	            this.connect()
+	            _this.attempts++;
+	            _this._logger.log("reconnecting (" + _this.attempts + ") ...");
+	            _this.connect()
 	                .then(function () {
 	                _this._logger.log("socket reconnected");
 	                _this.attempts = 0;
