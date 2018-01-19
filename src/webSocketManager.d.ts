@@ -115,6 +115,10 @@ export declare class WebSocketManager implements IWebSocketManager {
     private echo();
     /**
      *
+     */
+    private reconnect();
+    /**
+     *
      * @param name
      */
     private mapEventName(name);

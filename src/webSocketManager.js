@@ -199,7 +199,12 @@ var WebSocketManager = (function () {
         if (this.isClosing) {
             return Promise.reject(new Error("Can't open WebSocket while closing."));
         }
+        // User calls connect and already connected
         if (this.isOpened) {
+            return this._opening.promise;
+        }
+        // we have started to open, so return this and everyone can wait on it ....
+        if (this._opening && this._opening.isPending) {
             return this._opening.promise;
         }
         this._opening = new MyPromise();
@@ -327,7 +332,6 @@ var WebSocketManager = (function () {
      * @param event
      */
     WebSocketManager.prototype._handleClose = function (event) {
-        var _this = this;
         console.log("_handleClose", event);
         this.webSocket = undefined;
         this._logger.log("WebSocket Connection closed.");
@@ -347,20 +351,7 @@ var WebSocketManager = (function () {
         // only retry if we didn't manually close it and it actually connected in the first place
         if (!this.manuallyClosed && this.didConnect) {
             this._logger.log("socket not manually closed, reconnecting ...");
-            var time = this.generateInterval(this.attempts);
-            setTimeout(function () {
-                // We've tried to reconnect so increment the attempts by 1
-                _this.attempts++;
-                // Connection has closed so try to reconnect every 10 seconds.
-                _this._logger.log("reconnecting ...");
-                _this.connect()
-                    .then(function (result) {
-                    _this._logger.log("socket reconnected");
-                })
-                    .catch(function (error) {
-                    _this._logger.log("failed to reconnect", error);
-                });
-            }, time);
+            this.reconnect();
         }
     };
     /**
@@ -372,6 +363,26 @@ var WebSocketManager = (function () {
             payload: {},
             publishedOn: new Date().toISOString(),
         });
+    };
+    /**
+     *
+     */
+    WebSocketManager.prototype.reconnect = function () {
+        var time = this.generateInterval(this.attempts);
+        setTimeout(function () {
+            var _this = this;
+            this.attempts++;
+            this._logger.log("reconnecting (" + this.attempts + ") ...");
+            this.connect()
+                .then(function () {
+                _this._logger.log("socket reconnected");
+                _this.attempts = 0;
+            })
+                .catch(function (e) {
+                _this._logger.log("socket recycle failed", e);
+                _this.reconnect();
+            });
+        }, time);
     };
     /**
      *
