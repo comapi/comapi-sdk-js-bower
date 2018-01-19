@@ -35,7 +35,7 @@ var Device = (function () {
      */
     Device.prototype.setFCMPushDetails = function (packageName, registrationId) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._deviceManager.setFCMPushDetails(sessionInfo.session.id, packageName, registrationId);
         });
@@ -50,7 +50,7 @@ var Device = (function () {
      */
     Device.prototype.setAPNSPushDetails = function (bundleId, environment, token) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._deviceManager.setAPNSPushDetails(sessionInfo.session.id, bundleId, environment, token);
         });
@@ -62,7 +62,7 @@ var Device = (function () {
      */
     Device.prototype.removePushDetails = function () {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._deviceManager.removePushDetails(sessionInfo.session.id);
         });

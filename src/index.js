@@ -21,5 +21,7 @@ var interfaceSymbols_1 = require("./interfaceSymbols");
 exports.INTERFACE_SYMBOLS = interfaceSymbols_1.INTERFACE_SYMBOLS;
 var contentData_1 = require("./contentData");
 exports.ContentData = contentData_1.ContentData;
+var mutex_1 = require("./mutex");
+exports.Mutex = mutex_1.Mutex;
 __export(require("./interfaces"));
 //# sourceMappingURL=index.js.map

@@ -15,7 +15,7 @@ var Mutex = (function () {
     };
     Mutex.prototype.runExclusive = function (callback, name) {
         return this
-            .acquire()
+            .acquire(name)
             .then(function (release) {
             var result;
             try {

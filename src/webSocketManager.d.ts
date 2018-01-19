@@ -8,12 +8,44 @@ export declare class WebSocketManager implements IWebSocketManager {
     private _eventMapper;
     private readystates;
     private webSocket;
-    private manuallyClosed;
-    private connected;
-    private didConnect;
-    private attempts;
     private echoIntervalId;
     private echoIntervalTimeout;
+    private STATE;
+    private _opening;
+    private _closing;
+    private manuallyClosed;
+    private didConnect;
+    private attempts;
+    /**
+     * Is WebSocket connection in opening state.
+     *
+     * @returns {Boolean}
+     */
+    readonly isOpening: boolean;
+    /**
+     * Is WebSocket connection opened.
+     *
+     * @returns {Boolean}
+     */
+    readonly isOpened: boolean;
+    /**
+     * Is WebSocket connection in closing state.
+     *
+     * @returns {Boolean}
+     */
+    readonly isClosing: boolean;
+    /**
+     * Is WebSocket connection closed.
+     *
+     * @returns {Boolean}
+     */
+    readonly isClosed: boolean;
+    /**
+     * Function to determine te connection state of the websocket - rturns hether ther socket `did` connect rather than the current status as there is reconnection logic running.
+     * @method WebSocketManager#isConnected
+     * @returns {boolean}
+     */
+    isConnected(): boolean;
     /**
      * WebSocketManager class constructor.
      * @class  WebSocketManager
@@ -29,9 +61,14 @@ export declare class WebSocketManager implements IWebSocketManager {
     /**
      * Function to connect websocket
      * @method WebSocketManager#connect
-     * @returns {Promise}
      */
     connect(): Promise<boolean>;
+    /**
+     * Function to disconnect websocket
+     * @method WebSocketManager#disconnect
+     * @returns {Promise}
+     */
+    disconnect(): Promise<boolean>;
     /**
      * Function to send some data from the client down the websocket
      * @method WebSocketManager#send
@@ -40,23 +77,11 @@ export declare class WebSocketManager implements IWebSocketManager {
      */
     send(data: any): void;
     /**
-     * Function to determine te connection state of the websocket - rturns hether ther socket `did` connect rather than the current status as there is reconnection logic running.
-     * @method WebSocketManager#isConnected
-     * @returns {boolean}
-     */
-    isConnected(): boolean;
-    /**
      * Function to determine te whether there is an ative socket or not (connected or disconnected)
      * @method WebSocketManager#hasSocket
      * @returns {boolean}
      */
     hasSocket(): boolean;
-    /**
-     * Function to disconnect websocket
-     * @method WebSocketManager#disconnect
-     * @returns {Promise}
-     */
-    disconnect(): Promise<boolean>;
     /**
      * Function to generate an interval for reconnecton purposes
      * @method WebSocketManager#generateInterval
@@ -64,6 +89,26 @@ export declare class WebSocketManager implements IWebSocketManager {
      * @returns {Promise}
      */
     generateInterval(k: number): number;
+    /**
+     *
+     * @param event
+     */
+    private _handleOpen(event);
+    /**
+     *
+     * @param event
+     */
+    private _handleMessage(event);
+    /**
+     *
+     * @param event
+     */
+    private _handleError(event);
+    /**
+     *
+     * @param event
+     */
+    private _handleClose(event);
     /**
      *
      */

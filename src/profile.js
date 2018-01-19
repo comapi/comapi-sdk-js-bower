@@ -37,7 +37,7 @@ var Profile = (function () {
      */
     Profile.prototype.getProfile = function (profileId) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._profileManager.getProfile(profileId);
         });
@@ -50,7 +50,7 @@ var Profile = (function () {
      */
     Profile.prototype.queryProfiles = function (query) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._profileManager.queryProfiles(query);
         });
@@ -65,7 +65,7 @@ var Profile = (function () {
      */
     Profile.prototype.updateProfile = function (profileId, profile, eTag) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._profileManager.updateProfile(profileId, profile, eTag);
         });
@@ -80,7 +80,7 @@ var Profile = (function () {
      */
     Profile.prototype.patchProfile = function (profileId, profile, eTag) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._profileManager.patchProfile(profileId, profile, eTag);
         });
@@ -94,7 +94,7 @@ var Profile = (function () {
     Profile.prototype.getMyProfile = function (useEtag) {
         var _this = this;
         if (useEtag === void 0) { useEtag = true; }
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._profileManager.getProfile(sessionInfo.session.profileId);
         })
@@ -115,7 +115,7 @@ var Profile = (function () {
     Profile.prototype.updateMyProfile = function (profile, useEtag) {
         var _this = this;
         if (useEtag === void 0) { useEtag = true; }
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return Promise.all([sessionInfo, _this.getMyProfileETag(useEtag)]);
         })
@@ -138,7 +138,7 @@ var Profile = (function () {
      */
     Profile.prototype.patchMyProfile = function (profile, useEtag) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return Promise.all([sessionInfo, _this.getMyProfileETag(useEtag)]);
         })

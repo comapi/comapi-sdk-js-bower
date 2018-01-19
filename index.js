@@ -19,5 +19,7 @@ var interfaceSymbols_1 = require("./src/interfaceSymbols");
 exports.INTERFACE_SYMBOLS = interfaceSymbols_1.INTERFACE_SYMBOLS;
 var contentData_1 = require("./src/contentData");
 exports.ContentData = contentData_1.ContentData;
+var mutex_1 = require("./src/mutex");
+exports.Mutex = mutex_1.Mutex;
 
 __export(require("./src/interfaces"));

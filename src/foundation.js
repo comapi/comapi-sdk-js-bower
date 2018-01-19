@@ -14,6 +14,8 @@ var interfaceSymbols_1 = require("./interfaceSymbols");
 var inversify_config_1 = require("./inversify.config");
 var contentData_1 = require("./contentData");
 exports.ContentData = contentData_1.ContentData;
+var mutex_1 = require("./mutex");
+exports.Mutex = mutex_1.Mutex;
 var Foundation = (function () {
     /**
      * Foundation class constructor.

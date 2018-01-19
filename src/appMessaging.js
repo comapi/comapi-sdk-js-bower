@@ -38,7 +38,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.createConversation = function (conversationDetails) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._conversationManager.createConversation(conversationDetails);
         });
@@ -52,7 +52,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.updateConversation = function (conversationDetails, eTag) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._conversationManager.updateConversation(conversationDetails, eTag);
         });
@@ -65,7 +65,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.getConversation = function (conversationId) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._conversationManager.getConversation(conversationId);
         });
@@ -78,7 +78,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.deleteConversation = function (conversationId) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._conversationManager.deleteConversation(conversationId);
         })
@@ -95,7 +95,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.addParticipantsToConversation = function (conversationId, participants) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._conversationManager.addParticipantsToConversation(conversationId, participants);
         });
@@ -109,7 +109,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.deleteParticipantsFromConversation = function (conversationId, participants) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._conversationManager.deleteParticipantsFromConversation(conversationId, participants);
         });
@@ -122,7 +122,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.getParticipantsInConversation = function (conversationId) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._conversationManager.getParticipantsInConversation(conversationId);
         });
@@ -136,7 +136,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.getConversations = function (scope, profileId) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._conversationManager.getConversations(scope, profileId);
         });
@@ -151,7 +151,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.getConversationEvents = function (conversationId, from, limit) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._messageManager.getConversationEvents(conversationId, from, limit);
         });
@@ -165,7 +165,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.sendMessageToConversation = function (conversationId, message) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._messageManager.sendMessageToConversation(conversationId, message);
         });
@@ -179,7 +179,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.sendMessageStatusUpdates = function (conversationId, statuses) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._messageManager.sendMessageStatusUpdates(conversationId, statuses);
         });
@@ -196,7 +196,7 @@ var AppMessaging = (function () {
         var _this = this;
         var profileId;
         var _getMessagesResponse;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             profileId = sessionInfo.session.profileId;
             return _this._messagePager.getMessages(conversationId, pageSize, continuationToken);
@@ -217,7 +217,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.sendIsTyping = function (conversationId) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._conversationManager.sendIsTyping(conversationId);
         });
@@ -230,7 +230,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.sendIsTypingOff = function (conversationId) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._conversationManager.sendIsTypingOff(conversationId);
         });
@@ -243,7 +243,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.uploadContent = function (content, folder) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._contentManager.uploadContent(content, folder);
         });

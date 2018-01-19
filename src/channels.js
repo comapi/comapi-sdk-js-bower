@@ -33,7 +33,7 @@ var Channels = (function () {
      */
     Channels.prototype.createFbOptInState = function (data) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._facebookManager.createSendToMessengerState(data);
         });

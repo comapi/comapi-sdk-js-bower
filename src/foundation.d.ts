@@ -4,7 +4,8 @@ import { MessageBuilder } from "./messageBuilder";
 import { MessageStatusBuilder } from "./messageStatusBuilder";
 import { ComapiConfig } from "./comapiConfig";
 import { ContentData } from "./contentData";
-export { ComapiConfig, MessageStatusBuilder, ConversationBuilder, MessageBuilder, ContentData };
+import { Mutex } from "./mutex";
+export { ComapiConfig, MessageStatusBuilder, ConversationBuilder, MessageBuilder, ContentData, Mutex };
 export declare class Foundation implements IFoundation {
     private _eventManager;
     private _logger;

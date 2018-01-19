@@ -1390,6 +1390,8 @@ var COMAPI =
 	var inversify_config_1 = __webpack_require__(12);
 	var contentData_1 = __webpack_require__(77);
 	exports.ContentData = contentData_1.ContentData;
+	var mutex_1 = __webpack_require__(56);
+	exports.Mutex = mutex_1.Mutex;
 	var Foundation = (function () {
 	    /**
 	     * Foundation class constructor.
@@ -5226,7 +5228,7 @@ var COMAPI =
 	    };
 	    Mutex.prototype.runExclusive = function (callback, name) {
 	        return this
-	            .acquire()
+	            .acquire(name)
 	            .then(function (release) {
 	            var result;
 	            try {
@@ -5847,7 +5849,7 @@ var COMAPI =
 	                platform: /*browserInfo.name*/ "javascript",
 	                platformVersion: browserInfo.version,
 	                sdkType: /*"javascript"*/ "native",
-	                sdkVersion: "1.0.3.259"
+	                sdkVersion: "1.0.3.273"
 	            };
 	            return _this._restClient.post(url, {}, data);
 	        })
@@ -6004,7 +6006,86 @@ var COMAPI =
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
+	// https://github.com/vitalets/controlled-promise/blob/master/src/index.js
+	var MyPromise = (function () {
+	    function MyPromise() {
+	        this._promise = null;
+	        this._resolve = null;
+	        this._reject = null;
+	        this._isPending = false;
+	        this._value = null;
+	    }
+	    Object.defineProperty(MyPromise.prototype, "promise", {
+	        /**
+	         *
+	         * @returns {Boolean}
+	         */
+	        get: function () {
+	            return this._promise;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(MyPromise.prototype, "value", {
+	        /**
+	         *
+	         * @returns {Boolean}
+	         */
+	        get: function () {
+	            return this._value;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    /**
+	     *
+	     * @param fn
+	     */
+	    MyPromise.prototype.call = function (fn) {
+	        var _this = this;
+	        if (!this._isPending) {
+	            this._isPending = true;
+	            this._promise = new Promise(function (resolve, reject) {
+	                _this._resolve = resolve;
+	                _this._reject = reject;
+	                fn();
+	            });
+	        }
+	        return this._promise;
+	    };
+	    Object.defineProperty(MyPromise.prototype, "isPending", {
+	        /**
+	         * Returns true if promise is pending.
+	         *
+	         * @returns {Boolean}
+	         */
+	        get: function () {
+	            return this._isPending;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    /**
+	     *
+	     * @param value
+	     */
+	    MyPromise.prototype.resolve = function (value) {
+	        this._isPending = false;
+	        this._value = value;
+	        this._resolve(value);
+	    };
+	    /**
+	     *
+	     * @param value
+	     */
+	    MyPromise.prototype.reject = function (value) {
+	        this._isPending = false;
+	        this._reject(value);
+	    };
+	    return MyPromise;
+	}());
 	// https://gist.github.com/strife25/9310539
+	// https://github.com/vitalets/websocket-as-promised/blob/master/src/index.js
 	var WebSocketManager = (function () {
 	    /**
 	     * WebSocketManager class constructor.
@@ -6031,24 +6112,91 @@ var COMAPI =
 	            "Closing",
 	            "Closed" // 3
 	        ];
+	        // TODO: make configurable ...
+	        this.echoIntervalTimeout = 1000 * 60 / 3; // 30 seconds
+	        this.STATE = {
+	            CLOSED: 3,
+	            CLOSING: 2,
+	            CONNECTING: 0,
+	            OPEN: 1,
+	        };
+	        // can use _opening._value for equivalent functionality
 	        this.manuallyClosed = false;
-	        // current state of socket connection
-	        this.connected = false;
 	        // whether socket ever connected - set to true on first connect and used to determine whether to reconnect on close if not a manual close
 	        this.didConnect = false;
 	        this.attempts = 1;
-	        // TODO: make configurable ...
-	        this.echoIntervalTimeout = 1000 * 60 / 3; // 30 seconds
 	    }
+	    Object.defineProperty(WebSocketManager.prototype, "isOpening", {
+	        /**
+	         * Is WebSocket connection in opening state.
+	         *
+	         * @returns {Boolean}
+	         */
+	        get: function () {
+	            return Boolean(this.webSocket && this.webSocket.readyState === this.STATE.CONNECTING);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(WebSocketManager.prototype, "isOpened", {
+	        /**
+	         * Is WebSocket connection opened.
+	         *
+	         * @returns {Boolean}
+	         */
+	        get: function () {
+	            return Boolean(this.webSocket && this.webSocket.readyState === this.STATE.OPEN);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(WebSocketManager.prototype, "isClosing", {
+	        /**
+	         * Is WebSocket connection in closing state.
+	         *
+	         * @returns {Boolean}
+	         */
+	        get: function () {
+	            return Boolean(this.webSocket && this.webSocket.readyState === this.STATE.CLOSING);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(WebSocketManager.prototype, "isClosed", {
+	        /**
+	         * Is WebSocket connection closed.
+	         *
+	         * @returns {Boolean}
+	         */
+	        get: function () {
+	            return Boolean(!this.webSocket || this.webSocket.readyState === this.STATE.CLOSED);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    /**
+	     * Function to determine te connection state of the websocket - rturns hether ther socket `did` connect rather than the current status as there is reconnection logic running.
+	     * @method WebSocketManager#isConnected
+	     * @returns {boolean}
+	     */
+	    WebSocketManager.prototype.isConnected = function () {
+	        return this.isOpened;
+	    };
 	    /**
 	     * Function to connect websocket
 	     * @method WebSocketManager#connect
-	     * @returns {Promise}
 	     */
 	    WebSocketManager.prototype.connect = function () {
 	        var _this = this;
-	        this._logger.log("WebSocketManager.connect();");
-	        return new Promise(function (resolve, reject) {
+	        if (this.isClosing) {
+	            return Promise.reject(new Error("Can't open WebSocket while closing."));
+	        }
+	        if (this.isOpened) {
+	            return this._opening.promise;
+	        }
+	        this._opening = new MyPromise();
+	        return this._opening.call(function () {
+	            _this._logger.log("WebSocketManager.connect();");
 	            if (!_this.webSocket) {
 	                _this._logger.log("WebSocketManager.connect()");
 	                _this._sessionManager.getValidToken()
@@ -6061,70 +6209,36 @@ var COMAPI =
 	                    var fullUrl = url + queryString;
 	                    _this._logger.log("connecting ...", fullUrl);
 	                    _this.webSocket = new WebSocket(fullUrl);
+	                    _this.webSocket.onopen = _this._handleOpen.bind(_this);
+	                    _this.webSocket.onerror = _this._handleError.bind(_this);
+	                    _this.webSocket.onclose = _this._handleClose.bind(_this);
+	                    _this.webSocket.onmessage = _this._handleMessage.bind(_this);
 	                    _this.echoIntervalId = setInterval(function () { return _this.echo(); }, _this.echoIntervalTimeout);
-	                    /**
-	                     *
-	                     */
-	                    _this.webSocket.onopen = function () {
-	                        _this._logger.log("websocket onopen");
-	                        _this.connected = true;
-	                        if (_this.didConnect === false) {
-	                            _this.didConnect = true;
-	                            _this._logger.log("resolving connect() promise");
-	                            resolve(true);
-	                        }
-	                        _this._eventManager.publishLocalEvent("WebsocketOpened", { timestamp: new Date().toISOString() });
-	                    };
-	                    _this.webSocket.onerror = function (event) {
-	                        _this._logger.log("websocket onerror - readystate: " + _this.readystates[_this.webSocket.readyState], event);
-	                    };
-	                    _this.webSocket.onmessage = function (event) {
-	                        var message;
-	                        try {
-	                            message = JSON.parse(event.data);
-	                        }
-	                        catch (e) {
-	                            _this._logger.error("socket onmessage: (not JSON)", event.data);
-	                        }
-	                        if (message) {
-	                            _this._logger.log("websocket onmessage: ", message);
-	                            _this.publishWebsocketEvent(message);
-	                        }
-	                    };
-	                    _this.webSocket.onclose = function (event) {
-	                        _this.connected = false;
-	                        _this.webSocket = undefined;
-	                        _this._logger.log("WebSocket Connection closed.");
-	                        _this._eventManager.publishLocalEvent("WebsocketClosed", { timestamp: new Date().toISOString() });
-	                        if (_this.didConnect === false) {
-	                            reject({
-	                                code: event.code,
-	                                message: "Failed to connect webSocket",
-	                            });
-	                        }
-	                        // only retry if we didng manually close it and it actually connected in the first place
-	                        if (!_this.manuallyClosed && _this.didConnect) {
-	                            _this._logger.log("socket not manually closed, reconnecting ...");
-	                            var time = _this.generateInterval(_this.attempts);
-	                            setTimeout(function () {
-	                                // We've tried to reconnect so increment the attempts by 1
-	                                _this.attempts++;
-	                                // Connection has closed so try to reconnect every 10 seconds.
-	                                _this._logger.log("reconnecting ...");
-	                                _this.connect();
-	                            }, time);
-	                        }
-	                    };
+	                })
+	                    .catch(function (error) {
+	                    _this._opening.reject({
+	                        code: error.code,
+	                        message: "Failed to get Valid Token",
+	                    });
 	                });
 	            }
-	            else {
-	                if (_this.didConnect) {
-	                    resolve(true);
-	                }
-	                else {
-	                    reject({ message: "Failed to connect webSocket" });
-	                }
-	            }
+	        });
+	    };
+	    /**
+	     * Function to disconnect websocket
+	     * @method WebSocketManager#disconnect
+	     * @returns {Promise}
+	     */
+	    WebSocketManager.prototype.disconnect = function () {
+	        var _this = this;
+	        if (this.isClosed) {
+	            return Promise.resolve(true);
+	        }
+	        this._logger.log("WebSocketManager.disconnect();");
+	        this._closing = new MyPromise();
+	        return this._closing.call(function () {
+	            _this.manuallyClosed = true;
+	            _this.webSocket.close();
 	        });
 	    };
 	    /**
@@ -6139,48 +6253,12 @@ var COMAPI =
 	        }
 	    };
 	    /**
-	     * Function to determine te connection state of the websocket - rturns hether ther socket `did` connect rather than the current status as there is reconnection logic running.
-	     * @method WebSocketManager#isConnected
-	     * @returns {boolean}
-	     */
-	    WebSocketManager.prototype.isConnected = function () {
-	        return this.didConnect;
-	    };
-	    /**
 	     * Function to determine te whether there is an ative socket or not (connected or disconnected)
 	     * @method WebSocketManager#hasSocket
 	     * @returns {boolean}
 	     */
 	    WebSocketManager.prototype.hasSocket = function () {
 	        return this.webSocket ? true : false;
-	    };
-	    /**
-	     * Function to disconnect websocket
-	     * @method WebSocketManager#disconnect
-	     * @returns {Promise}
-	     */
-	    WebSocketManager.prototype.disconnect = function () {
-	        var _this = this;
-	        this._logger.log("WebSocketManager.disconnect();");
-	        return new Promise(function (resolve, reject) {
-	            if (_this.webSocket) {
-	                // overwrite the onclose callback so we can use it ... 
-	                _this.webSocket.onclose = function () {
-	                    _this.connected = false;
-	                    _this.didConnect = false;
-	                    _this._logger.log("socket closed.");
-	                    // TODO: will this crater it ?
-	                    _this.webSocket = undefined;
-	                    resolve(true);
-	                };
-	                clearInterval(_this.echoIntervalId);
-	                _this.manuallyClosed = true;
-	                _this.webSocket.close();
-	            }
-	            else {
-	                resolve(false);
-	            }
-	        });
 	    };
 	    /**
 	     * Function to generate an interval for reconnecton purposes
@@ -6200,15 +6278,92 @@ var COMAPI =
 	    };
 	    /**
 	     *
+	     * @param event
 	     */
-	    WebSocketManager.prototype.echo = function () {
-	        if (this.connected) {
-	            this.send({
-	                name: "echo",
-	                payload: {},
-	                publishedOn: new Date().toISOString(),
+	    WebSocketManager.prototype._handleOpen = function (event) {
+	        console.log("_handleOpen", event);
+	        this.didConnect = true;
+	        this._eventManager.publishLocalEvent("WebsocketOpened", { timestamp: new Date().toISOString() });
+	        if (this._opening) {
+	            this._opening.resolve(true);
+	        }
+	    };
+	    /**
+	     *
+	     * @param event
+	     */
+	    WebSocketManager.prototype._handleMessage = function (event) {
+	        console.log("_handleMessage", event);
+	        var message;
+	        try {
+	            message = JSON.parse(event.data);
+	        }
+	        catch (e) {
+	            this._logger.error("socket onmessage: (not JSON)", event.data);
+	        }
+	        if (message) {
+	            this._logger.log("websocket onmessage: ", message);
+	            this.publishWebsocketEvent(message);
+	        }
+	    };
+	    /**
+	     *
+	     * @param event
+	     */
+	    WebSocketManager.prototype._handleError = function (event) {
+	        console.log("_handleError", event);
+	        this._logger.log("websocket onerror - readystate: " + this.readystates[this.webSocket.readyState], event);
+	    };
+	    /**
+	     *
+	     * @param event
+	     */
+	    WebSocketManager.prototype._handleClose = function (event) {
+	        var _this = this;
+	        console.log("_handleClose", event);
+	        this.webSocket = undefined;
+	        this._logger.log("WebSocket Connection closed.");
+	        this._eventManager.publishLocalEvent("WebsocketClosed", { timestamp: new Date().toISOString() });
+	        // This is the failed to connect flow ...
+	        if (this._opening.isPending) {
+	            this._opening.reject({
+	                code: event.code,
+	                message: "WebSocket closed with reason: " + event.reason + " (" + event.code + ").",
 	            });
 	        }
+	        // This is the manually closed flow
+	        if (this._closing && this._closing.isPending) {
+	            this._closing.resolve(true);
+	            this.didConnect = false;
+	        }
+	        // only retry if we didn't manually close it and it actually connected in the first place
+	        if (!this.manuallyClosed && this.didConnect) {
+	            this._logger.log("socket not manually closed, reconnecting ...");
+	            var time = this.generateInterval(this.attempts);
+	            setTimeout(function () {
+	                // We've tried to reconnect so increment the attempts by 1
+	                _this.attempts++;
+	                // Connection has closed so try to reconnect every 10 seconds.
+	                _this._logger.log("reconnecting ...");
+	                _this.connect()
+	                    .then(function (result) {
+	                    _this._logger.log("socket reconnected");
+	                })
+	                    .catch(function (error) {
+	                    _this._logger.log("failed to reconnect", error);
+	                });
+	            }, time);
+	        }
+	    };
+	    /**
+	     *
+	     */
+	    WebSocketManager.prototype.echo = function () {
+	        this.send({
+	            name: "echo",
+	            payload: {},
+	            publishedOn: new Date().toISOString(),
+	        });
 	    };
 	    /**
 	     *
@@ -6350,7 +6505,6 @@ var COMAPI =
 	Object.defineProperty(exports, "__esModule", { value: true });
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
-	var mutex_1 = __webpack_require__(56);
 	var NetworkManager = (function () {
 	    /**
 	     * NetworkManager class constructor.
@@ -6363,7 +6517,6 @@ var COMAPI =
 	    function NetworkManager(_sessionManager, _webSocketManager) {
 	        this._sessionManager = _sessionManager;
 	        this._webSocketManager = _webSocketManager;
-	        this._mutex = new mutex_1.Mutex();
 	    }
 	    /**
 	     * Method to start a new authenticated session AND connect up the websocket
@@ -6434,43 +6587,12 @@ var COMAPI =
 	        return this._sessionManager.getValidToken();
 	    };
 	    /**
-	     * Ensure we have an active session and the websocket has been started
-	     * Socket may have disconected and be reconnecting. We just want to know that it was started
-	     * @method NetworkManager#ensureSessionAndSocket
-	     * @returns {Promise} - returns a Promise
-	     */
-	    NetworkManager.prototype.ensureSessionAndSocket = function () {
-	        var _this = this;
-	        return this._mutex.runExclusive(function () {
-	            return _this.ensureSession()
-	                .then(function (sessionInfo) {
-	                return Promise.all([sessionInfo, _this.ensureSocket()]);
-	            })
-	                .then(function (_a) {
-	                var sessionInfo = _a[0], connected = _a[1];
-	                if (!connected) {
-	                    console.error("Failed to connect web socket");
-	                }
-	                return sessionInfo;
-	            });
-	        }, "ensureSessionAndSocket");
-	    };
-	    /**
 	     * Create a session if we don't have one already ...
 	     * @method NetworkManager#ensureSession
 	     * @returns {Promise} - returns a Promise
 	     */
 	    NetworkManager.prototype.ensureSession = function () {
-	        // return this._sessionManager.sessionInfo ? Promise.resolve(this._sessionManager.sessionInfo) : this._sessionManager.startSession();
 	        return this._sessionManager.startSession();
-	    };
-	    /**
-	     * Ensure the web socket has been started
-	     * @method NetworkManager#ensureSocket
-	     * @returns {Promise} - returns a Promise
-	     */
-	    NetworkManager.prototype.ensureSocket = function () {
-	        return this._webSocketManager.hasSocket() ? Promise.resolve(true) : this._webSocketManager.connect();
 	    };
 	    return NetworkManager;
 	}());
@@ -8065,7 +8187,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.createConversation = function (conversationDetails) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._conversationManager.createConversation(conversationDetails);
 	        });
@@ -8079,7 +8201,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.updateConversation = function (conversationDetails, eTag) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._conversationManager.updateConversation(conversationDetails, eTag);
 	        });
@@ -8092,7 +8214,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.getConversation = function (conversationId) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._conversationManager.getConversation(conversationId);
 	        });
@@ -8105,7 +8227,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.deleteConversation = function (conversationId) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._conversationManager.deleteConversation(conversationId);
 	        })
@@ -8122,7 +8244,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.addParticipantsToConversation = function (conversationId, participants) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._conversationManager.addParticipantsToConversation(conversationId, participants);
 	        });
@@ -8136,7 +8258,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.deleteParticipantsFromConversation = function (conversationId, participants) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._conversationManager.deleteParticipantsFromConversation(conversationId, participants);
 	        });
@@ -8149,7 +8271,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.getParticipantsInConversation = function (conversationId) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._conversationManager.getParticipantsInConversation(conversationId);
 	        });
@@ -8163,7 +8285,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.getConversations = function (scope, profileId) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._conversationManager.getConversations(scope, profileId);
 	        });
@@ -8178,7 +8300,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.getConversationEvents = function (conversationId, from, limit) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._messageManager.getConversationEvents(conversationId, from, limit);
 	        });
@@ -8192,7 +8314,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.sendMessageToConversation = function (conversationId, message) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._messageManager.sendMessageToConversation(conversationId, message);
 	        });
@@ -8206,7 +8328,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.sendMessageStatusUpdates = function (conversationId, statuses) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._messageManager.sendMessageStatusUpdates(conversationId, statuses);
 	        });
@@ -8223,7 +8345,7 @@ var COMAPI =
 	        var _this = this;
 	        var profileId;
 	        var _getMessagesResponse;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            profileId = sessionInfo.session.profileId;
 	            return _this._messagePager.getMessages(conversationId, pageSize, continuationToken);
@@ -8244,7 +8366,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.sendIsTyping = function (conversationId) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._conversationManager.sendIsTyping(conversationId);
 	        });
@@ -8257,7 +8379,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.sendIsTypingOff = function (conversationId) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._conversationManager.sendIsTypingOff(conversationId);
 	        });
@@ -8270,7 +8392,7 @@ var COMAPI =
 	     */
 	    AppMessaging.prototype.uploadContent = function (content, folder) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._contentManager.uploadContent(content, folder);
 	        });
@@ -8332,7 +8454,7 @@ var COMAPI =
 	     */
 	    Profile.prototype.getProfile = function (profileId) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._profileManager.getProfile(profileId);
 	        });
@@ -8345,7 +8467,7 @@ var COMAPI =
 	     */
 	    Profile.prototype.queryProfiles = function (query) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._profileManager.queryProfiles(query);
 	        });
@@ -8360,7 +8482,7 @@ var COMAPI =
 	     */
 	    Profile.prototype.updateProfile = function (profileId, profile, eTag) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._profileManager.updateProfile(profileId, profile, eTag);
 	        });
@@ -8375,7 +8497,7 @@ var COMAPI =
 	     */
 	    Profile.prototype.patchProfile = function (profileId, profile, eTag) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._profileManager.patchProfile(profileId, profile, eTag);
 	        });
@@ -8389,7 +8511,7 @@ var COMAPI =
 	    Profile.prototype.getMyProfile = function (useEtag) {
 	        var _this = this;
 	        if (useEtag === void 0) { useEtag = true; }
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._profileManager.getProfile(sessionInfo.session.profileId);
 	        })
@@ -8410,7 +8532,7 @@ var COMAPI =
 	    Profile.prototype.updateMyProfile = function (profile, useEtag) {
 	        var _this = this;
 	        if (useEtag === void 0) { useEtag = true; }
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return Promise.all([sessionInfo, _this.getMyProfileETag(useEtag)]);
 	        })
@@ -8433,7 +8555,7 @@ var COMAPI =
 	     */
 	    Profile.prototype.patchMyProfile = function (profile, useEtag) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return Promise.all([sessionInfo, _this.getMyProfileETag(useEtag)]);
 	        })
@@ -8580,7 +8702,7 @@ var COMAPI =
 	     */
 	    Device.prototype.setFCMPushDetails = function (packageName, registrationId) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._deviceManager.setFCMPushDetails(sessionInfo.session.id, packageName, registrationId);
 	        });
@@ -8595,7 +8717,7 @@ var COMAPI =
 	     */
 	    Device.prototype.setAPNSPushDetails = function (bundleId, environment, token) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._deviceManager.setAPNSPushDetails(sessionInfo.session.id, bundleId, environment, token);
 	        });
@@ -8607,7 +8729,7 @@ var COMAPI =
 	     */
 	    Device.prototype.removePushDetails = function () {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._deviceManager.removePushDetails(sessionInfo.session.id);
 	        });
@@ -8662,7 +8784,7 @@ var COMAPI =
 	     */
 	    Channels.prototype.createFbOptInState = function (data) {
 	        var _this = this;
-	        return this._networkManager.ensureSessionAndSocket()
+	        return this._networkManager.ensureSession()
 	            .then(function (sessionInfo) {
 	            return _this._facebookManager.createSendToMessengerState(data);
 	        });

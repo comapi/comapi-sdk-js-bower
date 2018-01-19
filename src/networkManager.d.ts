@@ -2,7 +2,6 @@ import { ISessionManager, IWebSocketManager, ISessionInfo, ISession, INetworkMan
 export declare class NetworkManager implements INetworkManager {
     private _sessionManager;
     private _webSocketManager;
-    private _mutex;
     /**
      * NetworkManager class constructor.
      * @class NetworkManager
@@ -38,22 +37,9 @@ export declare class NetworkManager implements INetworkManager {
     endSession(): Promise<boolean>;
     getValidToken(): Promise<string>;
     /**
-     * Ensure we have an active session and the websocket has been started
-     * Socket may have disconected and be reconnecting. We just want to know that it was started
-     * @method NetworkManager#ensureSessionAndSocket
-     * @returns {Promise} - returns a Promise
-     */
-    ensureSessionAndSocket(): Promise<ISessionInfo>;
-    /**
      * Create a session if we don't have one already ...
      * @method NetworkManager#ensureSession
      * @returns {Promise} - returns a Promise
      */
-    private ensureSession();
-    /**
-     * Ensure the web socket has been started
-     * @method NetworkManager#ensureSocket
-     * @returns {Promise} - returns a Promise
-     */
-    private ensureSocket();
+    ensureSession(): Promise<ISessionInfo>;
 }
