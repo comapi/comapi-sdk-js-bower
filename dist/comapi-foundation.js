@@ -5849,7 +5849,7 @@ var COMAPI =
 	                platform: /*browserInfo.name*/ "javascript",
 	                platformVersion: browserInfo.version,
 	                sdkType: /*"javascript"*/ "native",
-	                sdkVersion: "1.0.3.276"
+	                sdkVersion: "1.0.3.277"
 	            };
 	            return _this._restClient.post(url, {}, data);
 	        })
@@ -6124,7 +6124,8 @@ var COMAPI =
 	        this.manuallyClosed = false;
 	        // whether socket ever connected - set to true on first connect and used to determine whether to reconnect on close if not a manual close
 	        this.didConnect = false;
-	        this.attempts = 1;
+	        this.reconnecting = false;
+	        this.attempts = 0;
 	    }
 	    Object.defineProperty(WebSocketManager.prototype, "isOpening", {
 	        /**
@@ -6341,8 +6342,9 @@ var COMAPI =
 	            this.didConnect = false;
 	        }
 	        // only retry if we didn't manually close it and it actually connected in the first place
-	        if (!this.manuallyClosed && this.didConnect) {
+	        if (!this.manuallyClosed && this.didConnect && !this.reconnecting) {
 	            this._logger.log("socket not manually closed, reconnecting ...");
+	            this.reconnecting = true;
 	            this.reconnect();
 	        }
 	    };
@@ -6369,6 +6371,7 @@ var COMAPI =
 	                .then(function () {
 	                _this._logger.log("socket reconnected");
 	                _this.attempts = 0;
+	                _this.reconnecting = false;
 	            })
 	                .catch(function (e) {
 	                _this._logger.log("socket recycle failed", e);

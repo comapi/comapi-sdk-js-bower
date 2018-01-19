@@ -15,6 +15,7 @@ export declare class WebSocketManager implements IWebSocketManager {
     private _closing;
     private manuallyClosed;
     private didConnect;
+    private reconnecting;
     private attempts;
     /**
      * Is WebSocket connection in opening state.
