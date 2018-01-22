@@ -107,6 +107,7 @@ var WebSocketManager = (function () {
      * @param {IEventManager} _eventManager
      */
     function WebSocketManager(_logger, _localStorageData, _comapiConfig, _sessionManager, _eventManager, _eventMapper) {
+        var _this = this;
         this._logger = _logger;
         this._localStorageData = _localStorageData;
         this._comapiConfig = _comapiConfig;
@@ -121,7 +122,7 @@ var WebSocketManager = (function () {
             "Closed" // 3
         ];
         // TODO: make configurable ...
-        this.echoIntervalTimeout = 1000 * 60 / 3; // 30 seconds
+        this.echoIntervalTimeout = 1000 * 60; // 1 minute
         this.STATE = {
             CLOSED: 3,
             CLOSING: 2,
@@ -134,6 +135,8 @@ var WebSocketManager = (function () {
         this.didConnect = false;
         this.reconnecting = false;
         this.attempts = 0;
+        // start this here just once
+        this.echoIntervalId = setInterval(function () { return _this.echo(); }, this.echoIntervalTimeout);
     }
     Object.defineProperty(WebSocketManager.prototype, "isOpening", {
         /**
@@ -227,7 +230,6 @@ var WebSocketManager = (function () {
                     _this.webSocket.onerror = _this._handleError.bind(_this);
                     _this.webSocket.onclose = _this._handleClose.bind(_this);
                     _this.webSocket.onmessage = _this._handleMessage.bind(_this);
-                    _this.echoIntervalId = setInterval(function () { return _this.echo(); }, _this.echoIntervalTimeout);
                 })
                     .catch(function (error) {
                     _this._opening.reject({
