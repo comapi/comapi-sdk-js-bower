@@ -262,7 +262,7 @@ var WebSocketManager = (function () {
      * @returns {Promise}
      */
     WebSocketManager.prototype.send = function (data) {
-        if (this.webSocket) {
+        if (this.isOpened) {
             this.webSocket.send(JSON.stringify(data));
         }
     };

@@ -5849,7 +5849,7 @@ var COMAPI =
 	                platform: /*browserInfo.name*/ "javascript",
 	                platformVersion: browserInfo.version,
 	                sdkType: /*"javascript"*/ "native",
-	                sdkVersion: "1.0.3.277"
+	                sdkVersion: "1.0.3.279"
 	            };
 	            return _this._restClient.post(url, {}, data);
 	        })
@@ -6254,7 +6254,7 @@ var COMAPI =
 	     * @returns {Promise}
 	     */
 	    WebSocketManager.prototype.send = function (data) {
-	        if (this.webSocket) {
+	        if (this.isOpened) {
 	            this.webSocket.send(JSON.stringify(data));
 	        }
 	    };
