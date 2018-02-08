@@ -158,10 +158,14 @@ var RestClient = (function () {
             if (!headers["Content-Type"]) {
                 headers["Content-Type"] = "application/json";
             }
-            // Edge wants to cache requests by default ...
+            // Edge/IE want to cache requests by default ...
+            /* tslint:disable:no-string-literal */
             if (!headers["Cache-Control"]) {
                 headers["Cache-Control"] = "no-cache";
+                headers["Pragma"] = "no-cache";
+                headers["If-Modified-Since"] = "Mon, 26 Jul 1997 05:00:00 GMT";
             }
+            /* tslint:enable:no-string-literal */
             if (_this.logger) {
                 _this.logger.log(method + "'ing " + url + "  ...");
             }
