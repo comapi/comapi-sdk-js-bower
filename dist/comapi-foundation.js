@@ -5853,7 +5853,7 @@ var COMAPI =
 	                platform: /*browserInfo.name*/ "javascript",
 	                platformVersion: browserInfo.version,
 	                sdkType: /*"javascript"*/ "native",
-	                sdkVersion: "1.0.3.281"
+	                sdkVersion: "1.0.3.283"
 	            };
 	            return _this._restClient.post(url, {}, data);
 	        })
@@ -6212,8 +6212,10 @@ var COMAPI =
 	            _this._logger.log("WebSocketManager.connect();");
 	            if (!_this.webSocket) {
 	                _this._logger.log("WebSocketManager.connect()");
+	                var _token_1;
 	                _this._sessionManager.getValidToken()
 	                    .then(function (token) {
+	                    _token_1 = token;
 	                    _this._logger.log("WebSocketManager.connect() - got auth token", token);
 	                    // reset this in case someone is opening / closing
 	                    _this.manuallyClosed = false;
@@ -6230,7 +6232,7 @@ var COMAPI =
 	                    .catch(function (error) {
 	                    _this._opening.reject({
 	                        code: error.code,
-	                        message: "Failed to get Valid Token",
+	                        message: _token_1 ? "Websocket Error" : "Failed to get Valid Token",
 	                    });
 	                });
 	            }
