@@ -16,6 +16,8 @@ var contentData_1 = require("./contentData");
 exports.ContentData = contentData_1.ContentData;
 var mutex_1 = require("./mutex");
 exports.Mutex = mutex_1.Mutex;
+var utils_1 = require("./utils");
+exports.Utils = utils_1.Utils;
 var Foundation = (function () {
     /**
      * Foundation class constructor.

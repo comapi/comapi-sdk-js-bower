@@ -1392,6 +1392,8 @@ var COMAPI =
 	exports.ContentData = contentData_1.ContentData;
 	var mutex_1 = __webpack_require__(56);
 	exports.Mutex = mutex_1.Mutex;
+	var utils_1 = __webpack_require__(6);
+	exports.Utils = utils_1.Utils;
 	var Foundation = (function () {
 	    /**
 	     * Foundation class constructor.
@@ -1913,6 +1915,31 @@ var COMAPI =
 	     */
 	    Utils.getHeaderValue = function (headers, key) {
 	        return headers[key] || headers[key.toLowerCase()];
+	    };
+	    /**
+	     * https://davidwalsh.name/javascript-debounce-function
+	     * Returns a function, that, as long as it continues to be invoked, will not
+	     * be triggered. The function will be called after it stops being called for
+	     * N milliseconds. If `immediate` is passed, trigger the function on the
+	     * leading edge, instead of the trailing.
+	     */
+	    Utils.debounce = function (func, wait, immediate) {
+	        var timeout;
+	        return function () {
+	            var context = this, args = arguments;
+	            var later = function () {
+	                timeout = null;
+	                if (!immediate) {
+	                    func.apply(context, args);
+	                }
+	            };
+	            var callNow = immediate && !timeout;
+	            clearTimeout(timeout);
+	            timeout = setTimeout(later, wait);
+	            if (callNow) {
+	                func.apply(context, args);
+	            }
+	        };
 	    };
 	    return Utils;
 	}());
@@ -5853,7 +5880,7 @@ var COMAPI =
 	                platform: /*browserInfo.name*/ "javascript",
 	                platformVersion: browserInfo.version,
 	                sdkType: /*"javascript"*/ "native",
-	                sdkVersion: "1.0.3.283"
+	                sdkVersion: "1.0.3.285"
 	            };
 	            return _this._restClient.post(url, {}, data);
 	        })
