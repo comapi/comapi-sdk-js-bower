@@ -228,6 +228,9 @@ var ConversationManager = (function () {
         return this._restClient.post(url, {}, {})
             .then(function (result) {
             _this.isTypingInfo[conversationId] = new Date().toISOString();
+            if (_this.isTypingOffInfo[conversationId]) {
+                delete _this.isTypingOffInfo[conversationId];
+            }
             return Promise.resolve(true);
         });
     };
@@ -256,6 +259,9 @@ var ConversationManager = (function () {
         return this._restClient.delete(url, {})
             .then(function (result) {
             _this.isTypingOffInfo[conversationId] = new Date().toISOString();
+            if (_this.isTypingInfo[conversationId]) {
+                delete _this.isTypingInfo[conversationId];
+            }
             return Promise.resolve(true);
         });
     };

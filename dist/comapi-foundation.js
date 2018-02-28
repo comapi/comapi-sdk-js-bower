@@ -5880,7 +5880,7 @@ var COMAPI =
 	                platform: /*browserInfo.name*/ "javascript",
 	                platformVersion: browserInfo.version,
 	                sdkType: /*"javascript"*/ "native",
-	                sdkVersion: "1.0.3.287"
+	                sdkVersion: "1.0.3.293"
 	            };
 	            return _this._restClient.post(url, {}, data);
 	        })
@@ -7067,6 +7067,9 @@ var COMAPI =
 	        return this._restClient.post(url, {}, {})
 	            .then(function (result) {
 	            _this.isTypingInfo[conversationId] = new Date().toISOString();
+	            if (_this.isTypingOffInfo[conversationId]) {
+	                delete _this.isTypingOffInfo[conversationId];
+	            }
 	            return Promise.resolve(true);
 	        });
 	    };
@@ -7095,6 +7098,9 @@ var COMAPI =
 	        return this._restClient.delete(url, {})
 	            .then(function (result) {
 	            _this.isTypingOffInfo[conversationId] = new Date().toISOString();
+	            if (_this.isTypingInfo[conversationId]) {
+	                delete _this.isTypingInfo[conversationId];
+	            }
 	            return Promise.resolve(true);
 	        });
 	    };
