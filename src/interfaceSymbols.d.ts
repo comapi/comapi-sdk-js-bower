@@ -1,0 +1,27 @@
+declare let INTERFACE_SYMBOLS: {
+    AppMessaging: string;
+    AuthenticatedRestClient: string;
+    Channels: string;
+    ComapiConfig: string;
+    ContentManager: string;
+    ConversationManager: string;
+    Device: string;
+    DeviceManager: string;
+    EventManager: string;
+    EventMapper: string;
+    FacebookManager: string;
+    IndexedDBLogger: string;
+    LocalStorageData: string;
+    Logger: string;
+    MessageManager: string;
+    MessagePager: string;
+    NetworkManager: string;
+    OrphanedEventManager: string;
+    Profile: string;
+    ProfileManager: string;
+    RestClient: string;
+    Services: string;
+    SessionManager: string;
+    WebSocketManager: string;
+};
+export { INTERFACE_SYMBOLS };

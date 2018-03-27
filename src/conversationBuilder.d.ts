@@ -80,12 +80,12 @@ export declare class ConversationBuilder implements IConversationDetails {
      * @param {IConversationPrivelages} privelages
      * @returns {ConversationBuilder} - Returns reference to itself so methods can be chained
      */
-    withOwnerPrivelages(privelages: IConversationPrivelages): ConversationBuilder;
+    withOwnerPrivelages(privelages: IConversationPrivelages): this;
     /**
      * Method to set participant privelages for the conversation
      * @method ConversationBuilder#withParticipantPrivelages
      * @param {IConversationPrivelages} privelages
      * @returns {ConversationBuilder} - Returns reference to itself so methods can be chained
      */
-    withParticipantPrivelages(privelages: IConversationPrivelages): ConversationBuilder;
+    withParticipantPrivelages(privelages: IConversationPrivelages): this;
 }

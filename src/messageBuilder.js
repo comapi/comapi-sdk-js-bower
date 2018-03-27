@@ -1,3 +1,5 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * @class MessageBuilder
  * @classdesc Class that implements MessageBuilder
@@ -38,6 +40,24 @@ var MessageBuilder = (function () {
             data: data,
             size: data.length,
             type: type,
+        });
+        return this;
+    };
+    /**
+     * Method to create a message containing a single data part
+     * @method MessageBuilder#withData
+     * @param {String} type - the type of the data i.e. `image/png`
+     * @param {String} url - the url
+     * @param {Number} [size] - the size of the resource the URL is pointing to
+     * @param {String} [name] - the teh name of the original file
+     * @returns {MessageBuilder}  - Returns reference to itself so methods can be chained
+     */
+    MessageBuilder.prototype.withURL = function (type, url, size, name) {
+        this.parts.push({
+            name: name,
+            size: size,
+            type: type,
+            url: url,
         });
         return this;
     };
@@ -100,6 +120,6 @@ var MessageBuilder = (function () {
         return this;
     };
     return MessageBuilder;
-})();
+}());
 exports.MessageBuilder = MessageBuilder;
 //# sourceMappingURL=messageBuilder.js.map

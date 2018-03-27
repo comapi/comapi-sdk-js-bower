@@ -1,3 +1,5 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var utils_1 = require("./utils");
 var ConversationBuilder = (function () {
     /**
@@ -74,8 +76,8 @@ var ConversationBuilder = (function () {
      */
     ConversationBuilder.prototype.withUsers = function (users) {
         this.participants = [];
-        for (var _i = 0; _i < users.length; _i++) {
-            var user = users[_i];
+        for (var _i = 0, users_1 = users; _i < users_1.length; _i++) {
+            var user = users_1[_i];
             this.participants.push({ id: user });
         }
         return this;
@@ -122,6 +124,6 @@ var ConversationBuilder = (function () {
         return this;
     };
     return ConversationBuilder;
-})();
+}());
 exports.ConversationBuilder = ConversationBuilder;
 //# sourceMappingURL=conversationBuilder.js.map

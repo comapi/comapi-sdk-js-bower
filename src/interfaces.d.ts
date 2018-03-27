@@ -11,11 +11,11 @@ export interface IEventManager {
  * Local storage interface
  */
 export interface ILocalStorageData {
-    getString(key: string): string;
-    setString(key: string, data: string): any;
-    getObject(key: string): Object;
-    setObject(key: string, data: Object): boolean;
-    remove(key: string): any;
+    getString(key: string): Promise<string>;
+    setString(key: string, data: string): Promise<boolean>;
+    getObject(key: string): Promise<Object>;
+    setObject(key: string, data: Object): Promise<boolean>;
+    remove(key: string): Promise<boolean>;
 }
 /**
  * Log level enum
@@ -32,6 +32,14 @@ export declare enum LogLevels {
 export declare enum LogPersistences {
     None = 0,
     IndexedDB = 1,
+    LocalStorage = 2,
+}
+/**
+ * Log persistence enum
+ */
+export declare enum OrphanedEventPersistences {
+    None = 0,
+    IndexedDbIfSupported = 1,
     LocalStorage = 2,
 }
 /**
@@ -71,6 +79,7 @@ export interface IRestClient {
     get(url: string, headers?: any): Promise<IRestClientResult>;
     post(url: string, headers: any, data: any): Promise<IRestClientResult>;
     put(url: string, headers: any, data: any): Promise<IRestClientResult>;
+    patch(url: string, headers: any, data: any): Promise<IRestClientResult>;
     delete(url: string, headers: any): Promise<IRestClientResult>;
 }
 /**
@@ -169,6 +178,7 @@ export declare enum Environment {
  */
 export interface ISessionManager {
     sessionInfo: ISessionInfo;
+    initialise(): Promise<boolean>;
     getValidToken(): Promise<string>;
     startSession(): Promise<ISessionInfo>;
     endSession(): Promise<boolean>;
@@ -182,7 +192,7 @@ export interface INetworkManager {
     startSession(): Promise<ISessionInfo>;
     restartSession(): Promise<ISessionInfo>;
     endSession(): Promise<boolean>;
-    ensureSessionAndSocket(): Promise<ISessionInfo>;
+    ensureSession(): Promise<ISessionInfo>;
 }
 /**
  * Session manager interface
@@ -210,6 +220,26 @@ export interface IAuthChallengeOptions {
 export interface IAuthChallenge {
     (options: IAuthChallengeOptions, answerAuthenticationChallenge: Function): void;
 }
+export interface IFoundationRestUrls {
+    content: string;
+    conversations: string;
+    conversation: string;
+    participants: string;
+    typing: string;
+    push: string;
+    facebook: string;
+    events: string;
+    messages: string;
+    statusUpdates: string;
+    profiles: string;
+    profile: string;
+    sessions: string;
+    sessionStart: string;
+    session: string;
+}
+export interface IEventMapping {
+    [category: string]: string[];
+}
 /**
  * Comapi options to be passed in on startup
  */
@@ -223,6 +253,28 @@ export interface IComapiConfig {
     logPersistence?: LogPersistences;
     isTypingTimeout?: number;
     isTypingOffTimeout?: number;
+    foundationRestUrls?: IFoundationRestUrls;
+    eventMapping?: IEventMapping;
+    interfaceContainer?: any;
+    localStoragePrefix?: string;
+    orphanedEventPersistence?: OrphanedEventPersistences;
+}
+export interface IContentData {
+    file: File;
+    data: string;
+    name: string;
+    type: string;
+}
+export interface IUploadContentResult {
+    folder: string;
+    id: string;
+    type: string;
+    url: string;
+    size: number;
+    name: string;
+}
+export interface IContentManager {
+    uploadContent(content: IContentData, folder?: string): Promise<IUploadContentResult>;
 }
 /**
  * Profile manager interface
@@ -230,6 +282,7 @@ export interface IComapiConfig {
 export interface IProfileManager {
     getProfile(id: string): Promise<any>;
     updateProfile(id: string, profile: Object, eTag?: string): Promise<any>;
+    patchProfile(id: string, profile: Object, eTag?: string): Promise<any>;
     queryProfiles(query: string): Promise<any>;
 }
 /**
@@ -298,6 +351,7 @@ export interface IConversationDetails2 extends IConversationDetails {
 }
 export interface ISendMessageResult {
     id: string;
+    eventId: number;
 }
 /**
  *
@@ -401,6 +455,19 @@ export interface IMessageStatus {
     messageIds: string[];
     status: string;
     timestamp: string;
+}
+export interface IEventMapper {
+    conversationDeleted(event: any): IConversationDeletedEventData;
+    conversationUndeleted(event: any): IConversationUndeletedEventData;
+    conversationUpdated(event: any): IConversationUpdatedEventData;
+    participantAdded(event: any): IParticipantAddedEventData;
+    participantRemoved(event: any): IParticipantRemovedEventData;
+    participantTyping(event: any): IParticipantTypingEventData;
+    participantTypingOff(event: any): IParticipantTypingOffEventData;
+    conversationMessageSent(event: any): IConversationMessageEvent;
+    conversationMessageRead(event: any): IConversationMessageEvent;
+    conversationMessageDelivered(event: any): IConversationMessageEvent;
+    profileUpdated(event: any): IProfileUpdatedEvent;
 }
 /**
  *
@@ -530,13 +597,16 @@ export interface IAppMessaging {
     getMessages(conversationId: string, pageSize: number, continuationToken?: number): Promise<IGetMessagesResponse>;
     sendIsTyping(conversationId: string): Promise<boolean>;
     sendIsTypingOff(conversationId: string): Promise<boolean>;
+    uploadContent(content: IContentData, folder?: string): Promise<IUploadContentResult>;
 }
 export interface IProfile {
     getProfile(profileId: string): Promise<any>;
     queryProfiles(query?: string): Promise<any>;
     updateProfile(profileId: string, profile: any, eTag?: string): Promise<any>;
+    patchProfile(id: string, profile: Object, eTag?: string): Promise<any>;
     getMyProfile(useEtag?: boolean): Promise<any>;
     updateMyProfile(profile: any, useEtag?: boolean): Promise<any>;
+    patchMyProfile(profile: any, useEtag?: boolean): Promise<any>;
 }
 export interface IServices {
     appMessaging: IAppMessaging;
@@ -559,6 +629,12 @@ export interface IOrphanedEventManager {
     removeOrphanedEvent(event: IConversationMessageEvent): Promise<boolean>;
     getOrphanedEvents(conversationId: string): Promise<IConversationMessageEvent[]>;
 }
+export interface IMessagePager {
+    getMessages(conversationId: string, pageSize: number, continuationToken?: number): Promise<IGetMessagesResponse>;
+    getOrphanedEvents(conversationId: string, orphanedEvents: any[]): Promise<IConversationMessageEvent[]>;
+    markMessagesAsDelivered(id: string, messages: IConversationMessage[], userId: string): Promise<string>;
+    resetConversation(conversationId: string): Promise<boolean>;
+}
 /**
  * Foundation interface definition
  * static methods missing as cant define them in TS ;-(
@@ -568,9 +644,22 @@ export interface IFoundation {
     device: IDevice;
     channels: IChannels;
     session: ISession;
+    logger: ILogger;
     startSession(): Promise<ISession>;
     endSession(): Promise<boolean>;
     on(eventType: string, handler: Function): void;
     off(eventType: string, handler?: Function): void;
     getLogs(): Promise<string>;
 }
+/**
+ * Method to perform the asnc operation
+ * @param {any} data  the data to operate on
+ * @returns {Promise<any>} returns a promise
+ */
+export declare type DoUntilOperationFunction = (data: any) => Promise<any>;
+/**
+ * Method to decide whether to continue or not
+ * @param {any} data  the data to look at (will have been returned vi a promise from DoUntilOperationFunction)
+ * @returns {boolean} returns true or false. return false to stop
+ */
+export declare type DoUntilTestFunction = (data: any) => boolean;

@@ -1,4 +1,7 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var interfaces_1 = require("./interfaces");
+var urlConfig_1 = require("./urlConfig");
 var ComapiConfig = (function () {
     /**
      * ComapiConfig class constructor.
@@ -13,6 +16,8 @@ var ComapiConfig = (function () {
         this.logPersistence = interfaces_1.LogPersistences.LocalStorage;
         this.isTypingTimeout = 10;
         this.isTypingOffTimeout = 10;
+        this.foundationRestUrls = new urlConfig_1.FoundationRestUrls();
+        this.orphanedEventPersistence = interfaces_1.OrphanedEventPersistences.IndexedDbIfSupported;
         this.apiSpaceId = undefined;
     }
     /**
@@ -85,7 +90,47 @@ var ComapiConfig = (function () {
         this.logPersistence = logPersistence;
         return this;
     };
+    /**
+     * Function to override foundationRestUrls
+     * @method ComapiConfig#withFoundationRestUrls
+     * @param {IFoundationRestUrls} foundationRestUrls - the foundationRestUrls
+     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+     */
+    ComapiConfig.prototype.withFoundationRestUrls = function (foundationRestUrls) {
+        this.foundationRestUrls = foundationRestUrls;
+        return this;
+    };
+    /**
+     * Function to override eventMapping
+     * @method ComapiConfig#withEventMapping
+     * @param {IEventMapping} eventMapping - the eventMapping
+     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+     */
+    ComapiConfig.prototype.withEventMapping = function (eventMapping) {
+        this.eventMapping = eventMapping;
+        return this;
+    };
+    /**
+     * Function to override localStoragePrefix
+     * @method ComapiConfig#withLocalStoragePrefix
+     * @param {string} localStoragePrefix - the localStoragePrefix
+     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+     */
+    ComapiConfig.prototype.withLocalStoragePrefix = function (localStoragePrefix) {
+        this.localStoragePrefix = localStoragePrefix;
+        return this;
+    };
+    /**
+     * Function to override orphanedEventPersistence
+     * @method ComapiConfig#withOrphanedEventPersistence
+     * @param {string} orphanedEventPersistence - the orphanedEventPersistence
+     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+     */
+    ComapiConfig.prototype.withOrphanedEventPersistence = function (orphanedEventPersistence) {
+        this.orphanedEventPersistence = orphanedEventPersistence;
+        return this;
+    };
     return ComapiConfig;
-})();
+}());
 exports.ComapiConfig = ComapiConfig;
 //# sourceMappingURL=comapiConfig.js.map

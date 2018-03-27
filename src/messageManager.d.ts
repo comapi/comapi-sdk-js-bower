@@ -1,11 +1,10 @@
-import { IMessageManager, IMessageStatus, IMessagePart, IMessageAlert, ISendMessageResult, IConversationManager, IConversationMessage, IConversationMessageEvent, IConversationMessagesResult, ISessionManager, IRestClient, ILogger, ILocalStorageData, IComapiConfig } from "./interfaces";
+import { IMessageManager, IMessageStatus, IMessagePart, IMessageAlert, ISendMessageResult, IConversationMessage, IConversationMessageEvent, IConversationMessagesResult, ISessionManager, IRestClient, ILogger, ILocalStorageData, IComapiConfig } from "./interfaces";
 export declare class MessageManager implements IMessageManager {
     private _logger;
     private _restClient;
     private _localStorageData;
     private _comapiConfig;
     private _sessionManager;
-    private _conversationManager;
     /**
      * MessagesManager class constructor.
      * @class MessagesManager
@@ -16,9 +15,8 @@ export declare class MessageManager implements IMessageManager {
      * @parameter {ILocalStorageData} localStorageData
      * @parameter {IComapiConfig} comapiConfig
      * @parameter {ISessionManager} sessionManager
-     * @parameter {IChannelManager} channelManager
      */
-    constructor(_logger: ILogger, _restClient: IRestClient, _localStorageData: ILocalStorageData, _comapiConfig: IComapiConfig, _sessionManager: ISessionManager, _conversationManager: IConversationManager);
+    constructor(_logger: ILogger, _restClient: IRestClient, _localStorageData: ILocalStorageData, _comapiConfig: IComapiConfig, _sessionManager: ISessionManager);
     /**
      * @method MessagesManager#getConversationEvents
      * @param {string} conversationId

@@ -1,3 +1,5 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var ApiSpaceManager = (function () {
     function ApiSpaceManager(_restClient, _urlBase) {
         this._restClient = _restClient;
@@ -37,16 +39,16 @@ var ApiSpaceManager = (function () {
     /**
      *
      */
-    ApiSpaceManager.prototype.updateAuth = function (token, appspaceId, authInfo) {
+    ApiSpaceManager.prototype.updateAuth = function (token, apiSpaceId, authInfo) {
         var headers = {
             "authorization": "Bearer " + token
         };
-        return this._restClient.put(this._urlBase + "/apispaces/" + appspaceId + "/auth", headers, authInfo)
+        return this._restClient.put(this._urlBase + "/apispaces/" + apiSpaceId + "/auth", headers, authInfo)
             .then(function (result) {
             return Promise.resolve(result.response);
         });
     };
     return ApiSpaceManager;
-})();
+}());
 exports.ApiSpaceManager = ApiSpaceManager;
 //# sourceMappingURL=apiSpaceManager.js.map

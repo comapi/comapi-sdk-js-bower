@@ -1,10 +1,10 @@
-import { IConversationManager, IConversationDetails, IConversationDetails2, IConversationParticipant, ConversationScope, IMessageManager, IConversationMessageEvent, IConversationMessage, ISendMessageResult, IMessageStatus, IGetMessagesResponse, INetworkManager } from "./interfaces";
-import { MessagePager } from "./messagePager";
+import { IConversationManager, IConversationDetails, IConversationDetails2, IConversationParticipant, ConversationScope, IMessageManager, IConversationMessageEvent, IConversationMessage, ISendMessageResult, IMessageStatus, IGetMessagesResponse, INetworkManager, IMessagePager, IContentManager, IContentData, IUploadContentResult } from "./interfaces";
 export declare class AppMessaging {
     private _networkManager;
     private _conversationManager;
     private _messageManager;
     private _messagePager;
+    private _contentManager;
     /**
      * AppMessaging class constructor.
      * @class  AppMessaging
@@ -13,7 +13,7 @@ export declare class AppMessaging {
      * @param {IConversationManager} conversationManager
      * @param {IMessageManager} messageManager
      */
-    constructor(_networkManager: INetworkManager, _conversationManager: IConversationManager, _messageManager: IMessageManager, _messagePager: MessagePager);
+    constructor(_networkManager: INetworkManager, _conversationManager: IConversationManager, _messageManager: IMessageManager, _messagePager: IMessagePager, _contentManager: IContentManager);
     /**
      * Function to create a conversation
      * @method AppMessaging#createConversation
@@ -122,4 +122,11 @@ export declare class AppMessaging {
      * @returns {Promise}
      */
     sendIsTypingOff(conversationId: string): Promise<boolean>;
+    /**
+     * Method to upload content data
+     * @method AppMessaging#uploadContent
+     * @param {ContentData} content - the content
+     * @returns {IUploadContentResult} - the result
+     */
+    uploadContent(content: IContentData, folder?: string): Promise<IUploadContentResult>;
 }

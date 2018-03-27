@@ -1,5 +1,5 @@
-import { ILocalStorageData, IProfileManager, INetworkManager } from "./interfaces";
-export declare class Profile {
+import { ILocalStorageData, IProfile, IProfileManager, INetworkManager } from "./interfaces";
+export declare class Profile implements IProfile {
     private _networkManager;
     private _localStorage;
     private _profileManager;
@@ -36,6 +36,15 @@ export declare class Profile {
      */
     updateProfile(profileId: string, profile: any, eTag?: string): Promise<any>;
     /**
+     * Function to patch a profile
+     * @method Profile#updateProfile
+     * @param {string} profileId - the id of the profile to update
+     * @param {any} profile - the profile to patch
+     * @param {string} [eTag] - the eTag (returned in headers from getProfile())
+     * @returns {Promise}
+     */
+    patchProfile(profileId: string, profile: Object, eTag?: string): Promise<any>;
+    /**
      * Get current user's profile
      * @method Profile#getMyProfile
      * @param {boolean} [useEtag=true] - Whether to use eTags to maintain consistency of profile data (defaults to true)
@@ -50,4 +59,16 @@ export declare class Profile {
      * @returns {Promise} - returns a Promise
      */
     updateMyProfile(profile: any, useEtag?: boolean): Promise<any>;
+    /**
+     * Patch current user's profile
+     * @method Profile#patchMyProfile
+     * @param {any} profile - the profile of the logged in user to update
+     * @returns {Promise} - returns a Promise
+     */
+    patchMyProfile(profile: any, useEtag: boolean): Promise<any>;
+    /**
+     *
+     * @param useEtag
+     */
+    private getMyProfileETag(useEtag);
 }

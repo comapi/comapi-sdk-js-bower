@@ -1,3 +1,19 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var inversify_1 = require("inversify");
+var interfaceSymbols_1 = require("./interfaceSymbols");
 var AppMessaging = (function () {
     /**
      * AppMessaging class constructor.
@@ -7,11 +23,12 @@ var AppMessaging = (function () {
      * @param {IConversationManager} conversationManager
      * @param {IMessageManager} messageManager
      */
-    function AppMessaging(_networkManager, _conversationManager, _messageManager, _messagePager) {
+    function AppMessaging(_networkManager, _conversationManager, _messageManager, _messagePager, _contentManager) {
         this._networkManager = _networkManager;
         this._conversationManager = _conversationManager;
         this._messageManager = _messageManager;
         this._messagePager = _messagePager;
+        this._contentManager = _contentManager;
     }
     /**
      * Function to create a conversation
@@ -21,7 +38,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.createConversation = function (conversationDetails) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._conversationManager.createConversation(conversationDetails);
         });
@@ -35,7 +52,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.updateConversation = function (conversationDetails, eTag) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._conversationManager.updateConversation(conversationDetails, eTag);
         });
@@ -48,7 +65,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.getConversation = function (conversationId) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._conversationManager.getConversation(conversationId);
         });
@@ -61,7 +78,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.deleteConversation = function (conversationId) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._conversationManager.deleteConversation(conversationId);
         })
@@ -78,7 +95,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.addParticipantsToConversation = function (conversationId, participants) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._conversationManager.addParticipantsToConversation(conversationId, participants);
         });
@@ -92,7 +109,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.deleteParticipantsFromConversation = function (conversationId, participants) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._conversationManager.deleteParticipantsFromConversation(conversationId, participants);
         });
@@ -105,7 +122,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.getParticipantsInConversation = function (conversationId) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._conversationManager.getParticipantsInConversation(conversationId);
         });
@@ -119,7 +136,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.getConversations = function (scope, profileId) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._conversationManager.getConversations(scope, profileId);
         });
@@ -134,7 +151,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.getConversationEvents = function (conversationId, from, limit) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._messageManager.getConversationEvents(conversationId, from, limit);
         });
@@ -148,7 +165,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.sendMessageToConversation = function (conversationId, message) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._messageManager.sendMessageToConversation(conversationId, message);
         });
@@ -162,7 +179,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.sendMessageStatusUpdates = function (conversationId, statuses) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._messageManager.sendMessageStatusUpdates(conversationId, statuses);
         });
@@ -179,7 +196,7 @@ var AppMessaging = (function () {
         var _this = this;
         var profileId;
         var _getMessagesResponse;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             profileId = sessionInfo.session.profileId;
             return _this._messagePager.getMessages(conversationId, pageSize, continuationToken);
@@ -200,7 +217,7 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.sendIsTyping = function (conversationId) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._conversationManager.sendIsTyping(conversationId);
         });
@@ -213,12 +230,34 @@ var AppMessaging = (function () {
      */
     AppMessaging.prototype.sendIsTypingOff = function (conversationId) {
         var _this = this;
-        return this._networkManager.ensureSessionAndSocket()
+        return this._networkManager.ensureSession()
             .then(function (sessionInfo) {
             return _this._conversationManager.sendIsTypingOff(conversationId);
         });
     };
+    /**
+     * Method to upload content data
+     * @method AppMessaging#uploadContent
+     * @param {ContentData} content - the content
+     * @returns {IUploadContentResult} - the result
+     */
+    AppMessaging.prototype.uploadContent = function (content, folder) {
+        var _this = this;
+        return this._networkManager.ensureSession()
+            .then(function (sessionInfo) {
+            return _this._contentManager.uploadContent(content, folder);
+        });
+    };
     return AppMessaging;
-})();
+}());
+AppMessaging = __decorate([
+    inversify_1.injectable(),
+    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
+    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager)),
+    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager)),
+    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager)),
+    __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ContentManager)),
+    __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
+], AppMessaging);
 exports.AppMessaging = AppMessaging;
 //# sourceMappingURL=appMessaging.js.map

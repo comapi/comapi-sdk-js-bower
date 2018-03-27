@@ -1,4 +1,20 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var inversify_1 = require("inversify");
 var utils_1 = require("./utils");
+var interfaceSymbols_1 = require("./interfaceSymbols");
 var SessionManager = (function () {
     /**
      * SessionManager class constructor.
@@ -15,14 +31,31 @@ var SessionManager = (function () {
         this._restClient = _restClient;
         this._localStorageData = _localStorageData;
         this._comapiConfig = _comapiConfig;
-        this._deviceId = _localStorageData.getString("deviceId");
-        if (!this._deviceId) {
-            this._deviceId = utils_1.Utils.uuid();
-            _localStorageData.setString("deviceId", this._deviceId);
-        }
-        // Load in cached session on startup
-        this._getSession();
     }
+    /**
+     * Retrieve a cached session if there is one
+     */
+    SessionManager.prototype.initialise = function () {
+        var _this = this;
+        return this._localStorageData.getObject("session")
+            .then(function (sessionInfo) {
+            if (sessionInfo) {
+                if (_this.isSessionValid(sessionInfo)) {
+                    _this._sessionInfo = sessionInfo;
+                    return true;
+                }
+                else {
+                    return _this._localStorageData.remove("session")
+                        .then(function () {
+                        return false;
+                    });
+                }
+            }
+            else {
+                return false;
+            }
+        });
+    };
     Object.defineProperty(SessionManager.prototype, "sessionInfo", {
         /**
          * Getter to get the current sessionInfo
@@ -35,55 +68,19 @@ var SessionManager = (function () {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(SessionManager.prototype, "expiry", {
-        /**
-         * Getter to get the current sessionInfo expiry time
-         * @method SessionManager#expiry
-         * @returns {string}
-         */
-        get: function () {
-            return this._sessionInfo.session.expiresOn;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(SessionManager.prototype, "isActive", {
-        /**
-         * @method SessionManager#isActive
-         */
-        get: function () {
-            var result = false;
-            // check we have a token and also that the token hasn't expired ...
-            if (this._sessionInfo) {
-                var now = new Date();
-                var expiry = new Date(this._sessionInfo.session.expiresOn);
-                if (now < expiry) {
-                    result = true;
-                }
-                else {
-                    this._removeSession();
-                }
-            }
-            return result;
-        },
-        enumerable: true,
-        configurable: true
-    });
     /**
      * Function to get auth token
      * @method SessionManager#token
      * @returns {Promise} - returns the auth token via a promise
      */
     SessionManager.prototype.getValidToken = function () {
-        return this.isActive
-            ? Promise.resolve(this._sessionInfo.token)
-            : this.startSession()
-                .then(function (sessionInfo) {
-                return Promise.resolve(sessionInfo.token);
-            });
+        return this.startSession()
+            .then(function (sessionInfo) {
+            return Promise.resolve(sessionInfo.token);
+        });
     };
     /**
-     * Function to start a new session
+     * Function to start a new session or return an existing session
      * @method SessionManager#startSession
      * @param {any} userDefined -  Additional client-specific information
      * @returns {Promise} - Returns a promise
@@ -92,9 +89,8 @@ var SessionManager = (function () {
         var _this = this;
         var self = this;
         return new Promise(function (resolve, reject) {
-            if (_this.isActive) {
-                self._logger.log("startSession() found an existing session: ");
-                resolve(_this._getSession());
+            if (_this._sessionInfo && _this.isSessionValid(_this._sessionInfo)) {
+                resolve(_this._sessionInfo);
             }
             else {
                 // call comapi service startAuth                
@@ -107,10 +103,17 @@ var SessionManager = (function () {
                         if (jwt) {
                             self._createAuthenticatedSession(jwt, sessionStartResponse.authenticationId, {})
                                 .then(function (sessionInfo) {
-                                self._setSession(sessionInfo);
+                                return Promise.all([sessionInfo, self._setSession(sessionInfo)]);
+                            })
+                                .then(function (_a) {
+                                var sessionInfo = _a[0], result = _a[1];
+                                if (!result) {
+                                    console.error("_setSession() failed");
+                                }
                                 // pass back to client
                                 resolve(sessionInfo);
-                            }).catch(function (error) {
+                            })
+                                .catch(function (error) {
                                 reject(error);
                             });
                         }
@@ -138,7 +141,7 @@ var SessionManager = (function () {
                     resolve(true);
                 }).catch(function (error) {
                     _this._removeSession();
-                    reject(error);
+                    resolve(false);
                 });
             }
             else {
@@ -154,17 +157,25 @@ var SessionManager = (function () {
      * @returns {Promise} - Returns a promise
      */
     SessionManager.prototype._createAuthenticatedSession = function (jwt, authenticationId, deviceInfo) {
-        var browserInfo = utils_1.Utils.getBrowserInfo();
-        var data = {
-            authenticationId: authenticationId,
-            authenticationToken: jwt,
-            deviceId: this._deviceId,
-            platform: /*browserInfo.name*/ "javascript",
-            platformVersion: browserInfo.version,
-            sdkType: /*"javascript"*/ "native",
-            sdkVersion: "1.0.2.8"
-        };
-        return this._restClient.post(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/sessions", {}, data)
+        var _this = this;
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessions, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            urlBase: this._comapiConfig.urlBase,
+        });
+        return this.getDeviceId()
+            .then(function () {
+            var browserInfo = utils_1.Utils.getBrowserInfo();
+            var data = {
+                authenticationId: authenticationId,
+                authenticationToken: jwt,
+                deviceId: _this._deviceId,
+                platform: /*browserInfo.name*/ "javascript",
+                platformVersion: browserInfo.version,
+                sdkType: /*"javascript"*/ "native",
+                sdkVersion: "1.1.0.293"
+            };
+            return _this._restClient.post(url, {}, data);
+        })
             .then(function (result) {
             return Promise.resolve(result.response);
         });
@@ -174,7 +185,11 @@ var SessionManager = (function () {
      * @returns {Promise} - Returns a promise
      */
     SessionManager.prototype._startAuth = function () {
-        return this._restClient.get(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/sessions/start")
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.sessionStart, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            urlBase: this._comapiConfig.urlBase,
+        });
+        return this._restClient.get(url)
             .then(function (result) {
             return Promise.resolve(result.response);
         });
@@ -188,42 +203,38 @@ var SessionManager = (function () {
             "Content-Type": "application/json",
             "authorization": this.getAuthHeader(),
         };
-        return this._restClient.delete(this._comapiConfig.urlBase + "/apispaces/" + this._comapiConfig.apiSpaceId + "/sessions/" + this._sessionInfo.session.id, headers)
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.session, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            sessionId: this.sessionInfo.session.id,
+            urlBase: this._comapiConfig.urlBase,
+        });
+        return this._restClient.delete(url, headers)
             .then(function (result) {
             return Promise.resolve(true);
         });
     };
     /**
      * Internal function to load in an existing session if available
-     * @returns {ISessionInfo} - returns session info if available
-     */
-    SessionManager.prototype._getSession = function () {
-        var sessionInfo = this._localStorageData.getObject("session");
-        if (sessionInfo) {
-            this._sessionInfo = sessionInfo;
-        }
-        return sessionInfo;
-    };
-    /**
-     * Internal function to load in an existing session if available
      * @returns {boolean} - returns boolean reault
      */
     SessionManager.prototype._setSession = function (sessionInfo) {
-        var expiry = new Date(sessionInfo.session.expiresOn);
-        var now = new Date();
-        if (expiry < now) {
+        if (this.hasExpired(sessionInfo.session.expiresOn)) {
             this._logger.error("Was given an expired token ;-(");
         }
         this._sessionInfo = sessionInfo;
-        this._localStorageData.setObject("session", sessionInfo);
+        return this._localStorageData.setObject("session", sessionInfo);
     };
     /**
      * Internal function to remove an existing session
      * @returns {boolean} - returns boolean reault
      */
     SessionManager.prototype._removeSession = function () {
-        this._localStorageData.remove("session");
-        this._sessionInfo = undefined;
+        var _this = this;
+        return this._localStorageData.remove("session")
+            .then(function (result) {
+            _this._sessionInfo = undefined;
+            return result;
+        });
     };
     /**
      *
@@ -231,7 +242,69 @@ var SessionManager = (function () {
     SessionManager.prototype.getAuthHeader = function () {
         return "Bearer " + this.sessionInfo.token;
     };
+    /**
+     * Create one if not available ...
+     */
+    SessionManager.prototype.getDeviceId = function () {
+        var _this = this;
+        if (this._deviceId) {
+            return Promise.resolve(this._deviceId);
+        }
+        else {
+            return this._localStorageData.getString("deviceId")
+                .then(function (value) {
+                if (value === null) {
+                    _this._deviceId = utils_1.Utils.uuid();
+                    return _this._localStorageData.setString("deviceId", _this._deviceId)
+                        .then(function (result) {
+                        return Promise.resolve(_this._deviceId);
+                    });
+                }
+                else {
+                    _this._deviceId = value;
+                    return Promise.resolve(_this._deviceId);
+                }
+            });
+        }
+    };
+    /**
+     * Check an iso date is not in the past ...
+     * @param expiresOn
+     */
+    SessionManager.prototype.hasExpired = function (expiresOn) {
+        var now = new Date();
+        var expiry = new Date(expiresOn);
+        return now > expiry;
+    };
+    /**
+     * Checks validity of session based on expiry and matching apiSpace
+     * @param sessionInfo
+     */
+    SessionManager.prototype.isSessionValid = function (sessionInfo) {
+        var valid = false;
+        if (!this.hasExpired(sessionInfo.session.expiresOn)) {
+            // check that the token matches 
+            if (sessionInfo.token) {
+                var bits = sessionInfo.token.split(".");
+                if (bits.length === 3) {
+                    var payload = JSON.parse(atob(bits[1]));
+                    if (payload.apiSpaceId === this._comapiConfig.apiSpaceId) {
+                        valid = true;
+                    }
+                }
+            }
+        }
+        return valid;
+    };
     return SessionManager;
-})();
+}());
+SessionManager = __decorate([
+    inversify_1.injectable(),
+    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient)),
+    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+    __metadata("design:paramtypes", [Object, Object, Object, Object])
+], SessionManager);
 exports.SessionManager = SessionManager;
 //# sourceMappingURL=sessionManager.js.map

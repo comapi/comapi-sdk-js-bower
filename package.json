@@ -2,7 +2,7 @@
     "name": "@comapi/sdk-js-foundation",
     "author": "Comapi",
     "description": "Comapi Javascript SDK - Foundation",
-    "version": "1.0.2",
+    "version": "1.1.0",
     "main": "./index.js",
     "types": "./index.d.ts",
     "repository": {
@@ -18,6 +18,10 @@
     "license": "MIT",
     "bugs": {
         "url": "https://github.com/comapi/comapi-sdk-js/issues"
+    },
+    "dependencies": {
+        "inversify": "^4.1.1",
+        "reflect-metadata": "^0.1.10"
     },
     "homepage": "http://www.comapi.com"
 }

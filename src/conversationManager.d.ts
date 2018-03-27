@@ -20,7 +20,7 @@ export declare class ConversationManager implements IConversationManager {
      */
     constructor(_logger: ILogger, _restClient: IRestClient, _localStorageData: ILocalStorageData, _comapiConfig: IComapiConfig, _sessionManager: ISessionManager);
     /**
-     * Function to create a onversation
+     * Function to create a conversation
      * @method ConversationManager#createConversation
      * @param {IConversationDetails} conversationDetails
      * @returns {Promise}

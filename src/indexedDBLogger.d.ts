@@ -1,10 +1,13 @@
-import { ILogEvent } from "./interfaces";
+import { IComapiConfig, ILogEvent } from "./interfaces";
 export declare class IndexedDBLogger {
+    private _comapiConfig;
+    private _initialised;
     private idbSupported;
     private _database;
     private _name;
     private _version;
     private _store;
+    private _mutex;
     /**
      * IndexedDBLogger class constructor.
      * @class IndexedDBLogger
@@ -12,13 +15,13 @@ export declare class IndexedDBLogger {
      * @classdesc Class that implements an IndexedDBLogger.
      * @param {string} name - database name (for overriding in unit tests)
      */
-    constructor(name?: string);
+    constructor(_comapiConfig?: IComapiConfig);
     /**
-     * Method to open a connection to the database
-     * @method IndexedDBLogger#openDatabase
-     * @returns {Promise} - returns a promise
+     * Setter to set the name
+     * @method IndexedDBLogger#name
+     * @param {string} name - the name
      */
-    openDatabase(): Promise<boolean>;
+    name: string;
     /**
      * Removes all records older than specified date
      * @method IndexedDBLogger#purge
@@ -64,4 +67,14 @@ export declare class IndexedDBLogger {
      * @returns {Promise} - returns a promise
      */
     addRecord(entity: ILogEvent): Promise<number>;
+    /**
+     *
+     */
+    private ensureInitialised();
+    /**
+     * Method to open a connection to the database
+     * @method IndexedDBLogger#initialise
+     * @returns {Promise} - returns a promise
+     */
+    private initialise();
 }

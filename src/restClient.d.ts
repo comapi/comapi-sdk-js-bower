@@ -11,7 +11,7 @@ export declare class RestClient implements IRestClient {
      * @param {ILogger} [logger] - the logger
      * @param {INetworkManager} [networkManager] - the network Manager
      */
-    constructor(logger?: ILogger, networkManager?: INetworkManager);
+    constructor(logger?: ILogger);
     /**
      * Method to make a GET request
      * @method RestClient#get
@@ -39,6 +39,15 @@ export declare class RestClient implements IRestClient {
      */
     put(url: string, headers: any, data: any): Promise<IRestClientResult>;
     /**
+     * Method to make a PATCH request
+     * @method RestClient#patch
+     * @param  {string} url
+     * @param  {any} headers
+     * @param  {any} data
+     * @returns {Promise} - returns a promise
+     */
+    patch(url: string, headers: any, data: any): Promise<IRestClientResult>;
+    /**
      * Method to make a DELETE request
      * @method RestClient#delete
      * @param  {string} url
@@ -59,14 +68,6 @@ export declare class RestClient implements IRestClient {
      *
      */
     private createCORSRequest(method, url);
-    /**
-     * @param  {string} method (GET,POST,PUT,DELETE)
-     * @param  {string} url
-     * @param  {any} [headers]
-     * @param  {any} [data]
-     * @returns {Promise} - returns a promise
-     */
-    private _makeRequest(method, url, headers?, data?);
     /**
      * @param  {string} method (GET,POST,PUT,DELETE)
      * @param  {string} url

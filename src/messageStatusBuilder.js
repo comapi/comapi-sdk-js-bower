@@ -1,3 +1,5 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * @class MessageStatusBuilder
  * @classdesc Class that implements MessageStatusBuilder
@@ -54,6 +56,6 @@ var MessageStatusBuilder = (function () {
         };
     };
     return MessageStatusBuilder;
-})();
+}());
 exports.MessageStatusBuilder = MessageStatusBuilder;
 //# sourceMappingURL=messageStatusBuilder.js.map

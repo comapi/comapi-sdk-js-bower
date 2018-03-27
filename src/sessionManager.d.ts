@@ -21,21 +21,15 @@ export declare class SessionManager implements ISessionManager {
      */
     constructor(_logger: ILogger, _restClient: IRestClient, _localStorageData: ILocalStorageData, _comapiConfig: IComapiConfig);
     /**
+     * Retrieve a cached session if there is one
+     */
+    initialise(): Promise<boolean>;
+    /**
      * Getter to get the current sessionInfo
      * @method SessionManager#sessionInfo
      * @returns {ISessionInfo}
      */
-    sessionInfo: ISessionInfo;
-    /**
-     * Getter to get the current sessionInfo expiry time
-     * @method SessionManager#expiry
-     * @returns {string}
-     */
-    expiry: string;
-    /**
-     * @method SessionManager#isActive
-     */
-    private isActive;
+    readonly sessionInfo: ISessionInfo;
     /**
      * Function to get auth token
      * @method SessionManager#token
@@ -43,7 +37,7 @@ export declare class SessionManager implements ISessionManager {
      */
     getValidToken(): Promise<string>;
     /**
-     * Function to start a new session
+     * Function to start a new session or return an existing session
      * @method SessionManager#startSession
      * @param {any} userDefined -  Additional client-specific information
      * @returns {Promise} - Returns a promise
@@ -75,11 +69,6 @@ export declare class SessionManager implements ISessionManager {
     private _endAuth();
     /**
      * Internal function to load in an existing session if available
-     * @returns {ISessionInfo} - returns session info if available
-     */
-    private _getSession();
-    /**
-     * Internal function to load in an existing session if available
      * @returns {boolean} - returns boolean reault
      */
     private _setSession(sessionInfo);
@@ -92,4 +81,18 @@ export declare class SessionManager implements ISessionManager {
      *
      */
     private getAuthHeader();
+    /**
+     * Create one if not available ...
+     */
+    private getDeviceId();
+    /**
+     * Check an iso date is not in the past ...
+     * @param expiresOn
+     */
+    private hasExpired(expiresOn);
+    /**
+     * Checks validity of session based on expiry and matching apiSpace
+     * @param sessionInfo
+     */
+    private isSessionValid(sessionInfo);
 }

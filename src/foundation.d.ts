@@ -1,10 +1,12 @@
-import { IEventManager, ILogger, ILocalStorageData, ISession, IDeviceManager, IFacebookManager, IConversationManager, IProfileManager, IMessageManager, IComapiConfig, IServices, IDevice, IChannels, IFoundation } from "./interfaces";
+import { IEventManager, ILogger, ISession, IComapiConfig, IServices, IDevice, IChannels, IFoundation, INetworkManager } from "./interfaces";
 import { ConversationBuilder } from "./conversationBuilder";
 import { MessageBuilder } from "./messageBuilder";
 import { MessageStatusBuilder } from "./messageStatusBuilder";
 import { ComapiConfig } from "./comapiConfig";
-import { NetworkManager } from "./networkManager";
-export { ComapiConfig, MessageStatusBuilder, ConversationBuilder, MessageBuilder };
+import { ContentData } from "./contentData";
+import { Mutex } from "./mutex";
+import { Utils } from "./utils";
+export { ComapiConfig, MessageStatusBuilder, ConversationBuilder, MessageBuilder, ContentData, Mutex, Utils };
 export declare class Foundation implements IFoundation {
     private _eventManager;
     private _logger;
@@ -49,7 +51,7 @@ export declare class Foundation implements IFoundation {
      * Property to get the SDK version
      * @method Foundation#version
      */
-    static version: string;
+    static readonly version: string;
     /**
      * Private initialisation method
      * @param comapiConfig
@@ -61,7 +63,7 @@ export declare class Foundation implements IFoundation {
      * @class Foundation
      * @classdesc Class that implements Comapi foundation functionality.
      */
-    constructor(_eventManager: IEventManager, _logger: ILogger, _localStorageData: ILocalStorageData, _networkManager: NetworkManager, _deviceManager: IDeviceManager, _facebookManager: IFacebookManager, _conversationManager: IConversationManager, _profileManager: IProfileManager, _messageManager: IMessageManager, _comapiConfig: IComapiConfig);
+    constructor(_eventManager: IEventManager, _logger: ILogger, _networkManager: INetworkManager, services: IServices, device: IDevice, channels: IChannels);
     /**
      * Method to start a new authenticated session
      * @method Foundation#startSession
@@ -79,25 +81,31 @@ export declare class Foundation implements IFoundation {
      * @method Foundation#services
      * @returns {Services} - Returns Services
      */
-    services: IServices;
+    readonly services: IServices;
     /**
      * Method to get Device interface
      * @method Foundation#device
      * @returns {Device} - Returns Device
      */
-    device: IDevice;
+    readonly device: IDevice;
     /**
      * Method to get Channels interface
      * @method Foundation#channels
      * @returns {Channels} - Returns Channels
      */
-    channels: IChannels;
+    readonly channels: IChannels;
     /**
      * Method to get current session
      * @method Foundation#session
      * @returns {ISession} - Returns an ISession interface
      */
-    session: ISession;
+    readonly session: ISession;
+    /**
+     * Method to get the logger
+     * @method Foundation#logger
+     * @returns {ILogger} - Returns an ILogger interface
+     */
+    readonly logger: ILogger;
     /**
      * Subscribes the caller to a comapi event.
      * @method Foundation#on

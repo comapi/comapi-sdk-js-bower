@@ -1,4 +1,21 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var inversify_1 = require("inversify");
 var interfaces_1 = require("./interfaces");
+var indexedDBLogger_1 = require("./indexedDBLogger");
+var interfaceSymbols_1 = require("./interfaceSymbols");
 var Logger = (function () {
     /**
      * Logger class constructor.
@@ -145,18 +162,18 @@ var Logger = (function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
             if (level <= _this._logLevel) {
-                var formattedMessage = "[" + _this._uid + "] : " + new Date().toJSON() + " ["
+                var formattedMessage_1 = "[" + _this._uid + "] : " + new Date().toJSON() + " ["
                     + _this._stringForLogLevel(level) + "] : " + message + (data !== undefined ? (" : "
                     + JSON.stringify(data)) : "") + "\r\n";
                 switch (level) {
                     case interfaces_1.LogLevels.Error:
-                        console.error(formattedMessage);
+                        console.error(formattedMessage_1);
                         break;
                     case interfaces_1.LogLevels.Warn:
-                        console.warn(formattedMessage);
+                        console.warn(formattedMessage_1);
                         break;
                     case interfaces_1.LogLevels.Debug:
-                        console.log(formattedMessage);
+                        console.log(formattedMessage_1);
                         break;
                     default:
                         break;
@@ -170,24 +187,29 @@ var Logger = (function () {
                     timestamp: now.toISOString(),
                 };
                 if (_this._indexedDB) {
-                    _this._indexedDB.addRecord(logEvent).then(function (index) {
+                    _this._indexedDB.addRecord(logEvent)
+                        .then(function (index) {
                         resolve(true);
                     });
                 }
                 else if (_this._localStorageData) {
                     // fall back to using local storage
-                    var log = _this._localStorageData.getString(_this._localStorageKey);
-                    if (log !== null) {
-                        log += formattedMessage;
-                    }
-                    else {
-                        log = formattedMessage;
-                    }
-                    if (log.length > _this._maxLocalStorageLogSize) {
-                        log = log.substring(formattedMessage.length);
-                    }
-                    _this._localStorageData.setString(_this._localStorageKey, log);
-                    resolve(true);
+                    _this._localStorageData.getString(_this._localStorageKey)
+                        .then(function (log) {
+                        if (log !== null) {
+                            log += formattedMessage_1;
+                        }
+                        else {
+                            log = formattedMessage_1;
+                        }
+                        if (log.length > _this._maxLocalStorageLogSize) {
+                            log = log.substring(formattedMessage_1.length);
+                        }
+                        _this._localStorageData.setString(_this._localStorageKey, log)
+                            .then(function () {
+                            resolve(true);
+                        });
+                    });
                 }
                 else {
                     resolve(true);
@@ -199,6 +221,13 @@ var Logger = (function () {
         });
     };
     return Logger;
-})();
+}());
+Logger = __decorate([
+    inversify_1.injectable(),
+    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager)),
+    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)), __param(2, inversify_1.optional()),
+    __metadata("design:paramtypes", [Object, Object, indexedDBLogger_1.IndexedDBLogger])
+], Logger);
 exports.Logger = Logger;
 //# sourceMappingURL=logger.js.map
