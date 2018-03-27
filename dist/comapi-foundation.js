@@ -5880,7 +5880,7 @@ var COMAPI =
 	                platform: /*browserInfo.name*/ "javascript",
 	                platformVersion: browserInfo.version,
 	                sdkType: /*"javascript"*/ "native",
-	                sdkVersion: "1.0.3.293"
+	                sdkVersion: "1.1.0.293"
 	            };
 	            return _this._restClient.post(url, {}, data);
 	        })
