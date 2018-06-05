@@ -50,6 +50,17 @@ export declare class SessionManager implements ISessionManager {
      */
     endSession(): Promise<boolean>;
     /**
+     * Retrieves details about a session
+     * @method SessionManager#requestSession
+     * @returns {Promise} - Returns a promise
+     */
+    requestSession(): Promise<any>;
+    /**
+     * Internal function to remove an existing cached session
+     * @returns {Promise} - returns boolean result
+     */
+    removeSession(): Promise<boolean>;
+    /**
      * Internal function to create an authenticated session
      * @param (String) jwt - the jwt retrieved from the integrator
      * @param (String) authenticationId - the authenticationId given by comapi back end
@@ -72,11 +83,6 @@ export declare class SessionManager implements ISessionManager {
      * @returns {boolean} - returns boolean reault
      */
     private _setSession(sessionInfo);
-    /**
-     * Internal function to remove an existing session
-     * @returns {boolean} - returns boolean reault
-     */
-    private _removeSession();
     /**
      *
      */

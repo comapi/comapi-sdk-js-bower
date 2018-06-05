@@ -23,7 +23,8 @@ var NetworkManager = (function () {
      * @parameter {ISessionManager} _sessionManager
      * @parameter {IWebSocketManager} _webSocketManager
      */
-    function NetworkManager(_sessionManager, _webSocketManager) {
+    function NetworkManager(_logger, _sessionManager, _webSocketManager) {
+        this._logger = _logger;
         this._sessionManager = _sessionManager;
         this._webSocketManager = _webSocketManager;
     }
@@ -34,16 +35,35 @@ var NetworkManager = (function () {
      */
     NetworkManager.prototype.startSession = function () {
         var _this = this;
+        var _sessionInfo;
         return this._sessionManager.startSession()
             .then(function (sessionInfo) {
-            return Promise.all([sessionInfo, _this._webSocketManager.connect()]);
+            _sessionInfo = sessionInfo;
+            return _this._webSocketManager.connect();
         })
-            .then(function (_a) {
-            var sessionInfo = _a[0], connected = _a[1];
-            if (!connected) {
-                console.error("Failed to connect web socket");
+            .then(function (connected) {
+            if (connected) {
+                return _sessionInfo;
             }
-            return sessionInfo;
+            else {
+                _this._logger.error("Failed to connect web socket");
+                // Is the session invalid even though it hadn't expired ? 
+                //  - perhaps the auth settings have changes since the token was issued ?
+                return _this._sessionManager.requestSession()
+                    .then(function (session) {
+                    // all good, websocket connection failure was just a blip and will automatically reconnect ...
+                    return _sessionInfo;
+                })
+                    .catch(function (error) {
+                    // session was bad
+                    _this._logger.error("failed to request session", error);
+                    // delete old cached session and re-auth ...
+                    return _this._sessionManager.removeSession()
+                        .then(function (result) {
+                        return _this._sessionManager.startSession();
+                    });
+                });
+            }
         });
     };
     /**
@@ -55,6 +75,9 @@ var NetworkManager = (function () {
         var _this = this;
         return this._webSocketManager.disconnect()
             .then(function (succeeded) {
+            return _this._sessionManager.removeSession();
+        })
+            .then(function (succeeded) {
             return _this._sessionManager.startSession();
         })
             .then(function (sessionInfo) {
@@ -63,7 +86,7 @@ var NetworkManager = (function () {
             .then(function (_a) {
             var sessionInfo = _a[0], connected = _a[1];
             if (!connected) {
-                console.error("Failed to connect web socket");
+                _this._logger.error("Failed to connect web socket");
             }
             return sessionInfo;
         });
@@ -107,9 +130,10 @@ var NetworkManager = (function () {
 }());
 NetworkManager = __decorate([
     inversify_1.injectable(),
-    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
-    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager)),
-    __metadata("design:paramtypes", [Object, Object])
+    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
+    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager)),
+    __metadata("design:paramtypes", [Object, Object, Object])
 ], NetworkManager);
 exports.NetworkManager = NetworkManager;
 //# sourceMappingURL=networkManager.js.map

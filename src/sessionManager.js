@@ -137,16 +137,45 @@ var SessionManager = (function () {
             if (_this._sessionInfo) {
                 _this._endAuth()
                     .then(function (result) {
-                    _this._removeSession();
+                    _this.removeSession();
                     resolve(true);
                 }).catch(function (error) {
-                    _this._removeSession();
+                    _this.removeSession();
                     resolve(false);
                 });
             }
             else {
                 reject({ message: "No active session is present, create one before ending one" });
             }
+        });
+    };
+    /**
+     * Retrieves details about a session
+     * @method SessionManager#requestSession
+     * @returns {Promise} - Returns a promise
+     */
+    SessionManager.prototype.requestSession = function () {
+        var headers = {
+            "Content-Type": "application/json",
+            "authorization": this.getAuthHeader(),
+        };
+        var url = utils_1.Utils.format(this._comapiConfig.foundationRestUrls.session, {
+            apiSpaceId: this._comapiConfig.apiSpaceId,
+            sessionId: this.sessionInfo.session.id,
+            urlBase: this._comapiConfig.urlBase,
+        });
+        return this._restClient.get(url, headers);
+    };
+    /**
+     * Internal function to remove an existing cached session
+     * @returns {Promise} - returns boolean result
+     */
+    SessionManager.prototype.removeSession = function () {
+        var _this = this;
+        return this._localStorageData.remove("session")
+            .then(function (result) {
+            _this._sessionInfo = undefined;
+            return result;
         });
     };
     /**
@@ -172,7 +201,7 @@ var SessionManager = (function () {
                 platform: /*browserInfo.name*/ "javascript",
                 platformVersion: browserInfo.version,
                 sdkType: /*"javascript"*/ "native",
-                sdkVersion: "1.1.0.293"
+                sdkVersion: "1.1.1.318"
             };
             return _this._restClient.post(url, {}, data);
         })
@@ -223,18 +252,6 @@ var SessionManager = (function () {
         }
         this._sessionInfo = sessionInfo;
         return this._localStorageData.setObject("session", sessionInfo);
-    };
-    /**
-     * Internal function to remove an existing session
-     * @returns {boolean} - returns boolean reault
-     */
-    SessionManager.prototype._removeSession = function () {
-        var _this = this;
-        return this._localStorageData.remove("session")
-            .then(function (result) {
-            _this._sessionInfo = undefined;
-            return result;
-        });
     };
     /**
      *

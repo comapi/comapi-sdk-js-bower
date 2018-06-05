@@ -1,5 +1,6 @@
-import { ISessionManager, IWebSocketManager, ISessionInfo, ISession, INetworkManager } from "./interfaces";
+import { ISessionManager, IWebSocketManager, ISessionInfo, ISession, ILogger, INetworkManager } from "./interfaces";
 export declare class NetworkManager implements INetworkManager {
+    private _logger;
     private _sessionManager;
     private _webSocketManager;
     /**
@@ -10,7 +11,7 @@ export declare class NetworkManager implements INetworkManager {
      * @parameter {ISessionManager} _sessionManager
      * @parameter {IWebSocketManager} _webSocketManager
      */
-    constructor(_sessionManager: ISessionManager, _webSocketManager: IWebSocketManager);
+    constructor(_logger: ILogger, _sessionManager: ISessionManager, _webSocketManager: IWebSocketManager);
     /**
      * Method to start a new authenticated session AND connect up the websocket
      * @method Foundation#startSession

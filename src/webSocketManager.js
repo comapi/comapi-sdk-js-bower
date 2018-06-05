@@ -343,10 +343,7 @@ var WebSocketManager = (function () {
         this._eventManager.publishLocalEvent("WebsocketClosed", { timestamp: new Date().toISOString() });
         // This is the failed to connect flow ...
         if (this._opening.isPending) {
-            this._opening.reject({
-                code: event.code,
-                message: "WebSocket closed with reason: " + event.reason + " (" + event.code + ").",
-            });
+            this._opening.resolve(false);
         }
         // This is the manually closed flow
         if (this._closing && this._closing.isPending) {
@@ -354,7 +351,7 @@ var WebSocketManager = (function () {
             this.didConnect = false;
         }
         // only retry if we didn't manually close it and it actually connected in the first place
-        if (!this.manuallyClosed && this.didConnect && !this.reconnecting) {
+        if (!this.manuallyClosed && !this.reconnecting) {
             this._logger.log("socket not manually closed, reconnecting ...");
             this.reconnecting = true;
             this.reconnect();
@@ -380,10 +377,16 @@ var WebSocketManager = (function () {
             _this.attempts++;
             _this._logger.log("reconnecting (" + _this.attempts + ") ...");
             _this.connect()
-                .then(function () {
-                _this._logger.log("socket reconnected");
-                _this.attempts = 0;
-                _this.reconnecting = false;
+                .then(function (connected) {
+                if (connected) {
+                    _this._logger.log("socket reconnected");
+                    _this.attempts = 0;
+                    _this.reconnecting = false;
+                }
+                else {
+                    _this._logger.log("socket recycle failed");
+                    _this.reconnect();
+                }
             })
                 .catch(function (e) {
                 _this._logger.log("socket recycle failed", e);
