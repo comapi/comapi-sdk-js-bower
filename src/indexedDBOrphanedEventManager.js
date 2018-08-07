@@ -111,8 +111,8 @@ var IndexedDBOrphanedEventManager = (function () {
                 var store = transaction.objectStore(_this._orphanedEventStore);
                 var request = store.put(event);
                 request.onerror = function (e) {
-                    console.error("Error", e.target.error.name);
-                    reject({ message: "add failed: " + e.target.error.name });
+                    // console.error("Error", e.target.error.name);
+                    return Promise.resolve(false);
                 };
                 request.onsuccess = function (e) {
                     // http://stackoverflow.com/questions/12502830/how-to-return-auto-increment-id-from-objectstore-put-in-an-indexeddb

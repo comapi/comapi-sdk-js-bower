@@ -112,7 +112,7 @@ var LocalStorageOrphanedEventManager = (function () {
                 }
             }
             else {
-                return Promise.reject({ message: "No container for conversation " + event.conversationId });
+                return Promise.resolve(false);
             }
         });
     };

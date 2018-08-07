@@ -6219,7 +6219,7 @@ var COMAPI =
 	                platform: /*browserInfo.name*/ "javascript",
 	                platformVersion: browserInfo.version,
 	                sdkType: /*"javascript"*/ "native",
-	                sdkVersion: "1.1.1.318"
+	                sdkVersion: "1.1.2.319"
 	            };
 	            return _this._restClient.post(url, {}, data);
 	        })
@@ -7880,8 +7880,8 @@ var COMAPI =
 	                var store = transaction.objectStore(_this._orphanedEventStore);
 	                var request = store.put(event);
 	                request.onerror = function (e) {
-	                    console.error("Error", e.target.error.name);
-	                    reject({ message: "add failed: " + e.target.error.name });
+	                    // console.error("Error", e.target.error.name);
+	                    return Promise.resolve(false);
 	                };
 	                request.onsuccess = function (e) {
 	                    // http://stackoverflow.com/questions/12502830/how-to-return-auto-increment-id-from-objectstore-put-in-an-indexeddb
@@ -8188,7 +8188,7 @@ var COMAPI =
 	                }
 	            }
 	            else {
-	                return Promise.reject({ message: "No container for conversation " + event.conversationId });
+	                return Promise.resolve(false);
 	            }
 	        });
 	    };
@@ -8369,8 +8369,10 @@ var COMAPI =
 	    MessagePager.prototype.getOrphanedEvents = function (conversationId, orphanedEvents) {
 	        var _this = this;
 	        var mapped = orphanedEvents.map(function (e) { return _this.mapOrphanedEvent(e); });
+	        // filter out any delete events... (as have no conversationId)
+	        var filtered = mapped.filter(function (e) { return e.conversationId !== undefined; });
 	        // add them into the store 
-	        return utils_1.Utils.eachSeries(mapped, function (event) {
+	        return utils_1.Utils.eachSeries(filtered, function (event) {
 	            return _this._orphanedEventManager.addOrphanedEvent(event);
 	        })
 	            .then(function (done) {

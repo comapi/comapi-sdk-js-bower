@@ -108,8 +108,10 @@ var MessagePager = (function () {
     MessagePager.prototype.getOrphanedEvents = function (conversationId, orphanedEvents) {
         var _this = this;
         var mapped = orphanedEvents.map(function (e) { return _this.mapOrphanedEvent(e); });
+        // filter out any delete events... (as have no conversationId)
+        var filtered = mapped.filter(function (e) { return e.conversationId !== undefined; });
         // add them into the store 
-        return utils_1.Utils.eachSeries(mapped, function (event) {
+        return utils_1.Utils.eachSeries(filtered, function (event) {
             return _this._orphanedEventManager.addOrphanedEvent(event);
         })
             .then(function (done) {
