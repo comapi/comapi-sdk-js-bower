@@ -4824,11 +4824,18 @@ var COMAPI =
 	    EventManager.prototype.unsubscribeFromLocalEvent = function (eventType, handler) {
 	        for (var i = this.eventSubscribers.length - 1; i >= 0; i--) {
 	            var subscriber = this.eventSubscribers[i];
-	            if (handler && subscriber.handler === handler && subscriber.eventType === eventType) {
-	                this.eventSubscribers.splice(i, 1);
+	            if (handler) {
+	                // looking for a single handler                
+	                if (subscriber.handler === handler && subscriber.eventType === eventType) {
+	                    this.eventSubscribers.splice(i, 1);
+	                    break;
+	                }
 	            }
-	            else if (subscriber.eventType === eventType) {
-	                this.eventSubscribers.splice(i, 1);
+	            else {
+	                // remove ANY subscribing to `eventType`
+	                if (subscriber.eventType === eventType) {
+	                    this.eventSubscribers.splice(i, 1);
+	                }
 	            }
 	        }
 	    };
@@ -6219,7 +6226,7 @@ var COMAPI =
 	                platform: /*browserInfo.name*/ "javascript",
 	                platformVersion: browserInfo.version,
 	                sdkType: /*"javascript"*/ "native",
-	                sdkVersion: "1.1.2.319"
+	                sdkVersion: "1.1.3.319"
 	            };
 	            return _this._restClient.post(url, {}, data);
 	        })
