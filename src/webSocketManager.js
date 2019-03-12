@@ -299,7 +299,7 @@ var WebSocketManager = (function () {
      * @param event
      */
     WebSocketManager.prototype._handleOpen = function (event) {
-        console.log("_handleOpen", event);
+        this._logger.log("_handleOpen", event);
         this.didConnect = true;
         this._eventManager.publishLocalEvent("WebsocketOpened", { timestamp: new Date().toISOString() });
         if (this._opening) {
@@ -311,7 +311,7 @@ var WebSocketManager = (function () {
      * @param event
      */
     WebSocketManager.prototype._handleMessage = function (event) {
-        console.log("_handleMessage", event);
+        this._logger.log("_handleMessage", event);
         var message;
         try {
             message = JSON.parse(event.data);
@@ -329,7 +329,6 @@ var WebSocketManager = (function () {
      * @param event
      */
     WebSocketManager.prototype._handleError = function (event) {
-        console.log("_handleError", event);
         this._logger.log("websocket onerror - readystate: " + this.readystates[this.webSocket.readyState], event);
     };
     /**
@@ -337,9 +336,8 @@ var WebSocketManager = (function () {
      * @param event
      */
     WebSocketManager.prototype._handleClose = function (event) {
-        console.log("_handleClose", event);
         this.webSocket = undefined;
-        this._logger.log("WebSocket Connection closed.");
+        this._logger.log("WebSocket Connection closed.", event);
         this._eventManager.publishLocalEvent("WebsocketClosed", { timestamp: new Date().toISOString() });
         // This is the failed to connect flow ...
         if (this._opening.isPending) {
