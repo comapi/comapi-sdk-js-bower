@@ -89,9 +89,7 @@ var Foundation = (function () {
         }
         var eventManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager);
         var logger = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger);
-        if (comapiConfig.logLevel) {
-            logger.logLevel = comapiConfig.logLevel;
-        }
+        logger.logLevel = comapiConfig.logLevel in interfaces_1.LogLevels ? comapiConfig.logLevel : 0;
         var networkManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager);
         var services = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Services);
         var device = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Device);
