@@ -193,15 +193,18 @@ var SessionManager = (function () {
         });
         return this.getDeviceId()
             .then(function () {
-            var browserInfo = utils_1.Utils.getBrowserInfo();
+            var platformVersion = "Unknown";
+            if (typeof navigator !== "undefined") {
+                platformVersion = (navigator.product !== "undefined" ? navigator.product : "Unknown") + (navigator.userAgent !== "undefined" ? " : " + navigator.userAgent : "");
+            }
             var data = {
                 authenticationId: authenticationId,
                 authenticationToken: jwt,
                 deviceId: _this._deviceId,
                 platform: /*browserInfo.name*/ "javascript",
-                platformVersion: browserInfo.version,
+                platformVersion: platformVersion,
                 sdkType: /*"javascript"*/ "native",
-                sdkVersion: "1.1.5.322"
+                sdkVersion: "1.1.6.328"
             };
             return _this._restClient.post(url, {}, data);
         })
