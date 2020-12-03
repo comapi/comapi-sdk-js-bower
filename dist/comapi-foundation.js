@@ -956,7 +956,7 @@ var COMAPI =
 	        function CreateMapPolyfill() {
 	            var cacheSentinel = {};
 	            var arraySentinel = [];
-	            var MapIterator = (function () {
+	            var MapIterator = /** @class */ (function () {
 	                function MapIterator(keys, values, selector) {
 	                    this._index = 0;
 	                    this._keys = keys;
@@ -999,7 +999,7 @@ var COMAPI =
 	                };
 	                return MapIterator;
 	            }());
-	            return (function () {
+	            return /** @class */ (function () {
 	                function Map() {
 	                    this._keys = [];
 	                    this._values = [];
@@ -1075,7 +1075,7 @@ var COMAPI =
 	        }
 	        // naive Set shim
 	        function CreateSetPolyfill() {
-	            return (function () {
+	            return /** @class */ (function () {
 	                function Set() {
 	                    this._map = new _Map();
 	                }
@@ -1101,7 +1101,7 @@ var COMAPI =
 	            var UUID_SIZE = 16;
 	            var keys = HashMap.create();
 	            var rootKey = CreateUniqueKey();
-	            return (function () {
+	            return /** @class */ (function () {
 	                function WeakMap() {
 	                    this._key = CreateUniqueKey();
 	                }
@@ -1184,7 +1184,7 @@ var COMAPI =
 	        }
 	    });
 	})(Reflect || (Reflect = {}));
-	//# sourceMappingURL=Reflect.js.map
+
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), (function() { return this; }())))
 
 /***/ }),
@@ -6216,15 +6216,18 @@ var COMAPI =
 	        });
 	        return this.getDeviceId()
 	            .then(function () {
-	            var browserInfo = utils_1.Utils.getBrowserInfo();
+	            var platformVersion = "Unknown";
+	            if (typeof navigator !== "undefined") {
+	                platformVersion = (navigator.product !== "undefined" ? navigator.product : "Unknown") + (navigator.userAgent !== "undefined" ? " : " + navigator.userAgent : "");
+	            }
 	            var data = {
 	                authenticationId: authenticationId,
 	                authenticationToken: jwt,
 	                deviceId: _this._deviceId,
 	                platform: /*browserInfo.name*/ "javascript",
-	                platformVersion: browserInfo.version,
+	                platformVersion: platformVersion,
 	                sdkType: /*"javascript"*/ "native",
-	                sdkVersion: "1.1.5.322"
+	                sdkVersion: "1.1.6.328"
 	            };
 	            return _this._restClient.post(url, {}, data);
 	        })
