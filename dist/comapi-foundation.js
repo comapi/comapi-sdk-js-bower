@@ -1440,7 +1440,7 @@ var COMAPI =
 	         * @method Foundation#version
 	         */
 	        get: function () {
-	            return "1.0.2.121";
+	            return "1.2.0-beta.1";
 	        },
 	        enumerable: true,
 	        configurable: true
@@ -1484,7 +1484,15 @@ var COMAPI =
 	        // adopt a cached session if there is one
 	        var sessionManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager);
 	        return sessionManager.initialise()
-	            .then(function (result) {
+	            .then(function (_) {
+	            if (comapiConfig.enableWebsocketForNonChatUsage) {
+	                return networkManager.setWebsocketEnabled(true);
+	            }
+	            else {
+	                return Promise.resolve(false);
+	            }
+	        })
+	            .then(function (_) {
 	            return Promise.resolve(foundation);
 	        });
 	    };
@@ -2282,6 +2290,16 @@ var COMAPI =
 	     */
 	    ComapiConfig.prototype.withOrphanedEventPersistence = function (orphanedEventPersistence) {
 	        this.orphanedEventPersistence = orphanedEventPersistence;
+	        return this;
+	    };
+	    /**
+	     * Function to override enableWebsocketForNonChatUsage
+	     * @method ComapiConfig#withEnabledNonChatSocket
+	     * @param {string} enabled - enabled
+	     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+	     */
+	    ComapiConfig.prototype.withEnabledNonChatSocket = function (enabled) {
+	        this.enableWebsocketForNonChatUsage = enabled;
 	        return this;
 	    };
 	    return ComapiConfig;
@@ -4970,7 +4988,6 @@ var COMAPI =
 	            this.setString(key, stringified);
 	        }
 	        catch (e) {
-	            console.log("caught exception in LocalStorageData.set(" + key + "): " + e);
 	            succeeded = false;
 	        }
 	        return Promise.resolve(succeeded);
@@ -5336,7 +5353,6 @@ var COMAPI =
 	                    var req = indexedDB.deleteDatabase(_this._name);
 	                    var self = _this;
 	                    req.onsuccess = function () {
-	                        console.log("Deleted database " + self._name + " successfully");
 	                        resolve(true);
 	                    };
 	                    req.onerror = function (e) {
@@ -5519,7 +5535,6 @@ var COMAPI =
 	                var self_1 = _this;
 	                var openRequest = indexedDB.open(_this._name, _this._version);
 	                openRequest.onupgradeneeded = function (e) {
-	                    console.log("Upgrading database...");
 	                    var thisDB = e.target.result;
 	                    if (!thisDB.objectStoreNames.contains(self_1._store)) {
 	                        var os = thisDB.createObjectStore(self_1._store, { autoIncrement: true });
@@ -6227,7 +6242,7 @@ var COMAPI =
 	                platform: /*browserInfo.name*/ "javascript",
 	                platformVersion: platformVersion,
 	                sdkType: /*"javascript"*/ "native",
-	                sdkVersion: "1.1.6.328"
+	                sdkVersion: "1.2.0-beta.1"
 	            };
 	            return _this._restClient.post(url, {}, data);
 	        })
@@ -6472,6 +6487,7 @@ var COMAPI =
 	        this._sessionManager = _sessionManager;
 	        this._eventManager = _eventManager;
 	        this._eventMapper = _eventMapper;
+	        this.enabled = false;
 	        // ready state code mapping ...
 	        this.readystates = [
 	            "Connecting",
@@ -6553,11 +6569,39 @@ var COMAPI =
 	        return this.isOpened;
 	    };
 	    /**
+	     * Function to enable or disable websocket connections.
+	     * @method WebSocketManager#setWebsocketEnabled
+	     * @param {boolean} enable
+	     * @returns {Promise}
+	     */
+	    WebSocketManager.prototype.setWebsocketEnabled = function (enable) {
+	        if (this.enabled !== enable) {
+	            this.enabled = enable;
+	            if (this.enabled && !this.isConnected()) {
+	                return this.connect();
+	            }
+	            else if (!this.enabled && this.isConnected()) {
+	                return this.disconnect();
+	            }
+	        }
+	        return Promise.resolve(this.enabled);
+	    };
+	    Object.defineProperty(WebSocketManager.prototype, "isEnabled", {
+	        get: function () {
+	            return this.enabled;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    /**
 	     * Function to connect websocket
 	     * @method WebSocketManager#connect
 	     */
 	    WebSocketManager.prototype.connect = function () {
 	        var _this = this;
+	        if (!this.enabled) {
+	            return Promise.resolve(false);
+	        }
 	        if (this.isClosing) {
 	            return Promise.reject(new Error("Can't open WebSocket while closing."));
 	        }
@@ -6657,7 +6701,6 @@ var COMAPI =
 	     * @param event
 	     */
 	    WebSocketManager.prototype._handleOpen = function (event) {
-	        this._logger.log("_handleOpen", event);
 	        this.didConnect = true;
 	        this._eventManager.publishLocalEvent("WebsocketOpened", { timestamp: new Date().toISOString() });
 	        if (this._opening) {
@@ -6669,7 +6712,6 @@ var COMAPI =
 	     * @param event
 	     */
 	    WebSocketManager.prototype._handleMessage = function (event) {
-	        this._logger.log("_handleMessage", event);
 	        var message;
 	        try {
 	            message = JSON.parse(event.data);
@@ -6695,7 +6737,7 @@ var COMAPI =
 	     */
 	    WebSocketManager.prototype._handleClose = function (event) {
 	        this.webSocket = undefined;
-	        this._logger.log("WebSocket Connection closed.", event);
+	        this._logger.log("WebSocket Connection closed.");
 	        this._eventManager.publishLocalEvent("WebsocketClosed", { timestamp: new Date().toISOString() });
 	        // This is the failed to connect flow ...
 	        if (this._opening.isPending) {
@@ -6728,13 +6770,21 @@ var COMAPI =
 	     */
 	    WebSocketManager.prototype.reconnect = function () {
 	        var _this = this;
+	        if (!this.enabled) {
+	            return;
+	        }
 	        var time = this.generateInterval(this.attempts);
 	        setTimeout(function () {
 	            _this.attempts++;
 	            _this._logger.log("reconnecting (" + _this.attempts + ") ...");
 	            _this.connect()
 	                .then(function (connected) {
-	                if (connected) {
+	                if (!_this.enabled) {
+	                    _this._logger.log("socket disabled");
+	                    _this.attempts = 0;
+	                    _this.reconnecting = false;
+	                }
+	                else if (connected) {
 	                    _this._logger.log("socket reconnected");
 	                    _this.attempts = 0;
 	                    _this.reconnecting = false;
@@ -6755,7 +6805,7 @@ var COMAPI =
 	     * @param name
 	     */
 	    WebSocketManager.prototype.mapEventName = function (name) {
-	        // // TODO: make this configurable
+	        // TODO: make this configurable
 	        // let eventAliasInfo: IEventMapping = {
 	        //     conversation: ["conversation", "chat"],
 	        //     conversationMessage: ["conversationMessage", "chatMessage"],
@@ -6918,7 +6968,7 @@ var COMAPI =
 	            return _this._webSocketManager.connect();
 	        })
 	            .then(function (connected) {
-	            if (connected) {
+	            if (connected || !_this._webSocketManager.isEnabled) {
 	                return _sessionInfo;
 	            }
 	            else {
@@ -7001,6 +7051,9 @@ var COMAPI =
 	     */
 	    NetworkManager.prototype.ensureSession = function () {
 	        return this._sessionManager.startSession();
+	    };
+	    NetworkManager.prototype.setWebsocketEnabled = function (enable) {
+	        return this._webSocketManager.setWebsocketEnabled(enable);
 	    };
 	    return NetworkManager;
 	}());
@@ -7913,7 +7966,6 @@ var COMAPI =
 	                    reject({ message: "delete failed: " + e.target.error.name });
 	                };
 	                request.onsuccess = function (e) {
-	                    console.log("store.delete", e.target.result);
 	                    resolve(true);
 	                };
 	            });
@@ -8035,7 +8087,6 @@ var COMAPI =
 	                reject({ message: "delete failed: " + event.target.error.name });
 	            };
 	            request.onsuccess = function (event) {
-	                console.log("store.delete", event.target.result);
 	                resolve(true);
 	            };
 	        });
@@ -8597,6 +8648,14 @@ var COMAPI =
 	        this._contentManager = _contentManager;
 	    }
 	    /**
+	     * Function to enable socket connections.
+	     * @method AppMessaging#enableSocket
+	     * @returns {Promise}
+	     */
+	    AppMessaging.prototype.enableSocket = function () {
+	        return this._networkManager.setWebsocketEnabled(true);
+	    };
+	    /**
 	     * Function to create a conversation
 	     * @method AppMessaging#createConversation
 	     * @param {IConversationDetails} conversationDetails - the conversation details (use `ConversationBuilder` to create this)
@@ -9050,6 +9109,7 @@ var COMAPI =
 	         * @returns {AppMessaging} - Returns AppMessaging interface
 	         */
 	        get: function () {
+	            this._appMessaging.enableSocket();
 	            return this._appMessaging;
 	        },
 	        enumerable: true,
@@ -9449,10 +9509,10 @@ var COMAPI =
 	                };
 	                xhr.onprogress = function (evt) {
 	                    if (evt.lengthComputable) {
-	                        var percentComplete = (evt.loaded / evt.total) * 100;
-	                        if (_this._logger) {
-	                            _this._logger.log("onprogress: " + percentComplete + " %");
-	                        }
+	                        // let percentComplete = (evt.loaded / evt.total) * 100;
+	                        // if (this._logger) {
+	                        //     this._logger.log("onprogress: " + percentComplete + " %");
+	                        // }
 	                    }
 	                };
 	            });

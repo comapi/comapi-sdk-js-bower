@@ -138,7 +138,6 @@ var IndexedDBOrphanedEventManager = (function () {
                     reject({ message: "delete failed: " + e.target.error.name });
                 };
                 request.onsuccess = function (e) {
-                    console.log("store.delete", e.target.result);
                     resolve(true);
                 };
             });
@@ -260,7 +259,6 @@ var IndexedDBOrphanedEventManager = (function () {
                 reject({ message: "delete failed: " + event.target.error.name });
             };
             request.onsuccess = function (event) {
-                console.log("store.delete", event.target.result);
                 resolve(true);
             };
         });

@@ -6,6 +6,7 @@ export declare class WebSocketManager implements IWebSocketManager {
     private _sessionManager;
     private _eventManager;
     private _eventMapper;
+    private enabled;
     private readystates;
     private webSocket;
     private echoIntervalId;
@@ -59,6 +60,14 @@ export declare class WebSocketManager implements IWebSocketManager {
      * @param {IEventManager} _eventManager
      */
     constructor(_logger: ILogger, _localStorageData: ILocalStorageData, _comapiConfig: IComapiConfig, _sessionManager: ISessionManager, _eventManager: IEventManager, _eventMapper: IEventMapper);
+    /**
+     * Function to enable or disable websocket connections.
+     * @method WebSocketManager#setWebsocketEnabled
+     * @param {boolean} enable
+     * @returns {Promise}
+     */
+    setWebsocketEnabled(enable: boolean): Promise<boolean>;
+    readonly isEnabled: boolean;
     /**
      * Function to connect websocket
      * @method WebSocketManager#connect

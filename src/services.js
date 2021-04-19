@@ -33,6 +33,7 @@ var Services = (function () {
          * @returns {AppMessaging} - Returns AppMessaging interface
          */
         get: function () {
+            this._appMessaging.enableSocket();
             return this._appMessaging;
         },
         enumerable: true,

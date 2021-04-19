@@ -42,7 +42,7 @@ var NetworkManager = (function () {
             return _this._webSocketManager.connect();
         })
             .then(function (connected) {
-            if (connected) {
+            if (connected || !_this._webSocketManager.isEnabled) {
                 return _sessionInfo;
             }
             else {
@@ -125,6 +125,9 @@ var NetworkManager = (function () {
      */
     NetworkManager.prototype.ensureSession = function () {
         return this._sessionManager.startSession();
+    };
+    NetworkManager.prototype.setWebsocketEnabled = function (enable) {
+        return this._webSocketManager.setWebsocketEnabled(enable);
     };
     return NetworkManager;
 }());

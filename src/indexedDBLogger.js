@@ -93,7 +93,6 @@ var IndexedDBLogger = (function () {
                     var req = indexedDB.deleteDatabase(_this._name);
                     var self = _this;
                     req.onsuccess = function () {
-                        console.log("Deleted database " + self._name + " successfully");
                         resolve(true);
                     };
                     req.onerror = function (e) {
@@ -276,7 +275,6 @@ var IndexedDBLogger = (function () {
                 var self_1 = _this;
                 var openRequest = indexedDB.open(_this._name, _this._version);
                 openRequest.onupgradeneeded = function (e) {
-                    console.log("Upgrading database...");
                     var thisDB = e.target.result;
                     if (!thisDB.objectStoreNames.contains(self_1._store)) {
                         var os = thisDB.createObjectStore(self_1._store, { autoIncrement: true });

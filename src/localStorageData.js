@@ -95,7 +95,6 @@ var LocalStorageData = (function () {
             this.setString(key, stringified);
         }
         catch (e) {
-            console.log("caught exception in LocalStorageData.set(" + key + "): " + e);
             succeeded = false;
         }
         return Promise.resolve(succeeded);

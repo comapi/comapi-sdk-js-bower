@@ -93,10 +93,10 @@ var ContentManager = (function () {
                 };
                 xhr.onprogress = function (evt) {
                     if (evt.lengthComputable) {
-                        var percentComplete = (evt.loaded / evt.total) * 100;
-                        if (_this._logger) {
-                            _this._logger.log("onprogress: " + percentComplete + " %");
-                        }
+                        // let percentComplete = (evt.loaded / evt.total) * 100;
+                        // if (this._logger) {
+                        //     this._logger.log("onprogress: " + percentComplete + " %");
+                        // }
                     }
                 };
             });

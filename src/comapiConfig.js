@@ -130,6 +130,16 @@ var ComapiConfig = (function () {
         this.orphanedEventPersistence = orphanedEventPersistence;
         return this;
     };
+    /**
+     * Function to override enableWebsocketForNonChatUsage
+     * @method ComapiConfig#withEnabledNonChatSocket
+     * @param {string} enabled - enabled
+     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+     */
+    ComapiConfig.prototype.withEnabledNonChatSocket = function (enabled) {
+        this.enableWebsocketForNonChatUsage = enabled;
+        return this;
+    };
     return ComapiConfig;
 }());
 exports.ComapiConfig = ComapiConfig;

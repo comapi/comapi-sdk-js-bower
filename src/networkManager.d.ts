@@ -43,4 +43,5 @@ export declare class NetworkManager implements INetworkManager {
      * @returns {Promise} - returns a Promise
      */
     ensureSession(): Promise<ISessionInfo>;
+    setWebsocketEnabled(enable: boolean): Promise<boolean>;
 }

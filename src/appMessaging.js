@@ -31,6 +31,14 @@ var AppMessaging = (function () {
         this._contentManager = _contentManager;
     }
     /**
+     * Function to enable socket connections.
+     * @method AppMessaging#enableSocket
+     * @returns {Promise}
+     */
+    AppMessaging.prototype.enableSocket = function () {
+        return this._networkManager.setWebsocketEnabled(true);
+    };
+    /**
      * Function to create a conversation
      * @method AppMessaging#createConversation
      * @param {IConversationDetails} conversationDetails - the conversation details (use `ConversationBuilder` to create this)

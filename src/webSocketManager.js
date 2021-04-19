@@ -114,6 +114,7 @@ var WebSocketManager = (function () {
         this._sessionManager = _sessionManager;
         this._eventManager = _eventManager;
         this._eventMapper = _eventMapper;
+        this.enabled = false;
         // ready state code mapping ...
         this.readystates = [
             "Connecting",
@@ -195,11 +196,39 @@ var WebSocketManager = (function () {
         return this.isOpened;
     };
     /**
+     * Function to enable or disable websocket connections.
+     * @method WebSocketManager#setWebsocketEnabled
+     * @param {boolean} enable
+     * @returns {Promise}
+     */
+    WebSocketManager.prototype.setWebsocketEnabled = function (enable) {
+        if (this.enabled !== enable) {
+            this.enabled = enable;
+            if (this.enabled && !this.isConnected()) {
+                return this.connect();
+            }
+            else if (!this.enabled && this.isConnected()) {
+                return this.disconnect();
+            }
+        }
+        return Promise.resolve(this.enabled);
+    };
+    Object.defineProperty(WebSocketManager.prototype, "isEnabled", {
+        get: function () {
+            return this.enabled;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
      * Function to connect websocket
      * @method WebSocketManager#connect
      */
     WebSocketManager.prototype.connect = function () {
         var _this = this;
+        if (!this.enabled) {
+            return Promise.resolve(false);
+        }
         if (this.isClosing) {
             return Promise.reject(new Error("Can't open WebSocket while closing."));
         }
@@ -299,7 +328,6 @@ var WebSocketManager = (function () {
      * @param event
      */
     WebSocketManager.prototype._handleOpen = function (event) {
-        this._logger.log("_handleOpen", event);
         this.didConnect = true;
         this._eventManager.publishLocalEvent("WebsocketOpened", { timestamp: new Date().toISOString() });
         if (this._opening) {
@@ -311,7 +339,6 @@ var WebSocketManager = (function () {
      * @param event
      */
     WebSocketManager.prototype._handleMessage = function (event) {
-        this._logger.log("_handleMessage", event);
         var message;
         try {
             message = JSON.parse(event.data);
@@ -337,7 +364,7 @@ var WebSocketManager = (function () {
      */
     WebSocketManager.prototype._handleClose = function (event) {
         this.webSocket = undefined;
-        this._logger.log("WebSocket Connection closed.", event);
+        this._logger.log("WebSocket Connection closed.");
         this._eventManager.publishLocalEvent("WebsocketClosed", { timestamp: new Date().toISOString() });
         // This is the failed to connect flow ...
         if (this._opening.isPending) {
@@ -370,13 +397,21 @@ var WebSocketManager = (function () {
      */
     WebSocketManager.prototype.reconnect = function () {
         var _this = this;
+        if (!this.enabled) {
+            return;
+        }
         var time = this.generateInterval(this.attempts);
         setTimeout(function () {
             _this.attempts++;
             _this._logger.log("reconnecting (" + _this.attempts + ") ...");
             _this.connect()
                 .then(function (connected) {
-                if (connected) {
+                if (!_this.enabled) {
+                    _this._logger.log("socket disabled");
+                    _this.attempts = 0;
+                    _this.reconnecting = false;
+                }
+                else if (connected) {
                     _this._logger.log("socket reconnected");
                     _this.attempts = 0;
                     _this.reconnecting = false;
@@ -397,7 +432,7 @@ var WebSocketManager = (function () {
      * @param name
      */
     WebSocketManager.prototype.mapEventName = function (name) {
-        // // TODO: make this configurable
+        // TODO: make this configurable
         // let eventAliasInfo: IEventMapping = {
         //     conversation: ["conversation", "chat"],
         //     conversationMessage: ["conversationMessage", "chatMessage"],

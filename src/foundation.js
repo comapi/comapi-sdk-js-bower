@@ -57,7 +57,7 @@ var Foundation = (function () {
          * @method Foundation#version
          */
         get: function () {
-            return "1.0.2.121";
+            return "1.2.0-beta.1";
         },
         enumerable: true,
         configurable: true
@@ -101,7 +101,15 @@ var Foundation = (function () {
         // adopt a cached session if there is one
         var sessionManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager);
         return sessionManager.initialise()
-            .then(function (result) {
+            .then(function (_) {
+            if (comapiConfig.enableWebsocketForNonChatUsage) {
+                return networkManager.setWebsocketEnabled(true);
+            }
+            else {
+                return Promise.resolve(false);
+            }
+        })
+            .then(function (_) {
             return Promise.resolve(foundation);
         });
     };

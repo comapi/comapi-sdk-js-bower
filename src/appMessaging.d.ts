@@ -15,6 +15,12 @@ export declare class AppMessaging {
      */
     constructor(_networkManager: INetworkManager, _conversationManager: IConversationManager, _messageManager: IMessageManager, _messagePager: IMessagePager, _contentManager: IContentManager);
     /**
+     * Function to enable socket connections.
+     * @method AppMessaging#enableSocket
+     * @returns {Promise}
+     */
+    enableSocket(): Promise<boolean>;
+    /**
      * Function to create a conversation
      * @method AppMessaging#createConversation
      * @param {IConversationDetails} conversationDetails - the conversation details (use `ConversationBuilder` to create this)
