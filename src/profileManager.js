@@ -12,10 +12,11 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ProfileManager = void 0;
 var inversify_1 = require("inversify");
 var utils_1 = require("./utils");
 var interfaceSymbols_1 = require("./interfaceSymbols");
-var ProfileManager = (function () {
+var ProfileManager = /** @class */ (function () {
     /**
      * ProfileManager class constructor.
      * @class ProfileManager
@@ -114,16 +115,16 @@ var ProfileManager = (function () {
         });
         return this._restClient.patch(url, headers, data);
     };
+    ProfileManager = __decorate([
+        inversify_1.injectable(),
+        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient)),
+        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+        __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+        __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
+        __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
+    ], ProfileManager);
     return ProfileManager;
 }());
-ProfileManager = __decorate([
-    inversify_1.injectable(),
-    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
-    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient)),
-    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
-    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
-    __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
-    __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
-], ProfileManager);
 exports.ProfileManager = ProfileManager;
 //# sourceMappingURL=profileManager.js.map

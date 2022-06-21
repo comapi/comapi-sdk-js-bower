@@ -12,10 +12,11 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.FacebookManager = void 0;
 var inversify_1 = require("inversify");
 var utils_1 = require("./utils");
 var interfaceSymbols_1 = require("./interfaceSymbols");
-var FacebookManager = (function () {
+var FacebookManager = /** @class */ (function () {
     /**
      * FacebookManager class constructor.
      * @class FacebookManager
@@ -38,13 +39,13 @@ var FacebookManager = (function () {
         });
         return this._restClient.post(url, {}, data || {});
     };
+    FacebookManager = __decorate([
+        inversify_1.injectable(),
+        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient)),
+        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+        __metadata("design:paramtypes", [Object, Object])
+    ], FacebookManager);
     return FacebookManager;
 }());
-FacebookManager = __decorate([
-    inversify_1.injectable(),
-    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient)),
-    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
-    __metadata("design:paramtypes", [Object, Object])
-], FacebookManager);
 exports.FacebookManager = FacebookManager;
 //# sourceMappingURL=facebookManager.js.map

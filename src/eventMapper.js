@@ -6,8 +6,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.EventMapper = void 0;
 var inversify_1 = require("inversify");
-var EventMapper = (function () {
+var EventMapper = /** @class */ (function () {
     function EventMapper() {
     }
     EventMapper.prototype.conversationDeleted = function (event) {
@@ -119,10 +120,10 @@ var EventMapper = (function () {
             profile: event.payload
         };
     };
+    EventMapper = __decorate([
+        inversify_1.injectable()
+    ], EventMapper);
     return EventMapper;
 }());
-EventMapper = __decorate([
-    inversify_1.injectable()
-], EventMapper);
 exports.EventMapper = EventMapper;
 //# sourceMappingURL=eventMapper.js.map

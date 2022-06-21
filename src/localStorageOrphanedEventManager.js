@@ -12,16 +12,19 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.LocalStorageOrphanedEventManager = void 0;
 var inversify_1 = require("inversify");
 var interfaceSymbols_1 = require("./interfaceSymbols");
 ;
-var LocalStorageOrphanedEventManager = (function () {
+var LocalStorageOrphanedEventManager = /** @class */ (function () {
     /**
      *
      */
     function LocalStorageOrphanedEventManager(_localStorage) {
         this._localStorage = _localStorage;
-        this._orphanedEvents = {};
+        this._orphanedEvents = {
+        // IOrphanedEventContainer will be keyed off a conversationId property
+        };
     }
     /**
      *
@@ -169,12 +172,12 @@ var LocalStorageOrphanedEventManager = (function () {
             return true;
         });
     };
+    LocalStorageOrphanedEventManager = __decorate([
+        inversify_1.injectable(),
+        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+        __metadata("design:paramtypes", [Object])
+    ], LocalStorageOrphanedEventManager);
     return LocalStorageOrphanedEventManager;
 }());
-LocalStorageOrphanedEventManager = __decorate([
-    inversify_1.injectable(),
-    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
-    __metadata("design:paramtypes", [Object])
-], LocalStorageOrphanedEventManager);
 exports.LocalStorageOrphanedEventManager = LocalStorageOrphanedEventManager;
 //# sourceMappingURL=localStorageOrphanedEventManager.js.map

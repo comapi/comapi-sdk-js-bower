@@ -65,12 +65,12 @@ export declare class AuthenticatedRestClient implements IRestClient {
      * @param {any} [headers] - The headers
      * @param {any} [data]  - The data
      */
-    private makeRequestWithRetry(count, verb, url, headers?, data?);
+    private makeRequestWithRetry;
     /**
      * Method to create an auth header from a token
      * @method AuthenticatedRestClient#constructAUthHeader
      * @param {string} token
      * @returns {string} - returns the auth header
      */
-    private constructAUthHeader(token);
+    private constructAUthHeader;
 }

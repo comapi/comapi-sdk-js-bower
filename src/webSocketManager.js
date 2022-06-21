@@ -12,10 +12,11 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.WebSocketManager = void 0;
 var inversify_1 = require("inversify");
 var interfaceSymbols_1 = require("./interfaceSymbols");
 // https://github.com/vitalets/controlled-promise/blob/master/src/index.js
-var MyPromise = (function () {
+var MyPromise = /** @class */ (function () {
     function MyPromise() {
         this._promise = null;
         this._resolve = null;
@@ -31,7 +32,7 @@ var MyPromise = (function () {
         get: function () {
             return this._promise;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MyPromise.prototype, "value", {
@@ -42,7 +43,7 @@ var MyPromise = (function () {
         get: function () {
             return this._value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -70,7 +71,7 @@ var MyPromise = (function () {
         get: function () {
             return this._isPending;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -94,7 +95,7 @@ var MyPromise = (function () {
 }());
 // https://gist.github.com/strife25/9310539
 // https://github.com/vitalets/websocket-as-promised/blob/master/src/index.js
-var WebSocketManager = (function () {
+var WebSocketManager = /** @class */ (function () {
     /**
      * WebSocketManager class constructor.
      * @class  WebSocketManager
@@ -137,7 +138,7 @@ var WebSocketManager = (function () {
         this.reconnecting = false;
         this.attempts = 0;
         // start this here just once
-        this.echoIntervalId = setInterval(function () { return _this.echo(); }, this.echoIntervalTimeout);
+        this.echoIntervalId = window.setInterval(function () { return _this.echo(); }, this.echoIntervalTimeout);
     }
     Object.defineProperty(WebSocketManager.prototype, "isOpening", {
         /**
@@ -148,7 +149,7 @@ var WebSocketManager = (function () {
         get: function () {
             return Boolean(this.webSocket && this.webSocket.readyState === this.STATE.CONNECTING);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(WebSocketManager.prototype, "isOpened", {
@@ -160,7 +161,7 @@ var WebSocketManager = (function () {
         get: function () {
             return Boolean(this.webSocket && this.webSocket.readyState === this.STATE.OPEN);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(WebSocketManager.prototype, "isClosing", {
@@ -172,7 +173,7 @@ var WebSocketManager = (function () {
         get: function () {
             return Boolean(this.webSocket && this.webSocket.readyState === this.STATE.CLOSING);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(WebSocketManager.prototype, "isClosed", {
@@ -184,7 +185,7 @@ var WebSocketManager = (function () {
         get: function () {
             return Boolean(!this.webSocket || this.webSocket.readyState === this.STATE.CLOSED);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -217,7 +218,7 @@ var WebSocketManager = (function () {
         get: function () {
             return this.enabled;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -532,17 +533,17 @@ var WebSocketManager = (function () {
                 break;
         }
     };
+    WebSocketManager = __decorate([
+        inversify_1.injectable(),
+        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+        __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
+        __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager)),
+        __param(5, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.EventMapper)),
+        __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object])
+    ], WebSocketManager);
     return WebSocketManager;
 }());
-WebSocketManager = __decorate([
-    inversify_1.injectable(),
-    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
-    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
-    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
-    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
-    __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager)),
-    __param(5, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.EventMapper)),
-    __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object])
-], WebSocketManager);
 exports.WebSocketManager = WebSocketManager;
 //# sourceMappingURL=webSocketManager.js.map

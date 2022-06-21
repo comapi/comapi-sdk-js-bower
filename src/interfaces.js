@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ConversationScope = exports.Environment = exports.OrphanedEventPersistences = exports.LogPersistences = exports.LogLevels = void 0;
 /**
  * Log level enum
  */
@@ -42,6 +43,7 @@ var Environment;
     Environment[Environment["development"] = 0] = "development";
     Environment[Environment["production"] = 1] = "production";
 })(Environment = exports.Environment || (exports.Environment = {}));
+;
 ;
 ;
 ;

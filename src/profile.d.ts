@@ -70,5 +70,5 @@ export declare class Profile implements IProfile {
      *
      * @param useEtag
      */
-    private getMyProfileETag(useEtag);
+    private getMyProfileETag;
 }

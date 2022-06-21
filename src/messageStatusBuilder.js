@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MessageStatusBuilder = void 0;
 /**
  * @class MessageStatusBuilder
  * @classdesc Class that implements MessageStatusBuilder
  */
-var MessageStatusBuilder = (function () {
+var MessageStatusBuilder = /** @class */ (function () {
     function MessageStatusBuilder() {
     }
     /**

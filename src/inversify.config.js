@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.InterfaceContainer = void 0;
 require("reflect-metadata");
 var inversify_1 = require("inversify");
 var interfaces_1 = require("./interfaces");
@@ -28,7 +29,7 @@ var indexedDBLogger_1 = require("./indexedDBLogger");
 var eventMapper_1 = require("./eventMapper");
 var contentManager_1 = require("./contentManager");
 var interfaceSymbols_1 = require("./interfaceSymbols");
-var InterfaceContainer = (function () {
+var InterfaceContainer = /** @class */ (function () {
     function InterfaceContainer() {
         this._overriddenInterfaces = {};
         this._container = new inversify_1.Container();

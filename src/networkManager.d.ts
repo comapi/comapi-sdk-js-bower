@@ -29,7 +29,7 @@ export declare class NetworkManager implements INetworkManager {
      * @method Foundation#session
      * @returns {ISession} - Returns an ISession interface
      */
-    readonly session: ISession;
+    get session(): ISession;
     /**
      * Method to end an existing authenticated session
      * @method Foundation#endSession

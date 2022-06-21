@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ConversationBuilder = void 0;
 var utils_1 = require("./utils");
-var ConversationBuilder = (function () {
+var ConversationBuilder = /** @class */ (function () {
     /**
      * ConversationBuilder class constructor.
      * initialises the id with a guid

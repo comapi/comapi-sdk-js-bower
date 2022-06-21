@@ -1383,25 +1383,26 @@ var COMAPI =
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.Foundation = exports.Utils = exports.Mutex = exports.ContentData = exports.MessageBuilder = exports.ConversationBuilder = exports.MessageStatusBuilder = exports.ComapiConfig = void 0;
 	var interfaces_1 = __webpack_require__(4);
 	var conversationBuilder_1 = __webpack_require__(5);
-	exports.ConversationBuilder = conversationBuilder_1.ConversationBuilder;
+	Object.defineProperty(exports, "ConversationBuilder", { enumerable: true, get: function () { return conversationBuilder_1.ConversationBuilder; } });
 	var messageBuilder_1 = __webpack_require__(7);
-	exports.MessageBuilder = messageBuilder_1.MessageBuilder;
+	Object.defineProperty(exports, "MessageBuilder", { enumerable: true, get: function () { return messageBuilder_1.MessageBuilder; } });
 	var messageStatusBuilder_1 = __webpack_require__(8);
-	exports.MessageStatusBuilder = messageStatusBuilder_1.MessageStatusBuilder;
+	Object.defineProperty(exports, "MessageStatusBuilder", { enumerable: true, get: function () { return messageStatusBuilder_1.MessageStatusBuilder; } });
 	var comapiConfig_1 = __webpack_require__(9);
-	exports.ComapiConfig = comapiConfig_1.ComapiConfig;
+	Object.defineProperty(exports, "ComapiConfig", { enumerable: true, get: function () { return comapiConfig_1.ComapiConfig; } });
 	var urlConfig_1 = __webpack_require__(10);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var inversify_config_1 = __webpack_require__(12);
 	var contentData_1 = __webpack_require__(80);
-	exports.ContentData = contentData_1.ContentData;
+	Object.defineProperty(exports, "ContentData", { enumerable: true, get: function () { return contentData_1.ContentData; } });
 	var mutex_1 = __webpack_require__(59);
-	exports.Mutex = mutex_1.Mutex;
+	Object.defineProperty(exports, "Mutex", { enumerable: true, get: function () { return mutex_1.Mutex; } });
 	var utils_1 = __webpack_require__(6);
-	exports.Utils = utils_1.Utils;
-	var Foundation = (function () {
+	Object.defineProperty(exports, "Utils", { enumerable: true, get: function () { return utils_1.Utils; } });
+	var Foundation = /** @class */ (function () {
 	    /**
 	     * Foundation class constructor.
 	     * @class Foundation
@@ -1440,9 +1441,9 @@ var COMAPI =
 	         * @method Foundation#version
 	         */
 	        get: function () {
-	            return "1.2.0-beta.1";
+	            return "1.2.2.45";
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    /**
@@ -1451,50 +1452,52 @@ var COMAPI =
 	     * @param indexedDBLogger
 	     */
 	    Foundation._initialise = function (comapiConfig, doSingleton) {
-	        if (doSingleton && Foundation._foundation) {
-	            return Promise.resolve(Foundation._foundation);
-	        }
-	        if (comapiConfig.foundationRestUrls === undefined) {
-	            comapiConfig.foundationRestUrls = new urlConfig_1.FoundationRestUrls();
-	        }
-	        var container = comapiConfig.interfaceContainer ? comapiConfig.interfaceContainer : new inversify_config_1.InterfaceContainer();
-	        if (comapiConfig.interfaceContainer) {
-	            container = comapiConfig.interfaceContainer;
-	        }
-	        else {
-	            container = new inversify_config_1.InterfaceContainer();
-	            container.initialise(comapiConfig);
-	            container.bindComapiConfig(comapiConfig);
-	        }
-	        if (comapiConfig.logPersistence &&
-	            comapiConfig.logPersistence === interfaces_1.LogPersistences.IndexedDB) {
-	            container.bindIndexedDBLogger();
-	        }
-	        var eventManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager);
-	        var logger = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger);
-	        logger.logLevel = comapiConfig.logLevel in interfaces_1.LogLevels ? comapiConfig.logLevel : 0;
-	        var networkManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager);
-	        var services = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Services);
-	        var device = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Device);
-	        var channels = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels);
-	        var foundation = new Foundation(eventManager, logger, networkManager, services, device, channels);
-	        if (doSingleton) {
-	            Foundation._foundation = foundation;
-	        }
-	        // adopt a cached session if there is one
-	        var sessionManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager);
-	        return sessionManager.initialise()
-	            .then(function (_) {
-	            if (comapiConfig.enableWebsocketForNonChatUsage) {
-	                return networkManager.setWebsocketEnabled(true);
+	        return Foundation._mutex.runExclusive(function () {
+	            if (doSingleton && Foundation._foundation) {
+	                return Promise.resolve(Foundation._foundation);
+	            }
+	            if (comapiConfig.foundationRestUrls === undefined) {
+	                comapiConfig.foundationRestUrls = new urlConfig_1.FoundationRestUrls();
+	            }
+	            var container = comapiConfig.interfaceContainer ? comapiConfig.interfaceContainer : new inversify_config_1.InterfaceContainer();
+	            if (comapiConfig.interfaceContainer) {
+	                container = comapiConfig.interfaceContainer;
 	            }
 	            else {
-	                return Promise.resolve(false);
+	                container = new inversify_config_1.InterfaceContainer();
+	                container.initialise(comapiConfig);
+	                container.bindComapiConfig(comapiConfig);
 	            }
-	        })
-	            .then(function (_) {
-	            return Promise.resolve(foundation);
-	        });
+	            if (comapiConfig.logPersistence &&
+	                comapiConfig.logPersistence === interfaces_1.LogPersistences.IndexedDB) {
+	                container.bindIndexedDBLogger();
+	            }
+	            var eventManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager);
+	            var logger = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger);
+	            logger.logLevel = comapiConfig.logLevel in interfaces_1.LogLevels ? comapiConfig.logLevel : 0;
+	            var networkManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager);
+	            var services = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Services);
+	            var device = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Device);
+	            var channels = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels);
+	            var foundation = new Foundation(eventManager, logger, networkManager, services, device, channels);
+	            if (doSingleton) {
+	                Foundation._foundation = foundation;
+	            }
+	            // adopt a cached session if there is one
+	            var sessionManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager);
+	            return sessionManager.initialise()
+	                .then(function (_) {
+	                if (comapiConfig.enableWebsocketForNonChatUsage) {
+	                    return networkManager.setWebsocketEnabled(true);
+	                }
+	                else {
+	                    return Promise.resolve(false);
+	                }
+	            })
+	                .then(function (_) {
+	                return Promise.resolve(foundation);
+	            });
+	        }, "initialise");
 	    };
 	    /**
 	     * Method to start a new authenticated session
@@ -1524,7 +1527,7 @@ var COMAPI =
 	        get: function () {
 	            return this._services;
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Object.defineProperty(Foundation.prototype, "device", {
@@ -1536,7 +1539,7 @@ var COMAPI =
 	        get: function () {
 	            return this._device;
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Object.defineProperty(Foundation.prototype, "channels", {
@@ -1548,7 +1551,7 @@ var COMAPI =
 	        get: function () {
 	            return this._channels;
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Object.defineProperty(Foundation.prototype, "session", {
@@ -1560,7 +1563,7 @@ var COMAPI =
 	        get: function () {
 	            return this._networkManager.session;
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Object.defineProperty(Foundation.prototype, "logger", {
@@ -1572,7 +1575,7 @@ var COMAPI =
 	        get: function () {
 	            return this._logger;
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    /**
@@ -1601,6 +1604,10 @@ var COMAPI =
 	    Foundation.prototype.getLogs = function () {
 	        return this._logger.getLog();
 	    };
+	    /**
+	     * Mutex to prevent re-entrancy during initialisation
+	     */
+	    Foundation._mutex = new mutex_1.Mutex();
 	    return Foundation;
 	}());
 	exports.Foundation = Foundation;
@@ -1612,6 +1619,7 @@ var COMAPI =
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.ConversationScope = exports.Environment = exports.OrphanedEventPersistences = exports.LogPersistences = exports.LogLevels = void 0;
 	/**
 	 * Log level enum
 	 */
@@ -1658,6 +1666,7 @@ var COMAPI =
 	;
 	;
 	;
+	;
 	/**
 	 * Log level enum
 	 */
@@ -1675,8 +1684,9 @@ var COMAPI =
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.ConversationBuilder = void 0;
 	var utils_1 = __webpack_require__(6);
-	var ConversationBuilder = (function () {
+	var ConversationBuilder = /** @class */ (function () {
 	    /**
 	     * ConversationBuilder class constructor.
 	     * initialises the id with a guid
@@ -1809,10 +1819,11 @@ var COMAPI =
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.Utils = void 0;
 	/*
 	 * Utility class
 	 */
-	var Utils = (function () {
+	var Utils = /** @class */ (function () {
 	    /**
 	     * Utils class constructor.
 	     * @class Utils
@@ -1927,7 +1938,12 @@ var COMAPI =
 	     * @param key
 	     */
 	    Utils.getHeaderValue = function (headers, key) {
-	        return headers[key] || headers[key.toLowerCase()];
+	        for (var _key in headers) {
+	            if (_key.toLowerCase() === key.toLowerCase()) {
+	                return headers[_key];
+	            }
+	        }
+	        return undefined;
 	    };
 	    /**
 	     * https://davidwalsh.name/javascript-debounce-function
@@ -1966,11 +1982,12 @@ var COMAPI =
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.MessageBuilder = void 0;
 	/**
 	 * @class MessageBuilder
 	 * @classdesc Class that implements MessageBuilder
 	 */
-	var MessageBuilder = (function () {
+	var MessageBuilder = /** @class */ (function () {
 	    function MessageBuilder() {
 	        this.id = undefined;
 	        this.metadata = {};
@@ -2096,11 +2113,12 @@ var COMAPI =
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.MessageStatusBuilder = void 0;
 	/**
 	 * @class MessageStatusBuilder
 	 * @classdesc Class that implements MessageStatusBuilder
 	 */
-	var MessageStatusBuilder = (function () {
+	var MessageStatusBuilder = /** @class */ (function () {
 	    function MessageStatusBuilder() {
 	    }
 	    /**
@@ -2162,9 +2180,10 @@ var COMAPI =
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.ComapiConfig = void 0;
 	var interfaces_1 = __webpack_require__(4);
 	var urlConfig_1 = __webpack_require__(10);
-	var ComapiConfig = (function () {
+	var ComapiConfig = /** @class */ (function () {
 	    /**
 	     * ComapiConfig class constructor.
 	     * @class ComapiConfig
@@ -2302,6 +2321,16 @@ var COMAPI =
 	        this.enableWebsocketForNonChatUsage = enabled;
 	        return this;
 	    };
+	    /**
+	     * Function to specify push configuration
+	     * @method ComapiConfig#withPushConfiguration
+	     * @param {IPushConfig} config - config
+	     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+	     */
+	    ComapiConfig.prototype.withPushConfiguration = function (config) {
+	        this.pushConfig = config;
+	        return this;
+	    };
 	    return ComapiConfig;
 	}());
 	exports.ComapiConfig = ComapiConfig;
@@ -2313,7 +2342,8 @@ var COMAPI =
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var FoundationRestUrls = (function () {
+	exports.FoundationRestUrls = void 0;
+	var FoundationRestUrls = /** @class */ (function () {
 	    function FoundationRestUrls() {
 	        // Content
 	        this.content = "{{urlBase}}/apispaces/{{apiSpaceId}}/content";
@@ -2349,6 +2379,7 @@ var COMAPI =
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.INTERFACE_SYMBOLS = void 0;
 	var INTERFACE_SYMBOLS = {
 	    AppMessaging: "AppMessaging",
 	    AuthenticatedRestClient: "AuthenticatedRestClient",
@@ -2373,7 +2404,7 @@ var COMAPI =
 	    RestClient: "RestClient",
 	    Services: "Services",
 	    SessionManager: "SessionManager",
-	    WebSocketManager: "WebSocketManager",
+	    WebSocketManager: "WebSocketManager"
 	};
 	exports.INTERFACE_SYMBOLS = INTERFACE_SYMBOLS;
 	//# sourceMappingURL=interfaceSymbols.js.map
@@ -2384,6 +2415,7 @@ var COMAPI =
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.InterfaceContainer = void 0;
 	__webpack_require__(1);
 	var inversify_1 = __webpack_require__(13);
 	var interfaces_1 = __webpack_require__(4);
@@ -2412,7 +2444,7 @@ var COMAPI =
 	var eventMapper_1 = __webpack_require__(78);
 	var contentManager_1 = __webpack_require__(79);
 	var interfaceSymbols_1 = __webpack_require__(11);
-	var InterfaceContainer = (function () {
+	var InterfaceContainer = /** @class */ (function () {
 	    function InterfaceContainer() {
 	        this._overriddenInterfaces = {};
 	        this._container = new inversify_1.Container();
@@ -4792,8 +4824,9 @@ var COMAPI =
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.EventManager = void 0;
 	var inversify_1 = __webpack_require__(13);
-	var EventManager = (function () {
+	var EventManager = /** @class */ (function () {
 	    /**
 	     * EventManager class constructor.
 	     * @class EventManager
@@ -4878,12 +4911,12 @@ var COMAPI =
 	            }
 	        });
 	    };
+	    EventManager = __decorate([
+	        inversify_1.injectable(),
+	        __metadata("design:paramtypes", [])
+	    ], EventManager);
 	    return EventManager;
 	}());
-	EventManager = __decorate([
-	    inversify_1.injectable(),
-	    __metadata("design:paramtypes", [])
-	], EventManager);
 	exports.EventManager = EventManager;
 	//# sourceMappingURL=eventManager.js.map
 
@@ -4905,9 +4938,10 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.LocalStorageData = void 0;
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
-	var LocalStorageData = (function () {
+	var LocalStorageData = /** @class */ (function () {
 	    /**
 	     * LocalStorageData class constructor.
 	     * @class LocalStorageData
@@ -4933,7 +4967,7 @@ var COMAPI =
 	        set: function (prefix) {
 	            this._prefix = prefix;
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    /**
@@ -5006,13 +5040,13 @@ var COMAPI =
 	        }
 	        return Promise.resolve(true);
 	    };
+	    LocalStorageData = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+	        __metadata("design:paramtypes", [Object])
+	    ], LocalStorageData);
 	    return LocalStorageData;
 	}());
-	LocalStorageData = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
-	    __metadata("design:paramtypes", [Object])
-	], LocalStorageData);
 	exports.LocalStorageData = LocalStorageData;
 	//# sourceMappingURL=localStorageData.js.map
 
@@ -5034,11 +5068,12 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.Logger = void 0;
 	var inversify_1 = __webpack_require__(13);
 	var interfaces_1 = __webpack_require__(4);
 	var indexedDBLogger_1 = __webpack_require__(58);
 	var interfaceSymbols_1 = __webpack_require__(11);
-	var Logger = (function () {
+	var Logger = /** @class */ (function () {
 	    /**
 	     * Logger class constructor.
 	     * @class Logger
@@ -5075,7 +5110,7 @@ var COMAPI =
 	        set: function (theLogLevel) {
 	            this._logLevel = theLogLevel;
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    /**
@@ -5242,15 +5277,15 @@ var COMAPI =
 	            }
 	        });
 	    };
+	    Logger = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager)),
+	        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+	        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)), __param(2, inversify_1.optional()),
+	        __metadata("design:paramtypes", [Object, Object, indexedDBLogger_1.IndexedDBLogger])
+	    ], Logger);
 	    return Logger;
 	}());
-	Logger = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager)),
-	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
-	    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.IndexedDBLogger)), __param(2, inversify_1.optional()),
-	    __metadata("design:paramtypes", [Object, Object, indexedDBLogger_1.IndexedDBLogger])
-	], Logger);
 	exports.Logger = Logger;
 	//# sourceMappingURL=logger.js.map
 
@@ -5272,6 +5307,7 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.IndexedDBLogger = void 0;
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var mutex_1 = __webpack_require__(59);
@@ -5279,7 +5315,7 @@ var COMAPI =
 	 * http://blog.vanamco.com/indexeddb-fundamentals-plus-a-indexeddb-example-tutorial/
 	 * http://code.tutsplus.com/tutorials/working-with-indexeddb--net-34673
 	 */
-	var IndexedDBLogger = (function () {
+	var IndexedDBLogger = /** @class */ (function () {
 	    /**
 	     * IndexedDBLogger class constructor.
 	     * @class IndexedDBLogger
@@ -5304,7 +5340,7 @@ var COMAPI =
 	        set: function (name) {
 	            this._name = name;
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    /**
@@ -5554,13 +5590,13 @@ var COMAPI =
 	            }
 	        });
 	    };
+	    IndexedDBLogger = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)), __param(0, inversify_1.optional()),
+	        __metadata("design:paramtypes", [Object])
+	    ], IndexedDBLogger);
 	    return IndexedDBLogger;
 	}());
-	IndexedDBLogger = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)), __param(0, inversify_1.optional()),
-	    __metadata("design:paramtypes", [Object])
-	], IndexedDBLogger);
 	exports.IndexedDBLogger = IndexedDBLogger;
 	//# sourceMappingURL=indexedDBLogger.js.map
 
@@ -5570,7 +5606,8 @@ var COMAPI =
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
-	var Mutex = (function () {
+	exports.Mutex = void 0;
+	var Mutex = /** @class */ (function () {
 	    function Mutex() {
 	        this._queue = [];
 	        this._pending = false;
@@ -5635,16 +5672,16 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.RestClient = void 0;
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
-	var RestClient = (function () {
+	var RestClient = /** @class */ (function () {
 	    /**
 	     * RestClient class constructor.
 	     * @class RestClient
 	     * @ignore
 	     * @classdesc Class that implements a RestClient.
 	     * @param {ILogger} [logger] - the logger
-	     * @param {INetworkManager} [networkManager] - the network Manager
 	     */
 	    function RestClient(logger) {
 	        this.logger = logger;
@@ -5864,13 +5901,13 @@ var COMAPI =
 	            }
 	        });
 	    };
+	    RestClient = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)), __param(0, inversify_1.optional()),
+	        __metadata("design:paramtypes", [Object])
+	    ], RestClient);
 	    return RestClient;
 	}());
-	RestClient = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)), __param(0, inversify_1.optional()),
-	    __metadata("design:paramtypes", [Object])
-	], RestClient);
 	exports.RestClient = RestClient;
 	//# sourceMappingURL=restClient.js.map
 
@@ -5892,9 +5929,10 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.AuthenticatedRestClient = void 0;
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
-	var AuthenticatedRestClient = (function () {
+	var AuthenticatedRestClient = /** @class */ (function () {
 	    /**
 	     * AuthenticatedRestClient class constructor.
 	     * @class AuthenticatedRestClient
@@ -6020,15 +6058,15 @@ var COMAPI =
 	    AuthenticatedRestClient.prototype.constructAUthHeader = function (token) {
 	        return "Bearer " + token;
 	    };
+	    AuthenticatedRestClient = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+	        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient)),
+	        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
+	        __metadata("design:paramtypes", [Object, Object, Object])
+	    ], AuthenticatedRestClient);
 	    return AuthenticatedRestClient;
 	}());
-	AuthenticatedRestClient = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
-	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient)),
-	    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
-	    __metadata("design:paramtypes", [Object, Object, Object])
-	], AuthenticatedRestClient);
 	exports.AuthenticatedRestClient = AuthenticatedRestClient;
 	//# sourceMappingURL=authenticatedRestClient.js.map
 
@@ -6050,10 +6088,12 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.SessionManager = void 0;
 	var inversify_1 = __webpack_require__(13);
+	var interfaces_1 = __webpack_require__(4);
 	var utils_1 = __webpack_require__(6);
 	var interfaceSymbols_1 = __webpack_require__(11);
-	var SessionManager = (function () {
+	var SessionManager = /** @class */ (function () {
 	    /**
 	     * SessionManager class constructor.
 	     * @class SessionManager
@@ -6103,7 +6143,7 @@ var COMAPI =
 	        get: function () {
 	            return this._sessionInfo;
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    /**
@@ -6216,6 +6256,21 @@ var COMAPI =
 	            return result;
 	        });
 	    };
+	    SessionManager.prototype._buildPushPayload = function (config) {
+	        if (config && config.apns) {
+	            return {
+	                "apns": {
+	                    "bundleId": config.apns.bundleId,
+	                    // need to stringify the numeric enum value 
+	                    "environment": interfaces_1.Environment[config.apns.environment],
+	                    "token": config.apns.token
+	                }
+	            };
+	        }
+	        else {
+	            return config;
+	        }
+	    };
 	    /**
 	     * Internal function to create an authenticated session
 	     * @param (String) jwt - the jwt retrieved from the integrator
@@ -6241,9 +6296,14 @@ var COMAPI =
 	                deviceId: _this._deviceId,
 	                platform: /*browserInfo.name*/ "javascript",
 	                platformVersion: platformVersion,
+	                push: _this._buildPushPayload(_this._comapiConfig.pushConfig),
 	                sdkType: /*"javascript"*/ "native",
-	                sdkVersion: "1.2.0-beta.1"
+	                sdkVersion: "1.2.2.45",
 	            };
+	            if (window && window.cordova && window.cordova.plugins && window.cordova.plugins.dotdigitalPlugin) {
+	                var pluginVersion = window.cordova.plugins.dotdigitalPlugin.version();
+	                data.sdkVersion += " - " + pluginVersion;
+	            }
 	            return _this._restClient.post(url, {}, data);
 	        })
 	            .then(function (result) {
@@ -6288,7 +6348,8 @@ var COMAPI =
 	     * @returns {boolean} - returns boolean reault
 	     */
 	    SessionManager.prototype._setSession = function (sessionInfo) {
-	        if (this.hasExpired(sessionInfo.session.expiresOn)) {
+	        var payload = this.extractTokenPayload(sessionInfo.token);
+	        if (payload && this.hasExpired(payload.exp)) {
 	            this._logger.error("Was given an expired token ;-(");
 	        }
 	        this._sessionInfo = sessionInfo;
@@ -6326,13 +6387,27 @@ var COMAPI =
 	        }
 	    };
 	    /**
-	     * Check an iso date is not in the past ...
-	     * @param expiresOn
+	     * Check a token exp property not in the past ...
+	     * @param token
 	     */
-	    SessionManager.prototype.hasExpired = function (expiresOn) {
+	    SessionManager.prototype.hasExpired = function (exp) {
 	        var now = new Date();
-	        var expiry = new Date(expiresOn);
+	        var expiry = new Date(exp * 1000);
 	        return now > expiry;
+	    };
+	    /**
+	     * Extract payload from a jwt
+	     * @param token
+	     * @returns payload object
+	     */
+	    SessionManager.prototype.extractTokenPayload = function (token) {
+	        if (token) {
+	            var bits = token.split(".");
+	            if (bits.length === 3) {
+	                return JSON.parse(atob(bits[1]));
+	            }
+	        }
+	        return null;
 	    };
 	    /**
 	     * Checks validity of session based on expiry and matching apiSpace
@@ -6340,30 +6415,27 @@ var COMAPI =
 	     */
 	    SessionManager.prototype.isSessionValid = function (sessionInfo) {
 	        var valid = false;
-	        if (!this.hasExpired(sessionInfo.session.expiresOn)) {
-	            // check that the token matches 
-	            if (sessionInfo.token) {
-	                var bits = sessionInfo.token.split(".");
-	                if (bits.length === 3) {
-	                    var payload = JSON.parse(atob(bits[1]));
-	                    if (payload.apiSpaceId === this._comapiConfig.apiSpaceId) {
-	                        valid = true;
-	                    }
+	        var payload = this.extractTokenPayload(sessionInfo.token);
+	        if (payload) {
+	            if (!this.hasExpired(payload.exp)) {
+	                // check that the token matches 
+	                if (payload.apiSpaceId === this._comapiConfig.apiSpaceId) {
+	                    valid = true;
 	                }
 	            }
 	        }
 	        return valid;
 	    };
+	    SessionManager = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+	        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient)),
+	        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+	        __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+	        __metadata("design:paramtypes", [Object, Object, Object, Object])
+	    ], SessionManager);
 	    return SessionManager;
 	}());
-	SessionManager = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
-	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient)),
-	    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
-	    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
-	    __metadata("design:paramtypes", [Object, Object, Object, Object])
-	], SessionManager);
 	exports.SessionManager = SessionManager;
 	//# sourceMappingURL=sessionManager.js.map
 
@@ -6385,10 +6457,11 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.WebSocketManager = void 0;
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	// https://github.com/vitalets/controlled-promise/blob/master/src/index.js
-	var MyPromise = (function () {
+	var MyPromise = /** @class */ (function () {
 	    function MyPromise() {
 	        this._promise = null;
 	        this._resolve = null;
@@ -6404,7 +6477,7 @@ var COMAPI =
 	        get: function () {
 	            return this._promise;
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Object.defineProperty(MyPromise.prototype, "value", {
@@ -6415,7 +6488,7 @@ var COMAPI =
 	        get: function () {
 	            return this._value;
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    /**
@@ -6443,7 +6516,7 @@ var COMAPI =
 	        get: function () {
 	            return this._isPending;
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    /**
@@ -6467,7 +6540,7 @@ var COMAPI =
 	}());
 	// https://gist.github.com/strife25/9310539
 	// https://github.com/vitalets/websocket-as-promised/blob/master/src/index.js
-	var WebSocketManager = (function () {
+	var WebSocketManager = /** @class */ (function () {
 	    /**
 	     * WebSocketManager class constructor.
 	     * @class  WebSocketManager
@@ -6510,7 +6583,7 @@ var COMAPI =
 	        this.reconnecting = false;
 	        this.attempts = 0;
 	        // start this here just once
-	        this.echoIntervalId = setInterval(function () { return _this.echo(); }, this.echoIntervalTimeout);
+	        this.echoIntervalId = window.setInterval(function () { return _this.echo(); }, this.echoIntervalTimeout);
 	    }
 	    Object.defineProperty(WebSocketManager.prototype, "isOpening", {
 	        /**
@@ -6521,7 +6594,7 @@ var COMAPI =
 	        get: function () {
 	            return Boolean(this.webSocket && this.webSocket.readyState === this.STATE.CONNECTING);
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Object.defineProperty(WebSocketManager.prototype, "isOpened", {
@@ -6533,7 +6606,7 @@ var COMAPI =
 	        get: function () {
 	            return Boolean(this.webSocket && this.webSocket.readyState === this.STATE.OPEN);
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Object.defineProperty(WebSocketManager.prototype, "isClosing", {
@@ -6545,7 +6618,7 @@ var COMAPI =
 	        get: function () {
 	            return Boolean(this.webSocket && this.webSocket.readyState === this.STATE.CLOSING);
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Object.defineProperty(WebSocketManager.prototype, "isClosed", {
@@ -6557,7 +6630,7 @@ var COMAPI =
 	        get: function () {
 	            return Boolean(!this.webSocket || this.webSocket.readyState === this.STATE.CLOSED);
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    /**
@@ -6590,7 +6663,7 @@ var COMAPI =
 	        get: function () {
 	            return this.enabled;
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    /**
@@ -6905,18 +6978,18 @@ var COMAPI =
 	                break;
 	        }
 	    };
+	    WebSocketManager = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+	        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+	        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+	        __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
+	        __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager)),
+	        __param(5, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.EventMapper)),
+	        __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object])
+	    ], WebSocketManager);
 	    return WebSocketManager;
 	}());
-	WebSocketManager = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
-	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
-	    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
-	    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
-	    __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager)),
-	    __param(5, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.EventMapper)),
-	    __metadata("design:paramtypes", [Object, Object, Object, Object, Object, Object])
-	], WebSocketManager);
 	exports.WebSocketManager = WebSocketManager;
 	//# sourceMappingURL=webSocketManager.js.map
 
@@ -6938,9 +7011,10 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.NetworkManager = void 0;
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
-	var NetworkManager = (function () {
+	var NetworkManager = /** @class */ (function () {
 	    /**
 	     * NetworkManager class constructor.
 	     * @class NetworkManager
@@ -7026,7 +7100,7 @@ var COMAPI =
 	        get: function () {
 	            return this._sessionManager.sessionInfo ? this._sessionManager.sessionInfo.session : null;
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    /**
@@ -7055,15 +7129,15 @@ var COMAPI =
 	    NetworkManager.prototype.setWebsocketEnabled = function (enable) {
 	        return this._webSocketManager.setWebsocketEnabled(enable);
 	    };
+	    NetworkManager = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+	        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
+	        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager)),
+	        __metadata("design:paramtypes", [Object, Object, Object])
+	    ], NetworkManager);
 	    return NetworkManager;
 	}());
-	NetworkManager = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
-	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
-	    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager)),
-	    __metadata("design:paramtypes", [Object, Object, Object])
-	], NetworkManager);
 	exports.NetworkManager = NetworkManager;
 	//# sourceMappingURL=networkManager.js.map
 
@@ -7085,11 +7159,12 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.DeviceManager = void 0;
 	var inversify_1 = __webpack_require__(13);
 	var interfaces_1 = __webpack_require__(4);
 	var utils_1 = __webpack_require__(6);
 	var interfaceSymbols_1 = __webpack_require__(11);
-	var DeviceManager = (function () {
+	var DeviceManager = /** @class */ (function () {
 	    // private _deviceId: string;
 	    /**
 	     * DeviceManager class constructor.
@@ -7102,15 +7177,10 @@ var COMAPI =
 	     * @parameter {IComapiConfig} ComapiConfig
 	     */
 	    function DeviceManager(_logger, _restClient, _localStorageData, _comapiConfig) {
-	        // this._deviceId = _localStorageData.getString("deviceId");
 	        this._logger = _logger;
 	        this._restClient = _restClient;
 	        this._localStorageData = _localStorageData;
 	        this._comapiConfig = _comapiConfig;
-	        // if (!this._deviceId) {
-	        //     this._deviceId = Utils.uuid();
-	        //     _localStorageData.setString("deviceId", this._deviceId);
-	        // }
 	    }
 	    /**
 	     * Function to set FCM push details for the current session
@@ -7121,6 +7191,7 @@ var COMAPI =
 	     * @returns {Promise} - Returns a promise
 	     */
 	    DeviceManager.prototype.setFCMPushDetails = function (sessionId, packageName, registrationId) {
+	        var _this = this;
 	        var data = {
 	            "fcm": {
 	                "package": packageName,
@@ -7129,6 +7200,7 @@ var COMAPI =
 	        };
 	        return this._restClient.put(this.getPushUrl(sessionId), {}, data)
 	            .then(function (result) {
+	            _this._comapiConfig.pushConfig = data;
 	            return Promise.resolve(true);
 	        });
 	    };
@@ -7142,6 +7214,7 @@ var COMAPI =
 	     * @returns {Promise} - Returns a promise
 	     */
 	    DeviceManager.prototype.setAPNSPushDetails = function (sessionId, bundleId, environment, token) {
+	        var _this = this;
 	        var data = {
 	            "apns": {
 	                "bundleId": bundleId,
@@ -7151,6 +7224,13 @@ var COMAPI =
 	        };
 	        return this._restClient.put(this.getPushUrl(sessionId), {}, data)
 	            .then(function (result) {
+	            _this._comapiConfig.pushConfig = {
+	                "apns": {
+	                    "bundleId": bundleId,
+	                    "environment": environment,
+	                    "token": token
+	                }
+	            };
 	            return Promise.resolve(true);
 	        });
 	    };
@@ -7161,8 +7241,10 @@ var COMAPI =
 	     * @returns {Promise} - Returns a promise
 	     */
 	    DeviceManager.prototype.removePushDetails = function (sessionId) {
+	        var _this = this;
 	        return this._restClient.delete(this.getPushUrl(sessionId), {})
 	            .then(function (result) {
+	            _this._comapiConfig.pushConfig = undefined;
 	            return Promise.resolve(true);
 	        });
 	    };
@@ -7178,16 +7260,16 @@ var COMAPI =
 	            urlBase: this._comapiConfig.urlBase,
 	        });
 	    };
+	    DeviceManager = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+	        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient)),
+	        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+	        __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+	        __metadata("design:paramtypes", [Object, Object, Object, Object])
+	    ], DeviceManager);
 	    return DeviceManager;
 	}());
-	DeviceManager = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
-	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient)),
-	    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
-	    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
-	    __metadata("design:paramtypes", [Object, Object, Object, Object])
-	], DeviceManager);
 	exports.DeviceManager = DeviceManager;
 	//# sourceMappingURL=deviceManager.js.map
 
@@ -7209,10 +7291,11 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.FacebookManager = void 0;
 	var inversify_1 = __webpack_require__(13);
 	var utils_1 = __webpack_require__(6);
 	var interfaceSymbols_1 = __webpack_require__(11);
-	var FacebookManager = (function () {
+	var FacebookManager = /** @class */ (function () {
 	    /**
 	     * FacebookManager class constructor.
 	     * @class FacebookManager
@@ -7235,14 +7318,14 @@ var COMAPI =
 	        });
 	        return this._restClient.post(url, {}, data || {});
 	    };
+	    FacebookManager = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient)),
+	        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+	        __metadata("design:paramtypes", [Object, Object])
+	    ], FacebookManager);
 	    return FacebookManager;
 	}());
-	FacebookManager = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient)),
-	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
-	    __metadata("design:paramtypes", [Object, Object])
-	], FacebookManager);
 	exports.FacebookManager = FacebookManager;
 	//# sourceMappingURL=facebookManager.js.map
 
@@ -7264,11 +7347,12 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.ConversationManager = void 0;
 	var inversify_1 = __webpack_require__(13);
 	var interfaces_1 = __webpack_require__(4);
 	var utils_1 = __webpack_require__(6);
 	var interfaceSymbols_1 = __webpack_require__(11);
-	var ConversationManager = (function () {
+	var ConversationManager = /** @class */ (function () {
 	    /**
 	     * ConversationManager class constructor.
 	     * @class ConversationManager
@@ -7517,17 +7601,17 @@ var COMAPI =
 	            return Promise.resolve(true);
 	        });
 	    };
+	    ConversationManager = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+	        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient)),
+	        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+	        __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+	        __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
+	        __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
+	    ], ConversationManager);
 	    return ConversationManager;
 	}());
-	ConversationManager = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
-	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient)),
-	    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
-	    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
-	    __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
-	    __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
-	], ConversationManager);
 	exports.ConversationManager = ConversationManager;
 	//# sourceMappingURL=conversationManager.js.map
 
@@ -7549,10 +7633,11 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.ProfileManager = void 0;
 	var inversify_1 = __webpack_require__(13);
 	var utils_1 = __webpack_require__(6);
 	var interfaceSymbols_1 = __webpack_require__(11);
-	var ProfileManager = (function () {
+	var ProfileManager = /** @class */ (function () {
 	    /**
 	     * ProfileManager class constructor.
 	     * @class ProfileManager
@@ -7651,17 +7736,17 @@ var COMAPI =
 	        });
 	        return this._restClient.patch(url, headers, data);
 	    };
+	    ProfileManager = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+	        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient)),
+	        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+	        __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+	        __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
+	        __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
+	    ], ProfileManager);
 	    return ProfileManager;
 	}());
-	ProfileManager = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
-	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient)),
-	    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
-	    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
-	    __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
-	    __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
-	], ProfileManager);
 	exports.ProfileManager = ProfileManager;
 	//# sourceMappingURL=profileManager.js.map
 
@@ -7683,10 +7768,11 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.MessageManager = void 0;
 	var inversify_1 = __webpack_require__(13);
 	var utils_1 = __webpack_require__(6);
 	var interfaceSymbols_1 = __webpack_require__(11);
-	var MessageManager = (function () {
+	var MessageManager = /** @class */ (function () {
 	    /**
 	     * MessagesManager class constructor.
 	     * @class MessagesManager
@@ -7808,17 +7894,17 @@ var COMAPI =
 	            return Promise.resolve(result.response);
 	        });
 	    };
+	    MessageManager = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+	        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient)),
+	        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+	        __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+	        __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
+	        __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
+	    ], MessageManager);
 	    return MessageManager;
 	}());
-	MessageManager = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
-	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient)),
-	    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
-	    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
-	    __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
-	    __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
-	], MessageManager);
 	exports.MessageManager = MessageManager;
 	//# sourceMappingURL=messageManager.js.map
 
@@ -7834,9 +7920,10 @@ var COMAPI =
 	    return c > 3 && r && Object.defineProperty(target, key, r), r;
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.IndexedDBOrphanedEventManager = void 0;
 	var inversify_1 = __webpack_require__(13);
 	;
-	var IndexedDBOrphanedEventManager = (function () {
+	var IndexedDBOrphanedEventManager = /** @class */ (function () {
 	    function IndexedDBOrphanedEventManager() {
 	        this.idbSupported = "indexedDB" in window;
 	        this._name = "Comapi.OrphanedEvents";
@@ -8119,11 +8206,11 @@ var COMAPI =
 	            };
 	        });
 	    };
+	    IndexedDBOrphanedEventManager = __decorate([
+	        inversify_1.injectable()
+	    ], IndexedDBOrphanedEventManager);
 	    return IndexedDBOrphanedEventManager;
 	}());
-	IndexedDBOrphanedEventManager = __decorate([
-	    inversify_1.injectable()
-	], IndexedDBOrphanedEventManager);
 	exports.IndexedDBOrphanedEventManager = IndexedDBOrphanedEventManager;
 	//# sourceMappingURL=indexedDBOrphanedEventManager.js.map
 
@@ -8145,16 +8232,19 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.LocalStorageOrphanedEventManager = void 0;
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	;
-	var LocalStorageOrphanedEventManager = (function () {
+	var LocalStorageOrphanedEventManager = /** @class */ (function () {
 	    /**
 	     *
 	     */
 	    function LocalStorageOrphanedEventManager(_localStorage) {
 	        this._localStorage = _localStorage;
-	        this._orphanedEvents = {};
+	        this._orphanedEvents = {
+	        // IOrphanedEventContainer will be keyed off a conversationId property
+	        };
 	    }
 	    /**
 	     *
@@ -8302,13 +8392,13 @@ var COMAPI =
 	            return true;
 	        });
 	    };
+	    LocalStorageOrphanedEventManager = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+	        __metadata("design:paramtypes", [Object])
+	    ], LocalStorageOrphanedEventManager);
 	    return LocalStorageOrphanedEventManager;
 	}());
-	LocalStorageOrphanedEventManager = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
-	    __metadata("design:paramtypes", [Object])
-	], LocalStorageOrphanedEventManager);
 	exports.LocalStorageOrphanedEventManager = LocalStorageOrphanedEventManager;
 	//# sourceMappingURL=localStorageOrphanedEventManager.js.map
 
@@ -8330,10 +8420,11 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.MessagePager = void 0;
 	var inversify_1 = __webpack_require__(13);
 	var utils_1 = __webpack_require__(6);
 	var interfaceSymbols_1 = __webpack_require__(11);
-	var MessagePager = (function () {
+	var MessagePager = /** @class */ (function () {
 	    /**
 	     * MessagePager class constructor.
 	     * @class MessagePager
@@ -8598,16 +8689,16 @@ var COMAPI =
 	        mapped.payload = event.data.payload;
 	        return mapped;
 	    };
+	    MessagePager = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+	        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+	        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager)),
+	        __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager)),
+	        __metadata("design:paramtypes", [Object, Object, Object, Object])
+	    ], MessagePager);
 	    return MessagePager;
 	}());
-	MessagePager = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
-	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
-	    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager)),
-	    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.OrphanedEventManager)),
-	    __metadata("design:paramtypes", [Object, Object, Object, Object])
-	], MessagePager);
 	exports.MessagePager = MessagePager;
 	//# sourceMappingURL=messagePager.js.map
 
@@ -8629,9 +8720,10 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.AppMessaging = void 0;
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
-	var AppMessaging = (function () {
+	var AppMessaging = /** @class */ (function () {
 	    /**
 	     * AppMessaging class constructor.
 	     * @class  AppMessaging
@@ -8873,17 +8965,17 @@ var COMAPI =
 	            return _this._contentManager.uploadContent(content, folder);
 	        });
 	    };
+	    AppMessaging = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
+	        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager)),
+	        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager)),
+	        __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager)),
+	        __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ContentManager)),
+	        __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
+	    ], AppMessaging);
 	    return AppMessaging;
 	}());
-	AppMessaging = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
-	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager)),
-	    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager)),
-	    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager)),
-	    __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ContentManager)),
-	    __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
-	], AppMessaging);
 	exports.AppMessaging = AppMessaging;
 	//# sourceMappingURL=appMessaging.js.map
 
@@ -8905,10 +8997,11 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.Profile = void 0;
 	var inversify_1 = __webpack_require__(13);
 	var utils_1 = __webpack_require__(6);
 	var interfaceSymbols_1 = __webpack_require__(11);
-	var Profile = (function () {
+	var Profile = /** @class */ (function () {
 	    /**
 	     * Profile class constructor.
 	     * @class Profile
@@ -8992,8 +9085,9 @@ var COMAPI =
 	            return _this._profileManager.getProfile(sessionInfo.session.profileId);
 	        })
 	            .then(function (result) {
-	            if (useEtag) {
-	                _this._localStorage.setString("MyProfileETag", utils_1.Utils.getHeaderValue(result.headers, "ETag"));
+	            var myProfileETag = utils_1.Utils.getHeaderValue(result.headers, "ETag");
+	            if (useEtag && myProfileETag) {
+	                _this._localStorage.setString("MyProfileETag", myProfileETag);
 	            }
 	            return Promise.resolve(result.response);
 	        });
@@ -9017,8 +9111,9 @@ var COMAPI =
 	            return _this._profileManager.updateProfile(sessionInfo.session.profileId, profile, eTag);
 	        })
 	            .then(function (result) {
-	            if (useEtag) {
-	                _this._localStorage.setString("MyProfileETag", utils_1.Utils.getHeaderValue(result.headers, "ETag"));
+	            var myProfileETag = utils_1.Utils.getHeaderValue(result.headers, "ETag");
+	            if (useEtag && myProfileETag) {
+	                _this._localStorage.setString("MyProfileETag", myProfileETag);
 	            }
 	            return Promise.resolve(result.response);
 	        });
@@ -9040,8 +9135,9 @@ var COMAPI =
 	            return _this._profileManager.patchProfile(sessionInfo.session.profileId, profile, eTag);
 	        })
 	            .then(function (result) {
-	            if (useEtag) {
-	                _this._localStorage.setString("MyProfileETag", utils_1.Utils.getHeaderValue(result.headers, "ETag"));
+	            var myProfileETag = utils_1.Utils.getHeaderValue(result.headers, "ETag");
+	            if (useEtag && myProfileETag) {
+	                _this._localStorage.setString("MyProfileETag", myProfileETag);
 	            }
 	            return Promise.resolve(result.response);
 	        });
@@ -9058,15 +9154,15 @@ var COMAPI =
 	            return Promise.resolve(undefined);
 	        }
 	    };
+	    Profile = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
+	        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+	        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager)),
+	        __metadata("design:paramtypes", [Object, Object, Object])
+	    ], Profile);
 	    return Profile;
 	}());
-	Profile = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
-	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
-	    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager)),
-	    __metadata("design:paramtypes", [Object, Object, Object])
-	], Profile);
 	exports.Profile = Profile;
 	//# sourceMappingURL=profile.js.map
 
@@ -9088,9 +9184,10 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.Services = void 0;
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
-	var Services = (function () {
+	var Services = /** @class */ (function () {
 	    /**
 	     * Services class constructor.
 	     * @class Services
@@ -9112,7 +9209,7 @@ var COMAPI =
 	            this._appMessaging.enableSocket();
 	            return this._appMessaging;
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
 	    Object.defineProperty(Services.prototype, "profile", {
@@ -9124,17 +9221,17 @@ var COMAPI =
 	        get: function () {
 	            return this._profile;
 	        },
-	        enumerable: true,
+	        enumerable: false,
 	        configurable: true
 	    });
+	    Services = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AppMessaging)),
+	        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Profile)),
+	        __metadata("design:paramtypes", [Object, Object])
+	    ], Services);
 	    return Services;
 	}());
-	Services = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AppMessaging)),
-	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Profile)),
-	    __metadata("design:paramtypes", [Object, Object])
-	], Services);
 	exports.Services = Services;
 	//# sourceMappingURL=services.js.map
 
@@ -9156,9 +9253,10 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.Device = void 0;
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
-	var Device = (function () {
+	var Device = /** @class */ (function () {
 	    /**
 	     * Device class constructor.
 	     * @class Device
@@ -9211,14 +9309,14 @@ var COMAPI =
 	            return _this._deviceManager.removePushDetails(sessionInfo.session.id);
 	        });
 	    };
+	    Device = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
+	        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager)),
+	        __metadata("design:paramtypes", [Object, Object])
+	    ], Device);
 	    return Device;
 	}());
-	Device = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
-	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.DeviceManager)),
-	    __metadata("design:paramtypes", [Object, Object])
-	], Device);
 	exports.Device = Device;
 	//# sourceMappingURL=device.js.map
 
@@ -9240,9 +9338,10 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.Channels = void 0;
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
-	var Channels = (function () {
+	var Channels = /** @class */ (function () {
 	    /**
 	     * Channels class constructor.
 	     * @class Channels
@@ -9266,14 +9365,14 @@ var COMAPI =
 	            return _this._facebookManager.createSendToMessengerState(data);
 	        });
 	    };
+	    Channels = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
+	        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager)),
+	        __metadata("design:paramtypes", [Object, Object])
+	    ], Channels);
 	    return Channels;
 	}());
-	Channels = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
-	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager)),
-	    __metadata("design:paramtypes", [Object, Object])
-	], Channels);
 	exports.Channels = Channels;
 	//# sourceMappingURL=channels.js.map
 
@@ -9289,8 +9388,9 @@ var COMAPI =
 	    return c > 3 && r && Object.defineProperty(target, key, r), r;
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.EventMapper = void 0;
 	var inversify_1 = __webpack_require__(13);
-	var EventMapper = (function () {
+	var EventMapper = /** @class */ (function () {
 	    function EventMapper() {
 	    }
 	    EventMapper.prototype.conversationDeleted = function (event) {
@@ -9402,11 +9502,11 @@ var COMAPI =
 	            profile: event.payload
 	        };
 	    };
+	    EventMapper = __decorate([
+	        inversify_1.injectable()
+	    ], EventMapper);
 	    return EventMapper;
 	}());
-	EventMapper = __decorate([
-	    inversify_1.injectable()
-	], EventMapper);
 	exports.EventMapper = EventMapper;
 	//# sourceMappingURL=eventMapper.js.map
 
@@ -9428,10 +9528,11 @@ var COMAPI =
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.ContentManager = void 0;
 	var inversify_1 = __webpack_require__(13);
 	var interfaceSymbols_1 = __webpack_require__(11);
 	var utils_1 = __webpack_require__(6);
-	var ContentManager = (function () {
+	var ContentManager = /** @class */ (function () {
 	    /**
 	     * ContentManager class constructor.
 	     * @class ContentManager
@@ -9527,15 +9628,15 @@ var COMAPI =
 	    ContentManager.prototype.constructAUthHeader = function (token) {
 	        return "Bearer " + token;
 	    };
+	    ContentManager = __decorate([
+	        inversify_1.injectable(),
+	        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+	        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
+	        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+	        __metadata("design:paramtypes", [Object, Object, Object])
+	    ], ContentManager);
 	    return ContentManager;
 	}());
-	ContentManager = __decorate([
-	    inversify_1.injectable(),
-	    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
-	    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
-	    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
-	    __metadata("design:paramtypes", [Object, Object, Object])
-	], ContentManager);
 	exports.ContentManager = ContentManager;
 	//# sourceMappingURL=contentManager.js.map
 
@@ -9545,10 +9646,11 @@ var COMAPI =
 
 	"use strict";
 	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.ContentData = void 0;
 	/*
 	 * Helper class to create the content
 	 */
-	var ContentData = (function () {
+	var ContentData = /** @class */ (function () {
 	    /**
 	     * ContentData class constructor.
 	     * @class ContentData

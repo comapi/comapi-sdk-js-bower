@@ -12,16 +12,16 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RestClient = void 0;
 var inversify_1 = require("inversify");
 var interfaceSymbols_1 = require("./interfaceSymbols");
-var RestClient = (function () {
+var RestClient = /** @class */ (function () {
     /**
      * RestClient class constructor.
      * @class RestClient
      * @ignore
      * @classdesc Class that implements a RestClient.
      * @param {ILogger} [logger] - the logger
-     * @param {INetworkManager} [networkManager] - the network Manager
      */
     function RestClient(logger) {
         this.logger = logger;
@@ -241,12 +241,12 @@ var RestClient = (function () {
             }
         });
     };
+    RestClient = __decorate([
+        inversify_1.injectable(),
+        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)), __param(0, inversify_1.optional()),
+        __metadata("design:paramtypes", [Object])
+    ], RestClient);
     return RestClient;
 }());
-RestClient = __decorate([
-    inversify_1.injectable(),
-    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)), __param(0, inversify_1.optional()),
-    __metadata("design:paramtypes", [Object])
-], RestClient);
 exports.RestClient = RestClient;
 //# sourceMappingURL=restClient.js.map

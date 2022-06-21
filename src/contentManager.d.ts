@@ -27,5 +27,5 @@ export declare class ContentManager {
      * @param {string} token
      * @returns {string} - returns the auth header
      */
-    private constructAUthHeader(token);
+    private constructAUthHeader;
 }

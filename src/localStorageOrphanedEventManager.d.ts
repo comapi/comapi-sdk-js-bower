@@ -35,9 +35,9 @@ export declare class LocalStorageOrphanedEventManager implements IOrphanedEventM
      *
      */
     getOrphanedEvents(conversationId: string): Promise<IConversationMessageEvent[]>;
-    private ensureInitialised();
+    private ensureInitialised;
     /**
      *
      */
-    private initialise();
+    private initialise;
 }

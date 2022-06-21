@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var ApiSpaceManager = (function () {
+exports.ApiSpaceManager = void 0;
+var ApiSpaceManager = /** @class */ (function () {
     function ApiSpaceManager(_restClient, _urlBase) {
         this._restClient = _restClient;
         this._urlBase = _urlBase;

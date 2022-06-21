@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ContentData = void 0;
 /*
  * Helper class to create the content
  */
-var ContentData = (function () {
+var ContentData = /** @class */ (function () {
     /**
      * ContentData class constructor.
      * @class ContentData

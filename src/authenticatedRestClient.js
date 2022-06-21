@@ -12,9 +12,10 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AuthenticatedRestClient = void 0;
 var inversify_1 = require("inversify");
 var interfaceSymbols_1 = require("./interfaceSymbols");
-var AuthenticatedRestClient = (function () {
+var AuthenticatedRestClient = /** @class */ (function () {
     /**
      * AuthenticatedRestClient class constructor.
      * @class AuthenticatedRestClient
@@ -140,14 +141,14 @@ var AuthenticatedRestClient = (function () {
     AuthenticatedRestClient.prototype.constructAUthHeader = function (token) {
         return "Bearer " + token;
     };
+    AuthenticatedRestClient = __decorate([
+        inversify_1.injectable(),
+        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient)),
+        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
+        __metadata("design:paramtypes", [Object, Object, Object])
+    ], AuthenticatedRestClient);
     return AuthenticatedRestClient;
 }());
-AuthenticatedRestClient = __decorate([
-    inversify_1.injectable(),
-    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
-    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient)),
-    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
-    __metadata("design:paramtypes", [Object, Object, Object])
-], AuthenticatedRestClient);
 exports.AuthenticatedRestClient = AuthenticatedRestClient;
 //# sourceMappingURL=authenticatedRestClient.js.map

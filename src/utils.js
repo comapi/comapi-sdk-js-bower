@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Utils = void 0;
 /*
  * Utility class
  */
-var Utils = (function () {
+var Utils = /** @class */ (function () {
     /**
      * Utils class constructor.
      * @class Utils
@@ -118,7 +119,12 @@ var Utils = (function () {
      * @param key
      */
     Utils.getHeaderValue = function (headers, key) {
-        return headers[key] || headers[key.toLowerCase()];
+        for (var _key in headers) {
+            if (_key.toLowerCase() === key.toLowerCase()) {
+                return headers[_key];
+            }
+        }
+        return undefined;
     };
     /**
      * https://davidwalsh.name/javascript-debounce-function

@@ -12,11 +12,12 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DeviceManager = void 0;
 var inversify_1 = require("inversify");
 var interfaces_1 = require("./interfaces");
 var utils_1 = require("./utils");
 var interfaceSymbols_1 = require("./interfaceSymbols");
-var DeviceManager = (function () {
+var DeviceManager = /** @class */ (function () {
     // private _deviceId: string;
     /**
      * DeviceManager class constructor.
@@ -29,15 +30,10 @@ var DeviceManager = (function () {
      * @parameter {IComapiConfig} ComapiConfig
      */
     function DeviceManager(_logger, _restClient, _localStorageData, _comapiConfig) {
-        // this._deviceId = _localStorageData.getString("deviceId");
         this._logger = _logger;
         this._restClient = _restClient;
         this._localStorageData = _localStorageData;
         this._comapiConfig = _comapiConfig;
-        // if (!this._deviceId) {
-        //     this._deviceId = Utils.uuid();
-        //     _localStorageData.setString("deviceId", this._deviceId);
-        // }
     }
     /**
      * Function to set FCM push details for the current session
@@ -48,6 +44,7 @@ var DeviceManager = (function () {
      * @returns {Promise} - Returns a promise
      */
     DeviceManager.prototype.setFCMPushDetails = function (sessionId, packageName, registrationId) {
+        var _this = this;
         var data = {
             "fcm": {
                 "package": packageName,
@@ -56,6 +53,7 @@ var DeviceManager = (function () {
         };
         return this._restClient.put(this.getPushUrl(sessionId), {}, data)
             .then(function (result) {
+            _this._comapiConfig.pushConfig = data;
             return Promise.resolve(true);
         });
     };
@@ -69,6 +67,7 @@ var DeviceManager = (function () {
      * @returns {Promise} - Returns a promise
      */
     DeviceManager.prototype.setAPNSPushDetails = function (sessionId, bundleId, environment, token) {
+        var _this = this;
         var data = {
             "apns": {
                 "bundleId": bundleId,
@@ -78,6 +77,13 @@ var DeviceManager = (function () {
         };
         return this._restClient.put(this.getPushUrl(sessionId), {}, data)
             .then(function (result) {
+            _this._comapiConfig.pushConfig = {
+                "apns": {
+                    "bundleId": bundleId,
+                    "environment": environment,
+                    "token": token
+                }
+            };
             return Promise.resolve(true);
         });
     };
@@ -88,8 +94,10 @@ var DeviceManager = (function () {
      * @returns {Promise} - Returns a promise
      */
     DeviceManager.prototype.removePushDetails = function (sessionId) {
+        var _this = this;
         return this._restClient.delete(this.getPushUrl(sessionId), {})
             .then(function (result) {
+            _this._comapiConfig.pushConfig = undefined;
             return Promise.resolve(true);
         });
     };
@@ -105,15 +113,15 @@ var DeviceManager = (function () {
             urlBase: this._comapiConfig.urlBase,
         });
     };
+    DeviceManager = __decorate([
+        inversify_1.injectable(),
+        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient)),
+        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+        __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+        __metadata("design:paramtypes", [Object, Object, Object, Object])
+    ], DeviceManager);
     return DeviceManager;
 }());
-DeviceManager = __decorate([
-    inversify_1.injectable(),
-    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
-    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient)),
-    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
-    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
-    __metadata("design:paramtypes", [Object, Object, Object, Object])
-], DeviceManager);
 exports.DeviceManager = DeviceManager;
 //# sourceMappingURL=deviceManager.js.map

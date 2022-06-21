@@ -46,5 +46,5 @@ export declare class DeviceManager implements IDeviceManager {
      * @method DeviceManager#pushUrl
      * @returns {string}
      */
-    private getPushUrl(sessionId);
+    private getPushUrl;
 }

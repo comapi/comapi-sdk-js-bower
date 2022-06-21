@@ -47,10 +47,10 @@ export declare class MessagePager implements IMessagePager {
      * Orphaned events must be applied in ascending order, so if we want to loop backwards through these they need to be sorted
      * by id descending
      */
-    private applyOrphanedEvents(messages, orphanedEvents);
+    private applyOrphanedEvents;
     /**
      *
      */
-    private playEvent(event, messages);
-    private mapOrphanedEvent(event);
+    private playEvent;
+    private mapOrphanedEvent;
 }

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var Mutex = (function () {
+exports.Mutex = void 0;
+var Mutex = /** @class */ (function () {
     function Mutex() {
         this._queue = [];
         this._pending = false;

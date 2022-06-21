@@ -15,7 +15,7 @@ export declare class LocalStorageData implements ILocalStorageData {
      * @method LocalStorageData#prefix
      * @param {string} prefix - the prefix
      */
-    prefix: string;
+    set prefix(prefix: string);
     /**
      * Get raw value as string from local storage.
      * @method LocalStorageData#getString

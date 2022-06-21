@@ -1,24 +1,25 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Foundation = exports.Utils = exports.Mutex = exports.ContentData = exports.MessageBuilder = exports.ConversationBuilder = exports.MessageStatusBuilder = exports.ComapiConfig = void 0;
 var interfaces_1 = require("./interfaces");
 var conversationBuilder_1 = require("./conversationBuilder");
-exports.ConversationBuilder = conversationBuilder_1.ConversationBuilder;
+Object.defineProperty(exports, "ConversationBuilder", { enumerable: true, get: function () { return conversationBuilder_1.ConversationBuilder; } });
 var messageBuilder_1 = require("./messageBuilder");
-exports.MessageBuilder = messageBuilder_1.MessageBuilder;
+Object.defineProperty(exports, "MessageBuilder", { enumerable: true, get: function () { return messageBuilder_1.MessageBuilder; } });
 var messageStatusBuilder_1 = require("./messageStatusBuilder");
-exports.MessageStatusBuilder = messageStatusBuilder_1.MessageStatusBuilder;
+Object.defineProperty(exports, "MessageStatusBuilder", { enumerable: true, get: function () { return messageStatusBuilder_1.MessageStatusBuilder; } });
 var comapiConfig_1 = require("./comapiConfig");
-exports.ComapiConfig = comapiConfig_1.ComapiConfig;
+Object.defineProperty(exports, "ComapiConfig", { enumerable: true, get: function () { return comapiConfig_1.ComapiConfig; } });
 var urlConfig_1 = require("./urlConfig");
 var interfaceSymbols_1 = require("./interfaceSymbols");
 var inversify_config_1 = require("./inversify.config");
 var contentData_1 = require("./contentData");
-exports.ContentData = contentData_1.ContentData;
+Object.defineProperty(exports, "ContentData", { enumerable: true, get: function () { return contentData_1.ContentData; } });
 var mutex_1 = require("./mutex");
-exports.Mutex = mutex_1.Mutex;
+Object.defineProperty(exports, "Mutex", { enumerable: true, get: function () { return mutex_1.Mutex; } });
 var utils_1 = require("./utils");
-exports.Utils = utils_1.Utils;
-var Foundation = (function () {
+Object.defineProperty(exports, "Utils", { enumerable: true, get: function () { return utils_1.Utils; } });
+var Foundation = /** @class */ (function () {
     /**
      * Foundation class constructor.
      * @class Foundation
@@ -57,9 +58,9 @@ var Foundation = (function () {
          * @method Foundation#version
          */
         get: function () {
-            return "1.2.0-beta.1";
+            return "1.2.2.45";
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -68,50 +69,52 @@ var Foundation = (function () {
      * @param indexedDBLogger
      */
     Foundation._initialise = function (comapiConfig, doSingleton) {
-        if (doSingleton && Foundation._foundation) {
-            return Promise.resolve(Foundation._foundation);
-        }
-        if (comapiConfig.foundationRestUrls === undefined) {
-            comapiConfig.foundationRestUrls = new urlConfig_1.FoundationRestUrls();
-        }
-        var container = comapiConfig.interfaceContainer ? comapiConfig.interfaceContainer : new inversify_config_1.InterfaceContainer();
-        if (comapiConfig.interfaceContainer) {
-            container = comapiConfig.interfaceContainer;
-        }
-        else {
-            container = new inversify_config_1.InterfaceContainer();
-            container.initialise(comapiConfig);
-            container.bindComapiConfig(comapiConfig);
-        }
-        if (comapiConfig.logPersistence &&
-            comapiConfig.logPersistence === interfaces_1.LogPersistences.IndexedDB) {
-            container.bindIndexedDBLogger();
-        }
-        var eventManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager);
-        var logger = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger);
-        logger.logLevel = comapiConfig.logLevel in interfaces_1.LogLevels ? comapiConfig.logLevel : 0;
-        var networkManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager);
-        var services = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Services);
-        var device = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Device);
-        var channels = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels);
-        var foundation = new Foundation(eventManager, logger, networkManager, services, device, channels);
-        if (doSingleton) {
-            Foundation._foundation = foundation;
-        }
-        // adopt a cached session if there is one
-        var sessionManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager);
-        return sessionManager.initialise()
-            .then(function (_) {
-            if (comapiConfig.enableWebsocketForNonChatUsage) {
-                return networkManager.setWebsocketEnabled(true);
+        return Foundation._mutex.runExclusive(function () {
+            if (doSingleton && Foundation._foundation) {
+                return Promise.resolve(Foundation._foundation);
+            }
+            if (comapiConfig.foundationRestUrls === undefined) {
+                comapiConfig.foundationRestUrls = new urlConfig_1.FoundationRestUrls();
+            }
+            var container = comapiConfig.interfaceContainer ? comapiConfig.interfaceContainer : new inversify_config_1.InterfaceContainer();
+            if (comapiConfig.interfaceContainer) {
+                container = comapiConfig.interfaceContainer;
             }
             else {
-                return Promise.resolve(false);
+                container = new inversify_config_1.InterfaceContainer();
+                container.initialise(comapiConfig);
+                container.bindComapiConfig(comapiConfig);
             }
-        })
-            .then(function (_) {
-            return Promise.resolve(foundation);
-        });
+            if (comapiConfig.logPersistence &&
+                comapiConfig.logPersistence === interfaces_1.LogPersistences.IndexedDB) {
+                container.bindIndexedDBLogger();
+            }
+            var eventManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.EventManager);
+            var logger = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger);
+            logger.logLevel = comapiConfig.logLevel in interfaces_1.LogLevels ? comapiConfig.logLevel : 0;
+            var networkManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager);
+            var services = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Services);
+            var device = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Device);
+            var channels = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.Channels);
+            var foundation = new Foundation(eventManager, logger, networkManager, services, device, channels);
+            if (doSingleton) {
+                Foundation._foundation = foundation;
+            }
+            // adopt a cached session if there is one
+            var sessionManager = container.getInterface(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager);
+            return sessionManager.initialise()
+                .then(function (_) {
+                if (comapiConfig.enableWebsocketForNonChatUsage) {
+                    return networkManager.setWebsocketEnabled(true);
+                }
+                else {
+                    return Promise.resolve(false);
+                }
+            })
+                .then(function (_) {
+                return Promise.resolve(foundation);
+            });
+        }, "initialise");
     };
     /**
      * Method to start a new authenticated session
@@ -141,7 +144,7 @@ var Foundation = (function () {
         get: function () {
             return this._services;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Foundation.prototype, "device", {
@@ -153,7 +156,7 @@ var Foundation = (function () {
         get: function () {
             return this._device;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Foundation.prototype, "channels", {
@@ -165,7 +168,7 @@ var Foundation = (function () {
         get: function () {
             return this._channels;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Foundation.prototype, "session", {
@@ -177,7 +180,7 @@ var Foundation = (function () {
         get: function () {
             return this._networkManager.session;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Foundation.prototype, "logger", {
@@ -189,7 +192,7 @@ var Foundation = (function () {
         get: function () {
             return this._logger;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -218,6 +221,10 @@ var Foundation = (function () {
     Foundation.prototype.getLogs = function () {
         return this._logger.getLog();
     };
+    /**
+     * Mutex to prevent re-entrancy during initialisation
+     */
+    Foundation._mutex = new mutex_1.Mutex();
     return Foundation;
 }());
 exports.Foundation = Foundation;

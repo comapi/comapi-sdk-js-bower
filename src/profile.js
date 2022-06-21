@@ -12,10 +12,11 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Profile = void 0;
 var inversify_1 = require("inversify");
 var utils_1 = require("./utils");
 var interfaceSymbols_1 = require("./interfaceSymbols");
-var Profile = (function () {
+var Profile = /** @class */ (function () {
     /**
      * Profile class constructor.
      * @class Profile
@@ -99,8 +100,9 @@ var Profile = (function () {
             return _this._profileManager.getProfile(sessionInfo.session.profileId);
         })
             .then(function (result) {
-            if (useEtag) {
-                _this._localStorage.setString("MyProfileETag", utils_1.Utils.getHeaderValue(result.headers, "ETag"));
+            var myProfileETag = utils_1.Utils.getHeaderValue(result.headers, "ETag");
+            if (useEtag && myProfileETag) {
+                _this._localStorage.setString("MyProfileETag", myProfileETag);
             }
             return Promise.resolve(result.response);
         });
@@ -124,8 +126,9 @@ var Profile = (function () {
             return _this._profileManager.updateProfile(sessionInfo.session.profileId, profile, eTag);
         })
             .then(function (result) {
-            if (useEtag) {
-                _this._localStorage.setString("MyProfileETag", utils_1.Utils.getHeaderValue(result.headers, "ETag"));
+            var myProfileETag = utils_1.Utils.getHeaderValue(result.headers, "ETag");
+            if (useEtag && myProfileETag) {
+                _this._localStorage.setString("MyProfileETag", myProfileETag);
             }
             return Promise.resolve(result.response);
         });
@@ -147,8 +150,9 @@ var Profile = (function () {
             return _this._profileManager.patchProfile(sessionInfo.session.profileId, profile, eTag);
         })
             .then(function (result) {
-            if (useEtag) {
-                _this._localStorage.setString("MyProfileETag", utils_1.Utils.getHeaderValue(result.headers, "ETag"));
+            var myProfileETag = utils_1.Utils.getHeaderValue(result.headers, "ETag");
+            if (useEtag && myProfileETag) {
+                _this._localStorage.setString("MyProfileETag", myProfileETag);
             }
             return Promise.resolve(result.response);
         });
@@ -165,14 +169,14 @@ var Profile = (function () {
             return Promise.resolve(undefined);
         }
     };
+    Profile = __decorate([
+        inversify_1.injectable(),
+        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
+        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager)),
+        __metadata("design:paramtypes", [Object, Object, Object])
+    ], Profile);
     return Profile;
 }());
-Profile = __decorate([
-    inversify_1.injectable(),
-    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
-    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
-    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ProfileManager)),
-    __metadata("design:paramtypes", [Object, Object, Object])
-], Profile);
 exports.Profile = Profile;
 //# sourceMappingURL=profile.js.map

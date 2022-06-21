@@ -1,7 +1,6 @@
-import { ILogger, IRestClient, IRestClientResult, INetworkManager } from "./interfaces";
+import { ILogger, IRestClient, IRestClientResult } from "./interfaces";
 export declare class RestClient implements IRestClient {
-    protected logger: ILogger;
-    protected networkManager: INetworkManager;
+    protected logger?: ILogger;
     private _readyStates;
     /**
      * RestClient class constructor.
@@ -9,7 +8,6 @@ export declare class RestClient implements IRestClient {
      * @ignore
      * @classdesc Class that implements a RestClient.
      * @param {ILogger} [logger] - the logger
-     * @param {INetworkManager} [networkManager] - the network Manager
      */
     constructor(logger?: ILogger);
     /**
@@ -59,15 +57,15 @@ export declare class RestClient implements IRestClient {
      * @param  {XMLHttpRequest} request
      * @param  {any} headers
      */
-    private addHeaders(request, headers);
+    private addHeaders;
     /**
      *
      */
-    private getResponseHeaders(xhr);
+    private getResponseHeaders;
     /**
      *
      */
-    private createCORSRequest(method, url);
+    private createCORSRequest;
     /**
      * @param  {string} method (GET,POST,PUT,DELETE)
      * @param  {string} url
@@ -75,5 +73,5 @@ export declare class RestClient implements IRestClient {
      * @param  {any} [data]
      * @returns {Promise} - returns a promise
      */
-    private makeRequest(method, url, headers?, data?);
+    private makeRequest;
 }

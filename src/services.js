@@ -12,9 +12,10 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Services = void 0;
 var inversify_1 = require("inversify");
 var interfaceSymbols_1 = require("./interfaceSymbols");
-var Services = (function () {
+var Services = /** @class */ (function () {
     /**
      * Services class constructor.
      * @class Services
@@ -36,7 +37,7 @@ var Services = (function () {
             this._appMessaging.enableSocket();
             return this._appMessaging;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Services.prototype, "profile", {
@@ -48,16 +49,16 @@ var Services = (function () {
         get: function () {
             return this._profile;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
+    Services = __decorate([
+        inversify_1.injectable(),
+        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AppMessaging)),
+        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Profile)),
+        __metadata("design:paramtypes", [Object, Object])
+    ], Services);
     return Services;
 }());
-Services = __decorate([
-    inversify_1.injectable(),
-    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AppMessaging)),
-    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Profile)),
-    __metadata("design:paramtypes", [Object, Object])
-], Services);
 exports.Services = Services;
 //# sourceMappingURL=services.js.map

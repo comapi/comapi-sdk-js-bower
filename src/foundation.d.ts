@@ -16,6 +16,10 @@ export declare class Foundation implements IFoundation {
      */
     private static _foundation;
     /**
+     * Mutex to prevent re-entrancy during initialisation
+     */
+    private static _mutex;
+    /**
      * @name Foundation#_services
      * @private
      * @type {Services}
@@ -51,13 +55,13 @@ export declare class Foundation implements IFoundation {
      * Property to get the SDK version
      * @method Foundation#version
      */
-    static readonly version: string;
+    static get version(): string;
     /**
      * Private initialisation method
      * @param comapiConfig
      * @param indexedDBLogger
      */
-    private static _initialise(comapiConfig, doSingleton);
+    private static _initialise;
     /**
      * Foundation class constructor.
      * @class Foundation
@@ -81,31 +85,31 @@ export declare class Foundation implements IFoundation {
      * @method Foundation#services
      * @returns {Services} - Returns Services
      */
-    readonly services: IServices;
+    get services(): IServices;
     /**
      * Method to get Device interface
      * @method Foundation#device
      * @returns {Device} - Returns Device
      */
-    readonly device: IDevice;
+    get device(): IDevice;
     /**
      * Method to get Channels interface
      * @method Foundation#channels
      * @returns {Channels} - Returns Channels
      */
-    readonly channels: IChannels;
+    get channels(): IChannels;
     /**
      * Method to get current session
      * @method Foundation#session
      * @returns {ISession} - Returns an ISession interface
      */
-    readonly session: ISession;
+    get session(): ISession;
     /**
      * Method to get the logger
      * @method Foundation#logger
      * @returns {ILogger} - Returns an ILogger interface
      */
-    readonly logger: ILogger;
+    get logger(): ILogger;
     /**
      * Subscribes the caller to a comapi event.
      * @method Foundation#on

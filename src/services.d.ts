@@ -15,11 +15,11 @@ export declare class Services implements IServices {
      * @method Services#appMessaging
      * @returns {AppMessaging} - Returns AppMessaging interface
      */
-    readonly appMessaging: IAppMessaging;
+    get appMessaging(): IAppMessaging;
     /**
      * Method to get Profile interface
      * @method Services#profile
      * @returns {Profile} - Returns Profile interface
      */
-    readonly profile: IProfile;
+    get profile(): IProfile;
 }

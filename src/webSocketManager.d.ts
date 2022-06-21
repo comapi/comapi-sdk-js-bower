@@ -23,25 +23,25 @@ export declare class WebSocketManager implements IWebSocketManager {
      *
      * @returns {Boolean}
      */
-    readonly isOpening: boolean;
+    get isOpening(): boolean;
     /**
      * Is WebSocket connection opened.
      *
      * @returns {Boolean}
      */
-    readonly isOpened: boolean;
+    get isOpened(): boolean;
     /**
      * Is WebSocket connection in closing state.
      *
      * @returns {Boolean}
      */
-    readonly isClosing: boolean;
+    get isClosing(): boolean;
     /**
      * Is WebSocket connection closed.
      *
      * @returns {Boolean}
      */
-    readonly isClosed: boolean;
+    get isClosed(): boolean;
     /**
      * Function to determine te connection state of the websocket - rturns hether ther socket `did` connect rather than the current status as there is reconnection logic running.
      * @method WebSocketManager#isConnected
@@ -67,7 +67,7 @@ export declare class WebSocketManager implements IWebSocketManager {
      * @returns {Promise}
      */
     setWebsocketEnabled(enable: boolean): Promise<boolean>;
-    readonly isEnabled: boolean;
+    get isEnabled(): boolean;
     /**
      * Function to connect websocket
      * @method WebSocketManager#connect
@@ -103,37 +103,37 @@ export declare class WebSocketManager implements IWebSocketManager {
      *
      * @param event
      */
-    private _handleOpen(event);
+    private _handleOpen;
     /**
      *
      * @param event
      */
-    private _handleMessage(event);
+    private _handleMessage;
     /**
      *
      * @param event
      */
-    private _handleError(event);
+    private _handleError;
     /**
      *
      * @param event
      */
-    private _handleClose(event);
+    private _handleClose;
     /**
      *
      */
-    private echo();
+    private echo;
     /**
      *
      */
-    private reconnect();
+    private reconnect;
     /**
      *
      * @param name
      */
-    private mapEventName(name);
+    private mapEventName;
     /**
      * Map internal event structure to a defined interface ...
      */
-    private publishWebsocketEvent(event);
+    private publishWebsocketEvent;
 }
