@@ -1,9 +1,9 @@
 import { ILogger, LogLevels, IEventManager, ILocalStorageData } from "./interfaces";
 import { IndexedDBLogger } from "./indexedDBLogger";
 export declare class Logger implements ILogger {
-    private _eventManager;
-    private _localStorageData;
-    private _indexedDB;
+    private _eventManager?;
+    private _localStorageData?;
+    private _indexedDB?;
     private _logLevel;
     private _uid;
     private _maxLocalStorageLogSize;
@@ -23,12 +23,13 @@ export declare class Logger implements ILogger {
      * @method Logger#logLevel
      * @returns {LogLevels} - returns the current log level
      */
+    get logLevel(): LogLevels;
     /**
      * Setter to set the log level
      * @method Logger#logLevel
      * @param {LogLevels} theLogLevel - the log level
      */
-    logLevel: LogLevels;
+    set logLevel(theLogLevel: LogLevels);
     /**
      * Write custon content to the diagnostic log of type info.
      * @method Logger#log
@@ -70,7 +71,7 @@ export declare class Logger implements ILogger {
      * @param {LogLevels} level
      * @returns {String}
      */
-    private _stringForLogLevel(level);
+    private _stringForLogLevel;
     /**
      * Private method to log a message
      * @param  {LogLevels} level
@@ -78,5 +79,5 @@ export declare class Logger implements ILogger {
      * @param  {Object} [data]
      * @returns Promise
      */
-    private _log(level, message, data?);
+    private _log;
 }

@@ -9,8 +9,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.EventManager = void 0;
 var inversify_1 = require("inversify");
-var EventManager = (function () {
+var EventManager = /** @class */ (function () {
     /**
      * EventManager class constructor.
      * @class EventManager
@@ -95,11 +96,11 @@ var EventManager = (function () {
             }
         });
     };
+    EventManager = __decorate([
+        inversify_1.injectable(),
+        __metadata("design:paramtypes", [])
+    ], EventManager);
     return EventManager;
 }());
-EventManager = __decorate([
-    inversify_1.injectable(),
-    __metadata("design:paramtypes", [])
-], EventManager);
 exports.EventManager = EventManager;
 //# sourceMappingURL=eventManager.js.map

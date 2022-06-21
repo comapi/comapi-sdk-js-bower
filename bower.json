@@ -1,7 +1,7 @@
 {
     "name": "comapi-sdk-js-foundation",
     "description": "Comapi Javascript SDK - Foundation",
-    "version": "1.2.0-beta.1",
+    "version": "1.2.2",
     "keywords": [
         "messaging",
         "chat",

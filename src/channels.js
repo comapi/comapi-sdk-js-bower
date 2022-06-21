@@ -12,9 +12,10 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Channels = void 0;
 var inversify_1 = require("inversify");
 var interfaceSymbols_1 = require("./interfaceSymbols");
-var Channels = (function () {
+var Channels = /** @class */ (function () {
     /**
      * Channels class constructor.
      * @class Channels
@@ -38,13 +39,13 @@ var Channels = (function () {
             return _this._facebookManager.createSendToMessengerState(data);
         });
     };
+    Channels = __decorate([
+        inversify_1.injectable(),
+        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
+        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager)),
+        __metadata("design:paramtypes", [Object, Object])
+    ], Channels);
     return Channels;
 }());
-Channels = __decorate([
-    inversify_1.injectable(),
-    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
-    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.FacebookManager)),
-    __metadata("design:paramtypes", [Object, Object])
-], Channels);
 exports.Channels = Channels;
 //# sourceMappingURL=channels.js.map

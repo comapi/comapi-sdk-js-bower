@@ -12,10 +12,11 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ContentManager = void 0;
 var inversify_1 = require("inversify");
 var interfaceSymbols_1 = require("./interfaceSymbols");
 var utils_1 = require("./utils");
-var ContentManager = (function () {
+var ContentManager = /** @class */ (function () {
     /**
      * ContentManager class constructor.
      * @class ContentManager
@@ -111,14 +112,14 @@ var ContentManager = (function () {
     ContentManager.prototype.constructAUthHeader = function (token) {
         return "Bearer " + token;
     };
+    ContentManager = __decorate([
+        inversify_1.injectable(),
+        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
+        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+        __metadata("design:paramtypes", [Object, Object, Object])
+    ], ContentManager);
     return ContentManager;
 }());
-ContentManager = __decorate([
-    inversify_1.injectable(),
-    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
-    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
-    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
-    __metadata("design:paramtypes", [Object, Object, Object])
-], ContentManager);
 exports.ContentManager = ContentManager;
 //# sourceMappingURL=contentManager.js.map

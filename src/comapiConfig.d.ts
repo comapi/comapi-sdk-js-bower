@@ -1,4 +1,4 @@
-import { IComapiConfig, IAuthChallenge, LogLevels, LogPersistences, OrphanedEventPersistences, IFoundationRestUrls, IEventMapping } from "./interfaces";
+import { IComapiConfig, IAuthChallenge, LogLevels, LogPersistences, OrphanedEventPersistences, IFoundationRestUrls, IEventMapping, IPushConfig } from "./interfaces";
 export declare class ComapiConfig implements IComapiConfig {
     apiSpaceId: string;
     logRetentionHours: number;
@@ -14,6 +14,7 @@ export declare class ComapiConfig implements IComapiConfig {
     localStoragePrefix: string;
     orphanedEventPersistence: OrphanedEventPersistences;
     enableWebsocketForNonChatUsage: boolean;
+    pushConfig?: IPushConfig;
     /**
      * ComapiConfig class constructor.
      * @class ComapiConfig
@@ -104,4 +105,11 @@ export declare class ComapiConfig implements IComapiConfig {
      * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
      */
     withEnabledNonChatSocket(enabled: boolean): this;
+    /**
+     * Function to specify push configuration
+     * @method ComapiConfig#withPushConfiguration
+     * @param {IPushConfig} config - config
+     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+     */
+    withPushConfiguration(config: IPushConfig): this;
 }

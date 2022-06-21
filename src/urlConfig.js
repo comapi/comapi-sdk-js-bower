@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var FoundationRestUrls = (function () {
+exports.FoundationRestUrls = void 0;
+var FoundationRestUrls = /** @class */ (function () {
     function FoundationRestUrls() {
         // Content
         this.content = "{{urlBase}}/apispaces/{{apiSpaceId}}/content";

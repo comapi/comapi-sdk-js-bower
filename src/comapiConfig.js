@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ComapiConfig = void 0;
 var interfaces_1 = require("./interfaces");
 var urlConfig_1 = require("./urlConfig");
-var ComapiConfig = (function () {
+var ComapiConfig = /** @class */ (function () {
     /**
      * ComapiConfig class constructor.
      * @class ComapiConfig
@@ -138,6 +139,16 @@ var ComapiConfig = (function () {
      */
     ComapiConfig.prototype.withEnabledNonChatSocket = function (enabled) {
         this.enableWebsocketForNonChatUsage = enabled;
+        return this;
+    };
+    /**
+     * Function to specify push configuration
+     * @method ComapiConfig#withPushConfiguration
+     * @param {IPushConfig} config - config
+     * @returns {ComapiConfig} - Returns reference to itself so methods can be chained
+     */
+    ComapiConfig.prototype.withPushConfiguration = function (config) {
+        this.pushConfig = config;
         return this;
     };
     return ComapiConfig;

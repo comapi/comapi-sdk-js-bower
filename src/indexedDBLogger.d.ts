@@ -1,6 +1,6 @@
 import { IComapiConfig, ILogEvent } from "./interfaces";
 export declare class IndexedDBLogger {
-    private _comapiConfig;
+    private _comapiConfig?;
     private _initialised;
     private idbSupported;
     private _database;
@@ -21,7 +21,7 @@ export declare class IndexedDBLogger {
      * @method IndexedDBLogger#name
      * @param {string} name - the name
      */
-    name: string;
+    set name(name: string);
     /**
      * Removes all records older than specified date
      * @method IndexedDBLogger#purge
@@ -70,11 +70,11 @@ export declare class IndexedDBLogger {
     /**
      *
      */
-    private ensureInitialised();
+    private ensureInitialised;
     /**
      * Method to open a connection to the database
      * @method IndexedDBLogger#initialise
      * @returns {Promise} - returns a promise
      */
-    private initialise();
+    private initialise;
 }

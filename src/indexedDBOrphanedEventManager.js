@@ -6,9 +6,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.IndexedDBOrphanedEventManager = void 0;
 var inversify_1 = require("inversify");
 ;
-var IndexedDBOrphanedEventManager = (function () {
+var IndexedDBOrphanedEventManager = /** @class */ (function () {
     function IndexedDBOrphanedEventManager() {
         this.idbSupported = "indexedDB" in window;
         this._name = "Comapi.OrphanedEvents";
@@ -291,10 +292,10 @@ var IndexedDBOrphanedEventManager = (function () {
             };
         });
     };
+    IndexedDBOrphanedEventManager = __decorate([
+        inversify_1.injectable()
+    ], IndexedDBOrphanedEventManager);
     return IndexedDBOrphanedEventManager;
 }());
-IndexedDBOrphanedEventManager = __decorate([
-    inversify_1.injectable()
-], IndexedDBOrphanedEventManager);
 exports.IndexedDBOrphanedEventManager = IndexedDBOrphanedEventManager;
 //# sourceMappingURL=indexedDBOrphanedEventManager.js.map

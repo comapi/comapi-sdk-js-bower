@@ -35,24 +35,24 @@ export declare class IndexedDBOrphanedEventManager implements IOrphanedEventMana
      *
      */
     getOrphanedEvents(conversationId: string): Promise<IConversationMessageEvent[]>;
-    private ensureInitialised();
+    private ensureInitialised;
     /**
      *
      */
-    private initialise();
+    private initialise;
     /**
      * Method to clear the data in an object store
      * @method ConversationStore#clearObjectStore
      * @param {string} objectStore : the object store to clear
      * @returns {Promise} - returns a promise
      */
-    private clearObjectStore(objectStoreName);
+    private clearObjectStore;
     /**
      *
      */
-    private deleteTokenInfo(conversationId);
+    private deleteTokenInfo;
     /**
      *
      */
-    private deleteEvents(conversationId);
+    private deleteEvents;
 }

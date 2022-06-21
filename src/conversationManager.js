@@ -12,11 +12,12 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ConversationManager = void 0;
 var inversify_1 = require("inversify");
 var interfaces_1 = require("./interfaces");
 var utils_1 = require("./utils");
 var interfaceSymbols_1 = require("./interfaceSymbols");
-var ConversationManager = (function () {
+var ConversationManager = /** @class */ (function () {
     /**
      * ConversationManager class constructor.
      * @class ConversationManager
@@ -265,16 +266,16 @@ var ConversationManager = (function () {
             return Promise.resolve(true);
         });
     };
+    ConversationManager = __decorate([
+        inversify_1.injectable(),
+        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient)),
+        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+        __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+        __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
+        __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
+    ], ConversationManager);
     return ConversationManager;
 }());
-ConversationManager = __decorate([
-    inversify_1.injectable(),
-    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
-    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.AuthenticatedRestClient)),
-    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
-    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
-    __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
-    __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
-], ConversationManager);
 exports.ConversationManager = ConversationManager;
 //# sourceMappingURL=conversationManager.js.map

@@ -12,10 +12,12 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SessionManager = void 0;
 var inversify_1 = require("inversify");
+var interfaces_1 = require("./interfaces");
 var utils_1 = require("./utils");
 var interfaceSymbols_1 = require("./interfaceSymbols");
-var SessionManager = (function () {
+var SessionManager = /** @class */ (function () {
     /**
      * SessionManager class constructor.
      * @class SessionManager
@@ -65,7 +67,7 @@ var SessionManager = (function () {
         get: function () {
             return this._sessionInfo;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -178,6 +180,21 @@ var SessionManager = (function () {
             return result;
         });
     };
+    SessionManager.prototype._buildPushPayload = function (config) {
+        if (config && config.apns) {
+            return {
+                "apns": {
+                    "bundleId": config.apns.bundleId,
+                    // need to stringify the numeric enum value 
+                    "environment": interfaces_1.Environment[config.apns.environment],
+                    "token": config.apns.token
+                }
+            };
+        }
+        else {
+            return config;
+        }
+    };
     /**
      * Internal function to create an authenticated session
      * @param (String) jwt - the jwt retrieved from the integrator
@@ -203,9 +220,14 @@ var SessionManager = (function () {
                 deviceId: _this._deviceId,
                 platform: /*browserInfo.name*/ "javascript",
                 platformVersion: platformVersion,
+                push: _this._buildPushPayload(_this._comapiConfig.pushConfig),
                 sdkType: /*"javascript"*/ "native",
-                sdkVersion: "1.2.0-beta.1"
+                sdkVersion: "1.2.2.45",
             };
+            if (window && window.cordova && window.cordova.plugins && window.cordova.plugins.dotdigitalPlugin) {
+                var pluginVersion = window.cordova.plugins.dotdigitalPlugin.version();
+                data.sdkVersion += " - " + pluginVersion;
+            }
             return _this._restClient.post(url, {}, data);
         })
             .then(function (result) {
@@ -250,7 +272,8 @@ var SessionManager = (function () {
      * @returns {boolean} - returns boolean reault
      */
     SessionManager.prototype._setSession = function (sessionInfo) {
-        if (this.hasExpired(sessionInfo.session.expiresOn)) {
+        var payload = this.extractTokenPayload(sessionInfo.token);
+        if (payload && this.hasExpired(payload.exp)) {
             this._logger.error("Was given an expired token ;-(");
         }
         this._sessionInfo = sessionInfo;
@@ -288,13 +311,27 @@ var SessionManager = (function () {
         }
     };
     /**
-     * Check an iso date is not in the past ...
-     * @param expiresOn
+     * Check a token exp property not in the past ...
+     * @param token
      */
-    SessionManager.prototype.hasExpired = function (expiresOn) {
+    SessionManager.prototype.hasExpired = function (exp) {
         var now = new Date();
-        var expiry = new Date(expiresOn);
+        var expiry = new Date(exp * 1000);
         return now > expiry;
+    };
+    /**
+     * Extract payload from a jwt
+     * @param token
+     * @returns payload object
+     */
+    SessionManager.prototype.extractTokenPayload = function (token) {
+        if (token) {
+            var bits = token.split(".");
+            if (bits.length === 3) {
+                return JSON.parse(atob(bits[1]));
+            }
+        }
+        return null;
     };
     /**
      * Checks validity of session based on expiry and matching apiSpace
@@ -302,29 +339,26 @@ var SessionManager = (function () {
      */
     SessionManager.prototype.isSessionValid = function (sessionInfo) {
         var valid = false;
-        if (!this.hasExpired(sessionInfo.session.expiresOn)) {
-            // check that the token matches 
-            if (sessionInfo.token) {
-                var bits = sessionInfo.token.split(".");
-                if (bits.length === 3) {
-                    var payload = JSON.parse(atob(bits[1]));
-                    if (payload.apiSpaceId === this._comapiConfig.apiSpaceId) {
-                        valid = true;
-                    }
+        var payload = this.extractTokenPayload(sessionInfo.token);
+        if (payload) {
+            if (!this.hasExpired(payload.exp)) {
+                // check that the token matches 
+                if (payload.apiSpaceId === this._comapiConfig.apiSpaceId) {
+                    valid = true;
                 }
             }
         }
         return valid;
     };
+    SessionManager = __decorate([
+        inversify_1.injectable(),
+        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient)),
+        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
+        __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+        __metadata("design:paramtypes", [Object, Object, Object, Object])
+    ], SessionManager);
     return SessionManager;
 }());
-SessionManager = __decorate([
-    inversify_1.injectable(),
-    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
-    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.RestClient)),
-    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.LocalStorageData)),
-    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
-    __metadata("design:paramtypes", [Object, Object, Object, Object])
-], SessionManager);
 exports.SessionManager = SessionManager;
 //# sourceMappingURL=sessionManager.js.map

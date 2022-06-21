@@ -24,7 +24,7 @@ export declare enum LogLevels {
     None = 0,
     Error = 1,
     Warn = 2,
-    Debug = 3,
+    Debug = 3
 }
 /**
  * Log persistence enum
@@ -32,7 +32,7 @@ export declare enum LogLevels {
 export declare enum LogPersistences {
     None = 0,
     IndexedDB = 1,
-    LocalStorage = 2,
+    LocalStorage = 2
 }
 /**
  * Log persistence enum
@@ -40,7 +40,7 @@ export declare enum LogPersistences {
 export declare enum OrphanedEventPersistences {
     None = 0,
     IndexedDbIfSupported = 1,
-    LocalStorage = 2,
+    LocalStorage = 2
 }
 /**
  * Log Event interface
@@ -171,7 +171,21 @@ export interface IBrowserInfo {
  */
 export declare enum Environment {
     development = 0,
-    production = 1,
+    production = 1
+}
+/**
+ * Environment enum
+ */
+export interface IPushConfig {
+    fcm?: {
+        package: string;
+        registrationId: string;
+    };
+    apns?: {
+        bundleId: string;
+        environment: Environment;
+        token: string;
+    };
 }
 /**
  * Session manager interface
@@ -198,7 +212,7 @@ export interface INetworkManager {
     setWebsocketEnabled(enable: boolean): Promise<boolean>;
 }
 /**
- * Session manager interface
+ * Device manager interface
  */
 export interface IDeviceManager {
     setFCMPushDetails(sessionId: string, packageName: string, registrationId: string): Promise<boolean>;
@@ -206,7 +220,7 @@ export interface IDeviceManager {
     removePushDetails(sessionId: string): Promise<boolean>;
 }
 /**
- * Session manager interface
+ * Facebook manager interface
  */
 export interface IFacebookManager {
     createSendToMessengerState(data?: any): Promise<any>;
@@ -262,6 +276,7 @@ export interface IComapiConfig {
     localStoragePrefix?: string;
     orphanedEventPersistence?: OrphanedEventPersistences;
     enableWebsocketForNonChatUsage?: boolean;
+    pushConfig?: IPushConfig;
 }
 export interface IContentData {
     file: File;
@@ -294,7 +309,7 @@ export interface IProfileManager {
  */
 export declare enum ConversationScope {
     public = 0,
-    participant = 1,
+    participant = 1
 }
 /**
  * Conversation manager interface

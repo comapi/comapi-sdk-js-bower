@@ -12,9 +12,10 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AppMessaging = void 0;
 var inversify_1 = require("inversify");
 var interfaceSymbols_1 = require("./interfaceSymbols");
-var AppMessaging = (function () {
+var AppMessaging = /** @class */ (function () {
     /**
      * AppMessaging class constructor.
      * @class  AppMessaging
@@ -256,16 +257,16 @@ var AppMessaging = (function () {
             return _this._contentManager.uploadContent(content, folder);
         });
     };
+    AppMessaging = __decorate([
+        inversify_1.injectable(),
+        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
+        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager)),
+        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager)),
+        __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager)),
+        __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ContentManager)),
+        __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
+    ], AppMessaging);
     return AppMessaging;
 }());
-AppMessaging = __decorate([
-    inversify_1.injectable(),
-    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.NetworkManager)),
-    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ConversationManager)),
-    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessageManager)),
-    __param(3, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.MessagePager)),
-    __param(4, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ContentManager)),
-    __metadata("design:paramtypes", [Object, Object, Object, Object, Object])
-], AppMessaging);
 exports.AppMessaging = AppMessaging;
 //# sourceMappingURL=appMessaging.js.map

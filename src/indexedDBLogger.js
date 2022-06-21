@@ -12,6 +12,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.IndexedDBLogger = void 0;
 var inversify_1 = require("inversify");
 var interfaceSymbols_1 = require("./interfaceSymbols");
 var mutex_1 = require("./mutex");
@@ -19,7 +20,7 @@ var mutex_1 = require("./mutex");
  * http://blog.vanamco.com/indexeddb-fundamentals-plus-a-indexeddb-example-tutorial/
  * http://code.tutsplus.com/tutorials/working-with-indexeddb--net-34673
  */
-var IndexedDBLogger = (function () {
+var IndexedDBLogger = /** @class */ (function () {
     /**
      * IndexedDBLogger class constructor.
      * @class IndexedDBLogger
@@ -44,7 +45,7 @@ var IndexedDBLogger = (function () {
         set: function (name) {
             this._name = name;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -294,12 +295,12 @@ var IndexedDBLogger = (function () {
             }
         });
     };
+    IndexedDBLogger = __decorate([
+        inversify_1.injectable(),
+        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)), __param(0, inversify_1.optional()),
+        __metadata("design:paramtypes", [Object])
+    ], IndexedDBLogger);
     return IndexedDBLogger;
 }());
-IndexedDBLogger = __decorate([
-    inversify_1.injectable(),
-    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)), __param(0, inversify_1.optional()),
-    __metadata("design:paramtypes", [Object])
-], IndexedDBLogger);
 exports.IndexedDBLogger = IndexedDBLogger;
 //# sourceMappingURL=indexedDBLogger.js.map

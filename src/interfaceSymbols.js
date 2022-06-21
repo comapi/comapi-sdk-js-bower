@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.INTERFACE_SYMBOLS = void 0;
 var INTERFACE_SYMBOLS = {
     AppMessaging: "AppMessaging",
     AuthenticatedRestClient: "AuthenticatedRestClient",
@@ -24,7 +25,7 @@ var INTERFACE_SYMBOLS = {
     RestClient: "RestClient",
     Services: "Services",
     SessionManager: "SessionManager",
-    WebSocketManager: "WebSocketManager",
+    WebSocketManager: "WebSocketManager"
 };
 exports.INTERFACE_SYMBOLS = INTERFACE_SYMBOLS;
 //# sourceMappingURL=interfaceSymbols.js.map

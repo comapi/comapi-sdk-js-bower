@@ -29,7 +29,7 @@ export declare class SessionManager implements ISessionManager {
      * @method SessionManager#sessionInfo
      * @returns {ISessionInfo}
      */
-    readonly sessionInfo: ISessionInfo;
+    get sessionInfo(): ISessionInfo;
     /**
      * Function to get auth token
      * @method SessionManager#token
@@ -60,6 +60,7 @@ export declare class SessionManager implements ISessionManager {
      * @returns {Promise} - returns boolean result
      */
     removeSession(): Promise<boolean>;
+    private _buildPushPayload;
     /**
      * Internal function to create an authenticated session
      * @param (String) jwt - the jwt retrieved from the integrator
@@ -67,38 +68,44 @@ export declare class SessionManager implements ISessionManager {
      * @param (Object) deviceInfo - the deviceInfo
      * @returns {Promise} - Returns a promise
      */
-    private _createAuthenticatedSession(jwt, authenticationId, deviceInfo);
+    private _createAuthenticatedSession;
     /**
      * Internal function to start an authenticated session
      * @returns {Promise} - Returns a promise
      */
-    private _startAuth();
+    private _startAuth;
     /**
      * Internal function to end an authenticated session
      * @returns {Promise} - Returns a promise
      */
-    private _endAuth();
+    private _endAuth;
     /**
      * Internal function to load in an existing session if available
      * @returns {boolean} - returns boolean reault
      */
-    private _setSession(sessionInfo);
+    private _setSession;
     /**
      *
      */
-    private getAuthHeader();
+    private getAuthHeader;
     /**
      * Create one if not available ...
      */
-    private getDeviceId();
+    private getDeviceId;
     /**
-     * Check an iso date is not in the past ...
-     * @param expiresOn
+     * Check a token exp property not in the past ...
+     * @param token
      */
-    private hasExpired(expiresOn);
+    private hasExpired;
+    /**
+     * Extract payload from a jwt
+     * @param token
+     * @returns payload object
+     */
+    private extractTokenPayload;
     /**
      * Checks validity of session based on expiry and matching apiSpace
      * @param sessionInfo
      */
-    private isSessionValid(sessionInfo);
+    private isSessionValid;
 }

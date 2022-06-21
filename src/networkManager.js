@@ -12,9 +12,10 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.NetworkManager = void 0;
 var inversify_1 = require("inversify");
 var interfaceSymbols_1 = require("./interfaceSymbols");
-var NetworkManager = (function () {
+var NetworkManager = /** @class */ (function () {
     /**
      * NetworkManager class constructor.
      * @class NetworkManager
@@ -100,7 +101,7 @@ var NetworkManager = (function () {
         get: function () {
             return this._sessionManager.sessionInfo ? this._sessionManager.sessionInfo.session : null;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -129,14 +130,14 @@ var NetworkManager = (function () {
     NetworkManager.prototype.setWebsocketEnabled = function (enable) {
         return this._webSocketManager.setWebsocketEnabled(enable);
     };
+    NetworkManager = __decorate([
+        inversify_1.injectable(),
+        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
+        __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
+        __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager)),
+        __metadata("design:paramtypes", [Object, Object, Object])
+    ], NetworkManager);
     return NetworkManager;
 }());
-NetworkManager = __decorate([
-    inversify_1.injectable(),
-    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.Logger)),
-    __param(1, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.SessionManager)),
-    __param(2, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.WebSocketManager)),
-    __metadata("design:paramtypes", [Object, Object, Object])
-], NetworkManager);
 exports.NetworkManager = NetworkManager;
 //# sourceMappingURL=networkManager.js.map

@@ -12,9 +12,10 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.LocalStorageData = void 0;
 var inversify_1 = require("inversify");
 var interfaceSymbols_1 = require("./interfaceSymbols");
-var LocalStorageData = (function () {
+var LocalStorageData = /** @class */ (function () {
     /**
      * LocalStorageData class constructor.
      * @class LocalStorageData
@@ -40,7 +41,7 @@ var LocalStorageData = (function () {
         set: function (prefix) {
             this._prefix = prefix;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -113,12 +114,12 @@ var LocalStorageData = (function () {
         }
         return Promise.resolve(true);
     };
+    LocalStorageData = __decorate([
+        inversify_1.injectable(),
+        __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
+        __metadata("design:paramtypes", [Object])
+    ], LocalStorageData);
     return LocalStorageData;
 }());
-LocalStorageData = __decorate([
-    inversify_1.injectable(),
-    __param(0, inversify_1.inject(interfaceSymbols_1.INTERFACE_SYMBOLS.ComapiConfig)),
-    __metadata("design:paramtypes", [Object])
-], LocalStorageData);
 exports.LocalStorageData = LocalStorageData;
 //# sourceMappingURL=localStorageData.js.map
