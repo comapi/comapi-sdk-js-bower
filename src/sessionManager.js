@@ -222,7 +222,7 @@ var SessionManager = /** @class */ (function () {
                 platformVersion: platformVersion,
                 push: _this._buildPushPayload(_this._comapiConfig.pushConfig),
                 sdkType: /*"javascript"*/ "native",
-                sdkVersion: "1.2.2.45",
+                sdkVersion: "1.3.0.46",
             };
             if (window && window.cordova && window.cordova.plugins && window.cordova.plugins.dotdigitalPlugin) {
                 var pluginVersion = window.cordova.plugins.dotdigitalPlugin.version();

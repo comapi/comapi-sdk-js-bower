@@ -1441,7 +1441,7 @@ var COMAPI =
 	         * @method Foundation#version
 	         */
 	        get: function () {
-	            return "1.2.2.45";
+	            return "1.3.0.46";
 	        },
 	        enumerable: false,
 	        configurable: true
@@ -1603,6 +1603,88 @@ var COMAPI =
 	     */
 	    Foundation.prototype.getLogs = function () {
 	        return this._logger.getLog();
+	    };
+	    /**
+	     * Track notification click and return deep link url to be opened.
+	     * @method Foundation#handleLink
+	     * @param message "FirebasePlugin push message returned from onMessageReceived"
+	     */
+	    Foundation.prototype.handlePush = function (message) {
+	        var _this = this;
+	        return new Promise(function (resolve, reject) {
+	            _this._handleLink(function (result) {
+	                resolve(result);
+	            }, function (error) {
+	                reject(error);
+	            }, message);
+	        });
+	    };
+	    Foundation.prototype._handleLink = function (successCallback, errorCallback, payload) {
+	        var _a, _b;
+	        var ddDeepLink = payload.dd_deepLink || ((_a = payload.data) === null || _a === void 0 ? void 0 : _a.dd_deepLink) || ((_b = payload.additionalData) === null || _b === void 0 ? void 0 : _b.dd_deepLink);
+	        var trackingUrl;
+	        var url;
+	        if (typeof ddDeepLink === "string") {
+	            try {
+	                var deepLinkData = JSON.parse(ddDeepLink);
+	                trackingUrl = deepLinkData === null || deepLinkData === void 0 ? void 0 : deepLinkData.trackingUrl;
+	                url = deepLinkData === null || deepLinkData === void 0 ? void 0 : deepLinkData.url;
+	            }
+	            catch (e) {
+	                errorCallback(e);
+	                return;
+	            }
+	        }
+	        else if (ddDeepLink) {
+	            trackingUrl = ddDeepLink.trackingUrl;
+	            url = ddDeepLink.url;
+	        }
+	        if (trackingUrl) {
+	            this._get(trackingUrl)
+	                .then(function () {
+	                successCallback(url);
+	            })
+	                .catch(function (error) {
+	                errorCallback(error);
+	            });
+	        }
+	        else {
+	            successCallback(url);
+	        }
+	    };
+	    Foundation.prototype._get = function (url) {
+	        return new Promise(function (resolve, reject) {
+	            var headers = {};
+	            /* tslint:disable:no-string-literal */
+	            headers["Content-Type"] = "application/json";
+	            headers["Cache-Control"] = "no-cache";
+	            headers["Pragma"] = "no-cache";
+	            headers["If-Modified-Since"] = "Mon, 26 Jul 1997 05:00:00 GMT";
+	            /* tslint:enable:no-string-literal */
+	            var xhr = new XMLHttpRequest();
+	            xhr.open("GET", url, true);
+	            for (var prop in headers) {
+	                if (headers.hasOwnProperty(prop)) {
+	                    xhr.setRequestHeader(prop, headers[prop]);
+	                }
+	            }
+	            xhr.onload = function () {
+	                var succeeded = xhr.status >= 200 && xhr.status < 300;
+	                if (succeeded) {
+	                    resolve(xhr.responseText);
+	                }
+	                else {
+	                    reject(xhr.responseText);
+	                }
+	            };
+	            xhr.onerror = function () {
+	                reject(xhr.status);
+	            };
+	            xhr.onabort = function (evt) {
+	                reject(xhr);
+	            };
+	            xhr.send(null);
+	        });
 	    };
 	    /**
 	     * Mutex to prevent re-entrancy during initialisation
@@ -6298,7 +6380,7 @@ var COMAPI =
 	                platformVersion: platformVersion,
 	                push: _this._buildPushPayload(_this._comapiConfig.pushConfig),
 	                sdkType: /*"javascript"*/ "native",
-	                sdkVersion: "1.2.2.45",
+	                sdkVersion: "1.3.0.46",
 	            };
 	            if (window && window.cordova && window.cordova.plugins && window.cordova.plugins.dotdigitalPlugin) {
 	                var pluginVersion = window.cordova.plugins.dotdigitalPlugin.version();
