@@ -1441,7 +1441,7 @@ var COMAPI =
 	         * @method Foundation#version
 	         */
 	        get: function () {
-	            return "1.3.0.46";
+	            return "1.4.0.47";
 	        },
 	        enumerable: false,
 	        configurable: true
@@ -1606,7 +1606,7 @@ var COMAPI =
 	    };
 	    /**
 	     * Track notification click and return deep link url to be opened.
-	     * @method Foundation#handleLink
+	     * @method Foundation#handlePush
 	     * @param message "FirebasePlugin push message returned from onMessageReceived"
 	     */
 	    Foundation.prototype.handlePush = function (message) {
@@ -1614,6 +1614,23 @@ var COMAPI =
 	        return new Promise(function (resolve, reject) {
 	            _this._handleLink(function (result) {
 	                resolve(result);
+	            }, function (error) {
+	                reject(error);
+	            }, message);
+	        });
+	    };
+	    /**
+	     * Track notification click and return deep link url to be opened as well as dd_originated flag.
+	     * @method Foundation#handlePushAndGetMessageDetails
+	     * @param message "FirebasePlugin push message returned from onMessageReceived"
+	     */
+	    Foundation.prototype.handlePushAndGetMessageDetails = function (message) {
+	        var _a;
+	        var ddOriginated = (_a = message["dd_originated"]) !== null && _a !== void 0 ? _a : false;
+	        var _this = this;
+	        return new Promise(function (resolve, reject) {
+	            _this._handleLink(function (url) {
+	                resolve({ url: url, ddOriginated: ddOriginated });
 	            }, function (error) {
 	                reject(error);
 	            }, message);
@@ -6380,7 +6397,7 @@ var COMAPI =
 	                platformVersion: platformVersion,
 	                push: _this._buildPushPayload(_this._comapiConfig.pushConfig),
 	                sdkType: /*"javascript"*/ "native",
-	                sdkVersion: "1.3.0.46",
+	                sdkVersion: "1.4.0.47",
 	            };
 	            if (window && window.cordova && window.cordova.plugins && window.cordova.plugins.dotdigitalPlugin) {
 	                var pluginVersion = window.cordova.plugins.dotdigitalPlugin.version();

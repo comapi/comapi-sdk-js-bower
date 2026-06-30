@@ -132,10 +132,16 @@ export declare class Foundation implements IFoundation {
     getLogs(): Promise<string>;
     /**
      * Track notification click and return deep link url to be opened.
-     * @method Foundation#handleLink
+     * @method Foundation#handlePush
      * @param message "FirebasePlugin push message returned from onMessageReceived"
      */
     handlePush(message: any): Promise<unknown>;
+    /**
+     * Track notification click and return deep link url to be opened as well as dd_originated flag.
+     * @method Foundation#handlePushAndGetMessageDetails
+     * @param message "FirebasePlugin push message returned from onMessageReceived"
+     */
+    handlePushAndGetMessageDetails(message: any): Promise<unknown>;
     private _handleLink;
     private _get;
 }
